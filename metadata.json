@@ -1,0 +1,7 @@
+{
+  "name": "Metodo Reinventar",
+  "description": "A self-reflection card game for personal reinvention.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
