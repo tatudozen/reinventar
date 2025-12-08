@@ -3,20 +3,19 @@ import React, { useState, useRef } from 'react';
 import { useGame } from '../store/GameContext';
 import { storage, db } from '../firebase-config';
 // @ts-ignore - Firebase v9 types workaround
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 // @ts-ignore
 import { doc, setDoc } from 'firebase/firestore';
-import { Mic, Square, Loader2, CheckCircle, Play, Pause, RefreshCw, AlertCircle, UploadCloud } from 'lucide-react';
+import { Mic, Square, Loader2, CheckCircle, Play, Pause, RefreshCw, AlertCircle, XCircle } from 'lucide-react';
 
 export const AuditScreen: React.FC = () => {
-  const { goToScreen, userUid, isOffline } = useGame();
+  const { goToScreen, userUid, isOffline, resetProgress } = useGame();
   
   // Estados da Interface
   const [status, setStatus] = useState<'idle' | 'recording' | 'processing' | 'uploading_file' | 'saving_db' | 'completed'>('idle');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   
   // Referências para lógica de gravação
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -106,7 +105,7 @@ export const AuditScreen: React.FC = () => {
     }
 
     setStatus('uploading_file');
-    setUploadProgress(0);
+    setErrorMessage(null);
 
     try {
         const extension = mimeTypeRef.current.includes('mp4') ? 'mp4' : 'webm';
@@ -114,28 +113,29 @@ export const AuditScreen: React.FC = () => {
         const filename = `audits/${userUid}/${timestamp}.${extension}`;
         const storageRef = ref(storage, filename);
 
-        console.log(`Iniciando upload (${blob.size} bytes) para: ${filename}`);
+        console.log(`Iniciando upload simples (${blob.size} bytes) para: ${filename}`);
 
-        const uploadTask = uploadBytesResumable(storageRef, blob);
+        const metadata = {
+          contentType: mimeTypeRef.current
+        };
 
-        uploadTask.on('state_changed', 
-            (snapshot: any) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(progress);
-                console.log('Upload is ' + progress + '% done');
-            },
-            (error: any) => {
-                console.error("Erro no listener de upload:", error);
-                // O erro será tratado no catch abaixo se o await falhar, 
-                // mas podemos forçar atualização de estado aqui se necessário
-            }
-        );
+        // 1. Cria a Promise do Upload
+        const uploadPromise = uploadBytes(storageRef, blob, metadata);
 
-        // Aguarda a conclusão do upload
-        await uploadTask;
+        // 2. Cria a Promise de Timeout (30 segundos)
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+                reject(new Error("Timeout: O envio demorou muito."));
+            }, 30000); // 30 segundos
+        });
+
+        // 3. Corrida: Quem terminar primeiro ganha
+        // Se o timeout ganhar, ele joga o erro e cai no catch
+        await Promise.race([uploadPromise, timeoutPromise]);
         
+        console.log("Upload concluído. Obtendo URL...");
         const downloadURL = await getDownloadURL(storageRef);
-        console.log("Arquivo enviado. URL:", downloadURL);
+        console.log("URL obtida:", downloadURL);
         
         setStatus('saving_db');
         setAudioUrl(downloadURL);
@@ -151,19 +151,23 @@ export const AuditScreen: React.FC = () => {
         setStatus('completed');
 
     } catch (error: any) {
+        // Se o status já for idle (cancelado manualmente), ignorar erro
+        if (status === 'idle') return;
+
         console.error("Erro no processo de upload:", error);
         
         let msg = "Falha ao enviar o áudio.";
-        if (error.code === 'storage/unauthorized') {
-            msg = "Permissão negada no Storage.";
-        } else if (error.code === 'storage/canceled') {
-            msg = "Envio cancelado.";
-        } else if (error.code === 'storage/unknown') {
-            msg = "Erro desconhecido no servidor.";
+        if (error.message && error.message.includes("Timeout")) {
+            msg = "O envio demorou muito (Timeout). Tente novamente.";
+        } else if (error.code === 'storage/unauthorized') {
+            msg = "Permissão negada (Verifique Regras do Storage).";
+        } else if (error.code === 'storage/retry-limit-exceeded') {
+            msg = "Conexão instável. Tente novamente.";
+        } else if (error.message && error.message.includes('network')) {
+            msg = "Erro de rede (Possível bloqueio de CORS).";
         }
         
         setErrorMessage(msg);
-        // Mantém status que permite retry se tivermos o blob
         setStatus('idle');
     }
   };
@@ -186,17 +190,23 @@ export const AuditScreen: React.FC = () => {
   };
 
   const resetAudit = () => {
-    setAudioUrl(null);
-    setStatus('idle');
-    setIsPlaying(false);
-    setErrorMessage(null);
-    setUploadProgress(0);
-    audioChunksRef.current = [];
-    recordedBlobRef.current = null;
+    // Cancela o player de áudio se estiver tocando
     if (audioPlayerRef.current) {
         audioPlayerRef.current.pause();
         audioPlayerRef.current = null;
     }
+    
+    // Limpa estados
+    setAudioUrl(null);
+    setStatus('idle');
+    setIsPlaying(false);
+    setErrorMessage(null);
+    audioChunksRef.current = [];
+    recordedBlobRef.current = null;
+  };
+
+  const finishJourney = () => {
+    resetProgress(true); // Reseta automaticamente sem perguntar ao concluir
   };
 
   return (
@@ -261,11 +271,6 @@ export const AuditScreen: React.FC = () => {
             <div className="flex flex-col items-center w-full max-w-xs mx-auto">
                 <div className="relative mb-6">
                     <Loader2 className="w-16 h-16 text-brand-blue animate-spin" />
-                    {status === 'uploading_file' && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-xs font-bold text-white">{Math.round(uploadProgress)}%</span>
-                        </div>
-                    )}
                 </div>
                 
                 <p className="text-gray-300 text-lg mb-2">
@@ -273,14 +278,17 @@ export const AuditScreen: React.FC = () => {
                     {status === 'uploading_file' && 'Enviando para a nuvem...'}
                     {status === 'saving_db' && 'Finalizando...'}
                 </p>
-
+                
                 {status === 'uploading_file' && (
-                    <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                            className="h-full bg-brand-blue transition-all duration-300 ease-out"
-                            style={{ width: `${uploadProgress}%` }}
-                        ></div>
-                    </div>
+                  <button 
+                    onClick={() => {
+                      setStatus('idle');
+                      setErrorMessage("Envio cancelado manualmente.");
+                    }}
+                    className="mt-4 flex items-center gap-2 text-xs text-red-400 hover:text-red-300 border border-red-500/30 px-3 py-1 rounded-full transition-colors"
+                  >
+                    <XCircle size={14} /> Cancelar envio
+                  </button>
                 )}
                 
                 <p className="text-xs text-gray-500 mt-4">Não feche o aplicativo</p>
@@ -312,7 +320,7 @@ export const AuditScreen: React.FC = () => {
                 </div>
 
                 <button
-                    onClick={() => goToScreen('landing')}
+                    onClick={finishJourney}
                     className="w-full py-4 bg-white text-gray-900 rounded-xl font-bold hover:bg-gray-200 transition-colors tracking-wide"
                 >
                     CONCLUIR JORNADA

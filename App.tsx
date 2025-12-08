@@ -92,13 +92,13 @@ const MainContent: React.FC = () => {
                 </div>
                 <Wheel />
                 
-                {/* Botão de Reset (Útil para testes) */}
+                {/* Botão de Reset (Útil para testes) - Agora com ação imediata */}
                 <button 
-                  onClick={resetProgress}
-                  className="mt-12 flex items-center gap-2 text-gray-600 hover:text-red-400 text-xs transition-colors"
+                  onClick={() => resetProgress(true)}
+                  className="mt-12 flex items-center gap-2 text-gray-600 hover:text-red-400 text-xs transition-colors px-4 py-2 rounded border border-transparent hover:border-gray-800"
                 >
                   <RefreshCcw size={12} />
-                  Reiniciar Jornada (Reset)
+                  Reiniciar Jornada (Forçar Reset)
                 </button>
               </div>
             );

@@ -24,7 +24,7 @@ interface GameContextType {
   saveAnswer: (text: string) => void;
   completeCategory: () => void;
   getFormattedAnswerKey: () => string;
-  resetProgress: () => Promise<void>; // Nova função
+  resetProgress: (skipConfirm?: boolean) => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -235,26 +235,32 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  // Função para limpar progresso (Útil para testes)
-  const resetProgress = async () => {
-    if (confirm("Tem certeza que deseja apagar todo o progresso?")) {
+  // Função para limpar progresso
+  const resetProgress = async (skipConfirm: boolean = false) => {
+    if (skipConfirm || window.confirm("Tem certeza que deseja apagar todo o progresso?")) {
+      // 1. Limpeza Imediata (UI First)
       setAnswers({});
       setCompletedCategories([]);
+      setCurrentCategoryKey(null);
+      setCurrentQuestionIndex(null);
       localStorage.removeItem('metodo_reinventar_state');
+      setCurrentScreen('landing');
       
+      // 2. Limpeza no Banco (Background)
       if (!isOffline && userUid && db) {
         try {
           const userRef = doc(db, "users", userUid);
+          // Substitui o documento inteiro por um vazio/novo
           await setDoc(userRef, {
             answers: {},
             completedCategories: [],
             resetAt: new Date().toISOString()
-          }, { merge: true });
+          });
+          console.log("Progresso resetado no Firestore.");
         } catch (e) {
-          console.error("Erro ao resetar no Firestore", e);
+          console.error("Erro ao resetar no Firestore (mas local foi limpo)", e);
         }
       }
-      setCurrentScreen('landing');
     }
   };
 
