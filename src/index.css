@@ -1,0 +1,222 @@
+@import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;500;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Helvetica Neue', Arial, sans-serif;
+
+  --color-brand-50: rgba(255, 255, 255, 0.05);
+  --color-brand-100: rgba(255, 255, 255, 0.08); /* glass */
+  --color-brand-200: rgba(255, 255, 255, 0.1);
+  --color-brand-300: var(--neon-magenta);
+  --color-brand-400: var(--neon-cyan);
+  --color-brand-500: var(--neon-lime);
+  --color-brand-600: var(--neon-cyan);
+  --color-brand-700: #00d9e6;
+  --color-brand-800: #ffffff;
+  --color-brand-900: var(--neon-cyan);
+
+  --color-bg-light: transparent;
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+}
+
+:root, [data-theme='cyber'] {
+  --neon-cyan: #00f2ff;
+  --neon-magenta: #ff00e5;
+  --neon-lime: #bcff00;
+  --bg-dark: #0a0b1e;
+  --glass: rgba(255, 255, 255, 0.08);
+  --text-main: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --bg-gradient: radial-gradient(circle at top right, #1e1b4b, #0a0b1e);
+  --btn-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+  --alpha-border: rgba(255,255,255,0.12);
+  --alpha-text: rgba(255,255,255,0.7);
+  --alpha-bg: rgba(255,255,255,0.04);
+  --alpha-border-coin: rgba(255,255,255,0.15);
+}
+
+[data-theme='dark_academia'] {
+  --neon-cyan: #d4af37; /* Gold */
+  --neon-magenta: #800020; /* Burgundy */
+  --neon-lime: #556b2f; /* Olive green */
+  --bg-dark: #1a1514;
+  --glass: rgba(255, 248, 220, 0.05);
+  --text-main: #e8dcc5;
+  --text-muted: rgba(232, 220, 197, 0.6);
+  --bg-gradient: radial-gradient(circle at top right, #2c241b, #1a1514);
+  --btn-shadow: 0 0 25px rgba(212, 175, 55, 0.2);
+  --alpha-border: rgba(255,255,255,0.12);
+  --alpha-text: rgba(255,255,255,0.7);
+  --alpha-bg: rgba(255,255,255,0.04);
+  --alpha-border-coin: rgba(255,255,255,0.15);
+}
+
+[data-theme='anime'] {
+  --neon-cyan: #ff3366; /* Vibrant pink */
+  --neon-magenta: #33ccff; /* Vibrant blue */
+  --neon-lime: #ffcc00; /* Vibrant yellow */
+  --bg-dark: #ffffff;
+  --glass: rgba(0, 0, 0, 0.05);
+  --text-main: #1a1a1a;
+  --text-muted: rgba(26, 26, 26, 0.6);
+  --bg-gradient: linear-gradient(135deg, #fefefe, #ffffff);
+  --btn-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+  --alpha-border: rgba(0,0,0,0.15);
+  --alpha-text: rgba(0,0,0,0.65);
+  --alpha-bg: rgba(0,0,0,0.04);
+  --alpha-border-coin: rgba(0,0,0,0.2);
+}
+
+body {
+  margin: 0;
+  background: var(--bg-gradient) no-repeat center center fixed !important;
+  background-color: var(--bg-dark) !important;
+  color: var(--text-main) !important;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* Glassmorphism defaults for standard utility classes used in the app */
+.bg-white { background-color: var(--glass) !important; }
+.bg-stone-50 { background-color: rgba(255, 255, 255, 0.03) !important; }
+.bg-stone-100 { background-color: rgba(255, 255, 255, 0.05) !important; }
+.bg-stone-200 { background-color: rgba(255, 255, 255, 0.1) !important; }
+.border-stone-100 { border-color: rgba(255, 255, 255, 0.05) !important; }
+.border-stone-200 { border-color: rgba(255, 255, 255, 0.1) !important; }
+.border-stone-300 { border-color: rgba(255, 255, 255, 0.2) !important; }
+
+/* General Text Recolor */
+.text-stone-400 { color: var(--text-muted) !important; }
+.text-stone-500 { color: var(--text-muted) !important; }
+.text-stone-600 { color: var(--text-muted) !important; }
+.text-stone-700, .text-stone-800, .text-stone-900 { color: var(--text-main) !important; }
+.text-\\[var\\(--color-brand-800\\)\\] { color: var(--text-main) !important; }
+.text-\\[var\\(--color-brand-600\\)\\] { color: var(--neon-cyan) !important; }
+.text-\\[var\\(--color-brand-500\\)\\] { color: var(--neon-magenta) !important; }
+
+/* Primary Buttons */
+.bg-\\[var\\(--color-brand-600\\)\\] {
+  background-color: var(--neon-cyan) !important;
+  color: var(--bg-dark) !important;
+  box-shadow: var(--btn-shadow) !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2px !important;
+  border-radius: 12px !important;
+  border: none !important;
+}
+
+.hover\\:bg-\\[var\\(--color-brand-700\\)\\]:hover {
+  background-color: #00d9e6 !important;
+  color: var(--bg-dark) !important;
+  box-shadow: 0 0 25px rgba(0, 242, 255, 0.6) !important;
+}
+
+/* Make layout panels look like glass workspace from design */
+.bg-\\[var\\(--color-brand-50\\)\\].border-\\[var\\(--color-brand-200\\)\\] {
+  background-color: var(--glass) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.2) !important;
+  border-radius: 32px !important;
+}
+
+/* Main workspace area borders */
+.rounded-xl { border-radius: 24px !important; }
+
+/* Secondary Button / Cards */
+button.border-stone-200, .border-stone-200 > button, button.btn-secondary {
+  border-color: rgba(128,128,128,0.3) !important;
+  color: var(--text-main) !important;
+  border-radius: 12px !important;
+}
+button.border-stone-200:hover, button.btn-secondary:hover {
+  background-color: var(--glass) !important;
+}
+
+/* Inputs and Forms */
+input, textarea {
+  background-color: var(--glass) !important;
+  border: 1px solid rgba(128,128,128,0.2) !important;
+  color: var(--text-main) !important;
+  border-radius: 12px !important;
+}
+input:focus, textarea:focus {
+  border-color: var(--neon-cyan) !important;
+  box-shadow: 0 0 10px rgba(0, 242, 255, 0.2) !important;
+  outline: none !important;
+}
+
+/* Dynamic color replacements for categories */
+.ring-blue-200 { --tw-ring-color: var(--neon-cyan) !important; }
+.bg-blue-50 { background-color: rgba(0, 242, 255, 0.1) !important; }
+.bg-blue-100 { background-color: rgba(0, 242, 255, 0.2) !important; }
+.text-blue-900, .text-blue-800 { color: var(--neon-cyan) !important; }
+.border-blue-300 { border-color: var(--neon-cyan) !important; }
+
+.bg-orange-50 { background-color: rgba(255, 174, 0, 0.1) !important; }
+.text-orange-900 { color: #ffae00 !important; }
+.border-orange-300, .border-orange-200 { border-color: #ffae00 !important; }
+
+.bg-yellow-50 { background-color: rgba(188, 255, 0, 0.1) !important; }
+.bg-yellow-100 { background-color: rgba(188, 255, 0, 0.2) !important; }
+.text-yellow-900, .text-yellow-800 { color: var(--neon-lime) !important; }
+.border-yellow-300 { border-color: var(--neon-lime) !important; }
+
+.bg-green-100 { background-color: rgba(188, 255, 0, 0.2) !important; }
+.border-green-300 { border-color: var(--neon-lime) !important; }
+.text-green-800 { color: var(--neon-lime) !important; }
+
+.bg-purple-100 { background-color: rgba(255, 0, 229, 0.2) !important; }
+.border-purple-300 { border-color: var(--neon-magenta) !important; }
+.text-purple-800 { color: var(--neon-magenta) !important; }
+
+/* Mission 1 Quadrants mapping */
+div.border-\\[var\\(--color-brand-400\\)\\] {
+    border-color: var(--neon-magenta) !important;
+    background-color: var(--glass) !important;
+    color: var(--text-main) !important;
+}
+
+/* Selected states */
+.ring-\\[var\\(--color-brand-400\\)\\] {
+    --tw-ring-color: var(--neon-cyan) !important;
+}
+.bg-\\[var\\(--color-brand-50\\)\\] {
+    background-color: var(--glass) !important;
+}
+.border-\\[var\\(--color-brand-400\\)\\] {
+    border-color: var(--neon-cyan) !important;
+}
+
+/* Anime theme: fix white-on-white Tailwind utilities (bordas e fundos apenas) */
+[data-theme='anime'] .border-white\/10 { border-color: rgba(0,0,0,0.1) !important; }
+[data-theme='anime'] .border-white\/5  { border-color: rgba(0,0,0,0.05) !important; }
+[data-theme='anime'] .bg-white\/10     { background-color: rgba(0,0,0,0.06) !important; }
+[data-theme='anime'] .bg-black\/30     { background-color: rgba(0,0,0,0.15) !important; }
+[data-theme='anime'] .bg-white\/5      { background-color: rgba(0,0,0,0.03) !important; }
+
+/* Dashboard screen specific overrides to match design */
+.mix-blend-multiply { mix-blend-mode: screen !important; border-width: 2px !important; }
+[data-theme='anime'] .mix-blend-multiply { mix-blend-mode: multiply !important; border-width: 2px !important; }
+
+.c-love { border-color: var(--neon-magenta) !important; background-color: color-mix(in srgb, var(--neon-magenta) 20%, transparent) !important; margin-top: -15px; }
+.c-good { border-color: var(--neon-cyan) !important; background-color: color-mix(in srgb, var(--neon-cyan) 20%, transparent) !important; margin-right: -15px; }
+.c-world { border-color: var(--neon-lime) !important; background-color: color-mix(in srgb, var(--neon-lime) 20%, transparent) !important; margin-left: -15px; }
+.c-paid { border-color: #ffae00 !important; background-color: color-mix(in srgb, #ffae00 20%, transparent) !important; margin-bottom: -15px; }
+
+/* Custom hide scrollbar */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* center white circle fix */
+.absolute.bg-white.text-black.p-4.rounded-full {
+    background-color: var(--text-main) !important;
+    color: var(--bg-dark) !important;
+    border-color: var(--neon-cyan) !important;
+}
