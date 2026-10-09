@@ -1,68 +1,67 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import { supabase } from './supabase';
 
-type Quadrant = 'flow' | 'boost' | 'neutral' | 'drain';
-export type ActivityMap = Record<string, Quadrant>;
+// Fase 1 — Mapa de Energia
+export type EnergyLevel = 'flow' | 'boost' | 'neutral' | 'drain';
+export type ActivityMap = Record<string, EnergyLevel>;
 
-const QUADRANT_MIGRATION: Record<string, Quadrant> = {
-  gosto_faco: 'flow',
-  gosto_naofaco: 'boost',
-  naogosto_faco: 'neutral',
-  naogosto_naofaco: 'drain',
-};
-
-function migrateState(raw: AppState): AppState {
-  const cards = raw.mission1?.energyCards;
-  if (!cards) return raw;
-  const hasOld = Object.values(cards).some(v => v in QUADRANT_MIGRATION);
-  if (!hasOld) return raw;
-  const migrated: ActivityMap = {};
-  Object.entries(cards).forEach(([k, v]) => {
-    migrated[k] = QUADRANT_MIGRATION[v] ?? v;
-  });
-  return { ...raw, mission1: { ...raw.mission1, energyCards: migrated } };
-}
-
-export type ColorCategory = 'estudo' | 'lazer' | 'familia' | 'descanso' | 'tedio' | null;
-export type AgendaMap = Record<string, ColorCategory>; // cellId (e.g., 'seg_manha') -> category
+// Fase 5 — arquétipos disponíveis
+export type Archetype =
+  | 'mentor' | 'criador' | 'guardiao'
+  | 'explorador' | 'curador' | 'sabio'
+  | 'conector' | 'realizador';
 
 export interface AppState {
   xp: number;
-  mission1: {
-    energyCards: ActivityMap;
-    childhoodVerbs: string[];
-    curiosityRadar: string[];
+  guide: string;               // guia escolhido na seleção inicial
+  completedPhases: number[];
+
+  phase1: {
+    energyCards: ActivityMap;  // card sort de atividades
+    maturityVerbs: string[];   // verbos que sempre fizeram naturalmente
+    curiosityThemes: string[]; // temas de curiosidade
   };
-  mission2: {
-    lightningChallenges: Record<string, number>;
-    detailRatings: Record<string, number[]>;
-    praiseMap: string[];
-    hiddenTalents: string[];
+
+  phase2: {
+    skillRatings: Record<string, number>;    // avaliação das 9 dimensões de habilidade
+    detailRatings: Record<string, number[]>; // sub-perguntas de aprofundamento
+    whoAsksYou: string[];                    // "quem te procura" (tipos de pedido de ajuda)
+    hiddenTalents: string[];                 // talentos ocultos selecionados
   };
-  mission3: {
-    impactPoints: Record<string, number>;
-    communityDilemmas: Record<string, string>;
-    impactScale: string;
-    contributionType: string[];
-    uniqueProblem: string;
+
+  phase3: {
+    impactPoints: Record<string, number>; // coin allocation entre causas
+    uniqueProblem: string;                // problema único selecionado
   };
-  mission4: {
-    sceneDuels: Record<string, string>;
-    environments: string[];
-    forcedChoices: Record<string, string>;
+
+  phase4: {
+    sceneDuels: Record<string, string>;    // duelos de cenas (sceneId → opção escolhida)
+    environments: string[];               // ambientes preferidos
+    forcedChoices: Record<string, string>; // escolhas forçadas (choiceId → opção)
   };
-  mission5: { ministry?: string; cargo?: string; saved: string[]; discarded: string[] };
-  mission6: {
-    selectedArchetypes: string[];
-    futureVision: Record<string, string>;
-    ultimateRole: string;
+
+  phase5: {
+    archetype: Archetype | '';            // arquétipo selecionado
   };
-  mission7: { saved: string[]; discarded: string[] };
-  mission8: { letter: string; future: Record<string, string> };
-  user: { name: string; email: string };
-  mentor: string;
-  theme: string;
-  completedMissions: number[];
+
+  phase6: {
+    connections: string[];               // tipos de conexão selecionados
+  };
+
+  phase7: {
+    fields: Record<string, string>;      // campos do formulário "O Próximo Capítulo"
+  };
+
+  phase8: {
+    letter: string;                      // carta ao eu de amanhã
+  };
+
+  user: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+
   adminConfig: {
     videoUrls: Record<string, string>;
   };
@@ -70,32 +69,32 @@ export interface AppState {
 
 const initialState: AppState = {
   xp: 0,
-  mission1: { energyCards: {}, childhoodVerbs: [], curiosityRadar: [] },
-  mission2: { lightningChallenges: {}, detailRatings: {}, praiseMap: [], hiddenTalents: [] },
-  mission3: { impactPoints: {}, communityDilemmas: {}, impactScale: '', contributionType: [], uniqueProblem: '' },
-  mission4: { sceneDuels: {}, environments: [], forcedChoices: {} },
-  mission5: { ministry: '', cargo: '', saved: [], discarded: [] },
-  mission6: { selectedArchetypes: [], futureVision: {}, ultimateRole: '' },
-  mission7: { saved: [], discarded: [] },
-  mission8: { letter: '', future: {} },
-  user: { name: '', email: '' },
-  mentor: '',
-  theme: 'cyber',
-  completedMissions: [],
-  adminConfig: {
-    videoUrls: {}
-  }
+  guide: '',
+  completedPhases: [],
+
+  phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [] },
+  phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [] },
+  phase3: { impactPoints: {}, uniqueProblem: '' },
+  phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
+  phase5: { archetype: '' },
+  phase6: { connections: [] },
+  phase7: { fields: {} },
+  phase8: { letter: '' },
+
+  user: { name: '', email: '', phone: '' },
+  adminConfig: { videoUrls: {} },
 };
 
 interface AppContextType {
   state: AppState;
   addXP: (amount: number) => void;
-  updateMission: <K extends keyof AppState>(mission: K, data: Partial<AppState[K]>) => void;
-  completeMission: (missionId: number) => void;
-  replaceMission: <K extends keyof AppState>(mission: K, data: AppState[K]) => void;
-  setUserData: (name: string, email: string) => void;
-  setThemeAndMentor: (mentor: string, theme: string) => void;
+  updatePhase: <K extends keyof AppState>(phase: K, data: Partial<AppState[K]>) => void;
+  replacePhase: <K extends keyof AppState>(phase: K, data: AppState[K]) => void;
+  completePhase: (phaseId: number) => void;
+  setGuide: (guide: string) => void;
+  setUserData: (name: string, email: string, phone?: string) => void;
   updateAdminConfig: (data: Partial<AppState['adminConfig']>) => void;
+  resetJourney: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -103,20 +102,22 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(() => {
     try {
-      const saved = localStorage.getItem('appState');
-      if (saved) return migrateState(JSON.parse(saved));
-    } catch (e) {}
+      const saved = localStorage.getItem('reinventar_state');
+      if (saved) return { ...initialState, ...JSON.parse(saved) };
+    } catch {
+      // ignora estado corrompido
+    }
     return initialState;
   });
 
   const adminConfigId = useRef<string | null>(null);
 
-  // Persist state changes
+  // Persiste estado no localStorage
   useEffect(() => {
-    localStorage.setItem('appState', JSON.stringify(state));
+    localStorage.setItem('reinventar_state', JSON.stringify(state));
   }, [state]);
 
-  // Sync adminConfig from Supabase
+  // Sincroniza adminConfig do Supabase (schema reinventar)
   useEffect(() => {
     supabase
       .from('admin_config')
@@ -126,30 +127,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       .then(({ data }) => {
         if (data) {
           adminConfigId.current = data.id;
-          // Só aplica se tiver URLs de facto (evita {} sobrescrever estado local)
           if (data.video_urls && Object.keys(data.video_urls).length > 0) {
             setState((prev) => ({
               ...prev,
-              adminConfig: { videoUrls: data.video_urls }
+              adminConfig: { videoUrls: data.video_urls },
             }));
           }
         }
       });
 
     const channel = supabase
-      .channel('admin_config_changes')
+      .channel('reinventar_admin_config')
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'admin_config' },
+        { event: 'UPDATE', schema: 'reinventar', table: 'admin_config' },
         (payload) => {
           const videoUrls = (payload.new as { video_urls: Record<string, string> }).video_urls;
           if (videoUrls) {
-            setState((prev) => ({
-              ...prev,
-              adminConfig: { videoUrls }
-            }));
+            setState((prev) => ({ ...prev, adminConfig: { videoUrls } }));
           }
-        }
+        },
       )
       .subscribe();
 
@@ -160,56 +157,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, xp: prev.xp + amount }));
   };
 
-  const updateMission = <K extends keyof AppState>(mission: K, data: Partial<AppState[K]>) => {
+  const updatePhase = <K extends keyof AppState>(phase: K, data: Partial<AppState[K]>) => {
     setState((prev) => ({
       ...prev,
-      [mission]: typeof data === 'object' && data !== null && !Array.isArray(data)
-        ? { ...(prev[mission] as object), ...data }
-        : data
+      [phase]:
+        typeof data === 'object' && data !== null && !Array.isArray(data)
+          ? { ...(prev[phase] as object), ...data }
+          : data,
     }));
   };
 
-  const replaceMission = <K extends keyof AppState>(mission: K, data: AppState[K]) => {
-    setState((prev) => ({
-      ...prev,
-      [mission]: data
-    }));
+  const replacePhase = <K extends keyof AppState>(phase: K, data: AppState[K]) => {
+    setState((prev) => ({ ...prev, [phase]: data }));
   };
 
-  const completeMission = (missionId: number) => {
+  const completePhase = (phaseId: number) => {
     setState((prev) => {
-      if (prev.completedMissions.includes(missionId)) return prev;
-      return { ...prev, completedMissions: [...prev.completedMissions, missionId] };
+      if (prev.completedPhases.includes(phaseId)) return prev;
+      return { ...prev, completedPhases: [...prev.completedPhases, phaseId] };
     });
   };
 
-  const setUserData = (name: string, email: string) => {
-    setState((prev) => ({ ...prev, user: { name, email } }));
+  const setGuide = (guide: string) => {
+    setState((prev) => ({ ...prev, guide }));
   };
 
-  const setThemeAndMentor = (mentor: string, theme: string) => {
-    setState((prev) => ({ ...prev, mentor, theme }));
-    document.documentElement.dataset.theme = theme;
+  const setUserData = (name: string, email: string, phone = '') => {
+    setState((prev) => ({ ...prev, user: { name, email, phone } }));
   };
 
   const updateAdminConfig = (data: Partial<AppState['adminConfig']>) => {
     setState((prev) => {
-      const mergedVideoUrls = { ...prev.adminConfig.videoUrls, ...(data.videoUrls || {}) };
+      const mergedVideoUrls = { ...prev.adminConfig.videoUrls, ...(data.videoUrls ?? {}) };
       return { ...prev, adminConfig: { ...prev.adminConfig, ...data, videoUrls: mergedVideoUrls } };
     });
   };
 
+  const resetJourney = () => {
+    localStorage.removeItem('reinventar_state');
+    setState(initialState);
+  };
+
   return (
-    <AppContext.Provider value={{ state, addXP, updateMission, replaceMission, completeMission, setUserData, setThemeAndMentor, updateAdminConfig }}>
+    <AppContext.Provider
+      value={{
+        state,
+        addXP,
+        updatePhase,
+        replacePhase,
+        completePhase,
+        setGuide,
+        setUserData,
+        updateAdminConfig,
+        resetJourney,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
 }
 
 export function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be used within an AppProvider');
+  return ctx;
 }
