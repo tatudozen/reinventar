@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const PASSWORD = process.env.ADMIN_PASSWORD!;
 const SECRET = process.env.ADMIN_SECRET!;
@@ -7,6 +7,15 @@ const TOKEN_TTL_MS = 8 * 60 * 60 * 1000; // 8 horas
 
 function sign(ts: string): string {
   return createHmac('sha256', SECRET).update(ts).digest('hex');
+}
+
+// Evita timing attacks — nunca use === para comparar segredos
+function safeEqual(a: string, b: string): boolean {
+  try {
+    return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  } catch {
+    return false;
+  }
 }
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
@@ -22,8 +31,9 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   if (action === 'verify') {
     if (!token || typeof token !== 'string') return res.json({ ok: false });
     const [ts, sig] = token.split('.');
-    const valid =
-      sig === sign(ts) && Date.now() - parseInt(ts, 10) < TOKEN_TTL_MS;
+    const age = Date.now() - parseInt(ts, 10);
+    // age >= 0 rejeita tokens com timestamp futuro (CWE-613)
+    const valid = sig != null && safeEqual(sig, sign(ts)) && age >= 0 && age < TOKEN_TTL_MS;
     return res.json({ ok: valid });
   }
 
@@ -31,7 +41,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     if (!PASSWORD || !SECRET) {
       return res.status(500).json({ ok: false, error: 'Servidor mal configurado' });
     }
-    if (!password || password !== PASSWORD) {
+    if (!password || !safeEqual(password, PASSWORD)) {
       return res.status(401).json({ ok: false, error: 'Senha incorreta' });
     }
     const ts = Date.now().toString();
