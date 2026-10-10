@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, GitMerge, Map } from 'lucide-react';
 import { useApp } from '../store';
@@ -21,248 +21,161 @@ interface Duel {
   B: DuelOption;
 }
 
-// 12 duelos: cada tipo RIASEC aparece exatamente 4 vezes
+// 12 duelos — cada tipo aparece exatamente 4 vezes
 // R:1,2,3,4 | I:1,5,6,7 | A:2,5,8,9 | S:3,8,10,11 | E:6,9,10,12 | C:4,7,11,12
 const DUELS: Duel[] = [
   {
     id: '1',
-    A: {
-      type: 'R', label: 'Experimentar',
-      text: 'Colocar a mão na massa e testar na prática',
-      img: '/questions/fase4-experimentar.jpeg',
-    },
-    B: {
-      type: 'I', label: 'Investigar',
-      text: 'Pesquisar fundo até entender o porquê das coisas',
-      img: '/questions/fase4-investigar.jpeg',
-    },
+    A: { type: 'R', label: 'Colocar a mão na massa', text: 'Testar, montar e ajustar com as próprias mãos até funcionar.', img: '/questions/fase4-duelo1-a-maos-na-massa.jpeg' },
+    B: { type: 'I', label: 'Entender o porquê', text: 'Pesquisar fundo, ler, refletir até chegar na raiz do problema.', img: '/questions/fase4-duelo1-b-entender-raiz.jpeg' },
   },
   {
     id: '2',
-    A: {
-      type: 'A', label: 'Criar',
-      text: 'Criar algo original a partir da imaginação',
-      img: '/questions/fase4-criar.jpeg',
-    },
-    B: {
-      type: 'R', label: 'Construir',
-      text: 'Montar algo concreto com ferramentas e esforço',
-      img: '/questions/fase4-construir.jpeg',
-    },
+    A: { type: 'A', label: 'Criar algo do zero', text: 'Partir de um papel em branco e transformar imaginação em algo real.', img: '/questions/fase4-duelo2-a-criar-zero.jpeg' },
+    B: { type: 'R', label: 'Construir algo concreto', text: 'Seguir um plano e erguer algo tangível com esforço e habilidade.', img: '/questions/fase4-duelo2-b-construir-concreto.jpeg' },
   },
   {
     id: '3',
-    A: {
-      type: 'R', label: 'Trabalho físico',
-      text: 'Trabalhar com o corpo, a terra e o espaço físico',
-      img: '/questions/fase4-trabalho-fisico.jpeg',
-    },
-    B: {
-      type: 'S', label: 'Com pessoas',
-      text: 'Trabalhar rodeado de pessoas e conexões humanas',
-      img: '/questions/fase4-com-pessoas.png',
-    },
+    A: { type: 'R', label: 'Trabalhar com as mãos', text: 'Jardim, marcenaria, culinária, artesanato — o prazer do físico.', img: '/questions/fase4-duelo3-a-maos-jardim.jpeg' },
+    B: { type: 'S', label: 'Trabalhar com pessoas', text: 'Rodeado de relações humanas, conversas e conexões genuínas.', img: '/questions/fase4-duelo3-b-pessoas-conexao.jpeg' },
   },
   {
     id: '4',
-    A: {
-      type: 'R', label: 'Analógico',
-      text: 'Operar máquinas, equipamentos e sistemas físicos',
-      img: '/questions/fase4-analogico.jpeg',
-    },
-    B: {
-      type: 'C', label: 'Digital',
-      text: 'Gerenciar dados, processos e fluxos virtuais',
-      img: '/questions/fase4-digital.jpeg',
-    },
+    A: { type: 'R', label: 'No mundo físico', text: 'Lidar com espaço, matéria, ferramentas e o mundo concreto.', img: '/questions/fase4-duelo4-a-fisico.jpeg' },
+    B: { type: 'C', label: 'Nos bastidores', text: 'Cuidar da ordem, dos processos e da consistência que sustenta tudo.', img: '/questions/fase4-duelo4-b-bastidores-ordem.jpeg' },
   },
   {
     id: '5',
-    A: {
-      type: 'I', label: 'Investigar',
-      text: 'Descobrir verdades ocultas com curiosidade científica',
-      img: '/questions/fase4-investigar.jpeg',
-    },
-    B: {
-      type: 'A', label: 'Narrar',
-      text: 'Criar narrativas e contar histórias que emocionam',
-      img: '/questions/fase4-narrar.png',
-    },
+    A: { type: 'I', label: 'Investigar fundo', text: 'Descobrir padrões ocultos com curiosidade quase científica.', img: '/questions/fase4-duelo5-a-investigar.jpeg' },
+    B: { type: 'A', label: 'Contar histórias', text: 'Transformar experiência em narrativa que toca e inspira outros.', img: '/questions/fase4-duelo5-b-contar-historias.jpeg' },
   },
   {
     id: '6',
-    A: {
-      type: 'I', label: 'Refletir',
-      text: 'Pensar profundamente antes de qualquer decisão',
-      img: '/questions/fase4-refletir.jpeg',
-    },
-    B: {
-      type: 'E', label: 'Agir',
-      text: 'Liderar e fazer as coisas acontecerem agora',
-      img: '/questions/fase4-agir.jpeg',
-    },
+    A: { type: 'I', label: 'Refletir antes de agir', text: 'Pensar com calma, mapear o terreno, decidir com sabedoria.', img: '/questions/fase4-duelo6-a-refletir.jpeg' },
+    B: { type: 'E', label: 'Agir e mobilizar', text: 'Liderar a mudança, engajar pessoas e fazer as coisas saírem do papel.', img: '/questions/fase4-duelo6-b-agir-mobilizar.jpeg' },
   },
   {
     id: '7',
-    A: {
-      type: 'I', label: 'Explorar',
-      text: 'Explorar ideias complexas sem fronteiras definidas',
-      img: '/questions/fase4-explorar.jpeg',
-    },
-    B: {
-      type: 'C', label: 'Estruturar',
-      text: 'Estruturar sistemas com regras claras e precisas',
-      img: '/questions/fase4-estruturar.jpeg',
-    },
+    A: { type: 'I', label: 'Explorar sem mapa', text: 'Mergulhar em ideias sem destino fixo — a curiosidade como bússola.', img: '/questions/fase4-duelo7-a-explorar.jpeg' },
+    B: { type: 'C', label: 'Criar sistemas que durem', text: 'Estruturar processos claros que outras pessoas possam seguir.', img: '/questions/fase4-duelo7-b-criar-sistemas.jpeg' },
   },
   {
     id: '8',
-    A: {
-      type: 'A', label: 'Autoexpressão',
-      text: 'Se expressar de forma única, criativa e livre',
-      img: '/questions/fase4-auto-expressao.jpeg',
-    },
-    B: {
-      type: 'S', label: 'Conexão',
-      text: 'Conectar, ensinar e apoiar outras pessoas',
-      img: '/questions/fase4-conexao.jpeg',
-    },
+    A: { type: 'A', label: 'Me expressar livremente', text: 'Arte, escrita, música, design — a vida como expressão pessoal.', img: '/questions/fase4-duelo8-a-expressar.jpeg' },
+    B: { type: 'S', label: 'Transmitir o que sei', text: 'Ensinar, mentorar e ver a semente do conhecimento germinar em outros.', img: '/questions/fase4-duelo8-b-transmitir.jpeg' },
   },
   {
     id: '9',
-    A: {
-      type: 'A', label: 'Expressão',
-      text: 'Criar arte, design ou música que toca as pessoas',
-      img: '/questions/fase4-expressao.jpeg',
-    },
-    B: {
-      type: 'E', label: 'Liderança',
-      text: 'Persuadir, influenciar e liderar iniciativas',
-      img: '/questions/fase4-lideranca.jpeg',
-    },
+    A: { type: 'A', label: 'Criar beleza e sentido', text: 'Projetos que emocionam, provocam ou iluminam quem os encontra.', img: '/questions/fase4-duelo9-a-beleza.jpeg' },
+    B: { type: 'E', label: 'Construir algo maior', text: 'Liderar uma causa, um negócio ou uma iniciativa que ganha escala.', img: '/questions/fase4-duelo9-b-impacto-amplo.jpeg' },
   },
   {
     id: '10',
-    A: {
-      type: 'S', label: 'Cuidar',
-      text: 'Cuidar do bem-estar e da saúde das pessoas',
-      img: '/questions/fase4-cuidar.jpeg',
-    },
-    B: {
-      type: 'E', label: 'Empreender',
-      text: 'Criar e escalar um negócio do zero',
-      img: '/questions/fase4-empreender.jpeg',
-    },
+    A: { type: 'S', label: 'Cuidar de perto', text: 'Estar presente, apoiar o bem-estar de pessoas reais ao meu redor.', img: '/questions/fase4-duelo10-a-cuidar-perto.jpeg' },
+    B: { type: 'E', label: 'Gerar impacto amplo', text: 'Criar soluções que cheguem a muitas pessoas de uma só vez.', img: '/questions/fase4-duelo10-b-impacto-muitos.jpeg' },
   },
   {
     id: '11',
-    A: {
-      type: 'S', label: 'Colaborar',
-      text: 'Trabalhar junto com outros em prol de um objetivo coletivo',
-      img: '/questions/fase4-colaborar.jpeg',
-    },
-    B: {
-      type: 'C', label: 'Organizar',
-      text: 'Organizar fluxos, planilhas e procedimentos com rigor',
-      img: '/questions/fase4-organizar.jpeg',
-    },
+    A: { type: 'S', label: 'Colaborar em grupo', text: 'Co-criar com outros — a sinergia de talentos diferentes.', img: '/questions/fase4-duelo11-a-colaborar.jpeg' },
+    B: { type: 'C', label: 'Dar ordem ao caos', text: 'Organizar, documentar e criar clareza onde havia confusão.', img: '/questions/fase4-duelo11-b-ordem-caos.jpeg' },
   },
   {
     id: '12',
-    A: {
-      type: 'E', label: 'Inovar',
-      text: 'Disruptar, criar o novo e assumir riscos calculados',
-      img: '/questions/fase4-inovar.png',
-    },
-    B: {
-      type: 'C', label: 'Preservar',
-      text: 'Manter a excelência e a consistência dos sistemas',
-      img: '/questions/fase4-preservar.jpeg',
-    },
+    A: { type: 'E', label: 'Renovar e transformar', text: 'Criar o que ainda não existe, mesmo que exija sair da zona de conforto.', img: '/questions/fase4-duelo12-a-renovar.jpeg' },
+    B: { type: 'C', label: 'Preservar e aprimorar', text: 'Proteger o que funciona e refiná-lo com cuidado e consistência.', img: '/questions/fase4-duelo12-b-preservar.jpeg' },
   },
 ];
 
-const RIASEC: Record<RIASECType, { full: string; desc: string; color: string; icon: string; careers: string[] }> = {
+const RIASEC: Record<RIASECType, { full: string; desc: string; color: string; icon: string; roles: string[] }> = {
   R: {
-    full: 'Realista',
-    desc: 'Você tem perfil prático e gosta de trabalhar com coisas concretas, ferramentas, máquinas e o mundo físico.',
+    full: 'Prático',
+    desc: 'Você encontra satisfação no trabalho concreto — com as mãos, com espaços, com ferramentas. O resultado tangível é a sua recompensa.',
     color: '#f97316',
-    icon: '🔧',
-    careers: ['Engenheiro', 'Arquiteto', 'Técnico Industrial', 'Atleta', 'Mecânico'],
+    icon: '🛠️',
+    roles: ['Artesão / Artesã', 'Jardineiro / Horta', 'Restaurador(a)', 'Voluntário de campo', 'Construtor(a) de comunidade'],
   },
   I: {
     full: 'Investigativo',
-    desc: 'Você adora investigar, analisar e resolver problemas complexos de forma intelectual e criativa.',
+    desc: 'Você é movido pela curiosidade intelectual — adorar entender como as coisas funcionam e por quê o mundo é como é.',
     color: '#8b5cf6',
     icon: '🔬',
-    careers: ['Cientista', 'Pesquisador', 'Médico', 'Analista de Dados', 'Programador'],
+    roles: ['Pesquisador(a) independente', 'Escritor(a) de não-ficção', 'Consultor(a) especialista', 'Mentor de carreira', 'Tutor(a)'],
   },
   A: {
     full: 'Artístico',
-    desc: 'Você se expressa de forma criativa e original, trabalhando com emoções, ideias e imaginação.',
+    desc: 'Você precisa se expressar de forma criativa e original — a arte, a escrita e a beleza são formas de dar sentido à vida.',
     color: '#ec4899',
     icon: '🎨',
-    careers: ['Designer', 'Músico', 'Escritor', 'Cineasta', 'Arquiteto Criativo'],
+    roles: ['Escritor(a) / Poeta', 'Artista plástico(a)', 'Músico(a)', 'Contador(a) de histórias', 'Designer'],
   },
   S: {
     full: 'Social',
-    desc: 'Você tem vocação para ajudar, ensinar e conectar pessoas — seu ambiente ideal é o coletivo.',
+    desc: 'Sua vocação é humana — você floresce ajudando, ensinando, ouvindo e criando pontes entre pessoas.',
     color: '#22c55e',
     icon: '🤝',
-    careers: ['Professor', 'Psicólogo', 'Assistente Social', 'Enfermeiro', 'Terapeuta'],
+    roles: ['Mentor(a)', 'Terapeuta / Coach', 'Voluntário em ONGs', 'Professor(a)', 'Cuidador(a)'],
   },
   E: {
     full: 'Empreendedor',
-    desc: 'Você lidera, persuade e faz as coisas acontecerem — seu terreno é a ação, a influência e o risco.',
+    desc: 'Você lidera naturalmente, mobiliza recursos e pessoas, e tem energia para transformar ideias em realidade.',
     color: '#f59e0b',
     icon: '🚀',
-    careers: ['Empresário', 'Gerente', 'Advogado', 'Vendedor', 'Produtor Executivo'],
+    roles: ['Empreendedor(a) social', 'Líder de comunidade', 'Consultor(a) de negócios', 'Fundador(a) de projeto', 'Gestor(a) de impacto'],
   },
   C: {
-    full: 'Convencional',
-    desc: 'Você valoriza organização, precisão e consistência — seu talento está em estruturar e sistematizar.',
+    full: 'Estruturador',
+    desc: 'Você valoriza ordem, clareza e consistência — sua habilidade de sistematizar cria a base sobre a qual tudo o mais funciona.',
     color: '#06b6d4',
     icon: '📊',
-    careers: ['Contador', 'Administrador', 'Auditor', 'Analista Financeiro', 'Gestor Operacional'],
+    roles: ['Gestor(a) de projetos', 'Planejador(a) financeiro', 'Administrador(a) de ONG', 'Arquivista / Documentalista', 'Organizador(a) de processos'],
   },
 };
 
 const ENVIRONMENTS = [
-  'Laboratório', 'Estúdio Criativo', 'Hospital / Clínica',
-  'Escritório Corporativo', 'Campo / Fazenda', 'Sala de Aula',
-  'Palco / Bastidor', 'Startup / Coworking', 'Oficina / Indústria',
-  'Tribunal', 'Comunidade / Rua', 'Universidade / Pesquisa'
+  'Casa / Ateliê pessoal',
+  'Natureza / Campo',
+  'Escola / Centro educacional',
+  'Hospital / Clínica',
+  'ONG / Terceiro setor',
+  'Consultoria / Mentoria',
+  'Espaço cultural / Biblioteca',
+  'Comunidade / Associação',
+  'Coworking / Startup',
+  'Online / Remoto',
+  'Empresa familiar',
+  'Espaço espiritual / Retiro',
 ];
 
 const FORCED_CHOICES = [
   {
-    id: 'impact_vs_peace',
-    optionA: { id: 'impact', text: 'Alto Impacto + Caos', desc: 'Você trabalha em algo muito significativo, mas a rotina é imprevisível e exige muito.' },
-    optionB: { id: 'peace', text: 'Paz Mental + Rotina', desc: 'Você tem estabilidade, horários claros e paz, mas sente falta de um desafio épico.' },
+    id: 'estrutura_vs_liberdade',
+    optionA: { id: 'estrutura', text: 'Estrutura e equipe', desc: 'Prefiro ter horários definidos, papéis claros e um grupo de pessoas com quem contar, mesmo que isso reduza minha autonomia.' },
+    optionB: { id: 'liberdade', text: 'Autonomia e ritmo próprio', desc: 'Prefiro trabalhar no meu tempo e do meu jeito, mesmo que isso signifique mais incerteza e isolamento em certos momentos.' },
   },
   {
-    id: 'leadership_vs_specialty',
-    optionA: { id: 'leader', text: 'Líder / Gestor', desc: 'Toma decisões difíceis, guia o barco, mas lida com política e problemas humanos o dia todo.' },
-    optionB: { id: 'specialist', text: 'Especialista Técnico', desc: 'É o melhor no que faz tecnicamente, mas tem menos poder de decisão sobre o projeto todo.' },
-  }
+    id: 'mentor_vs_executor',
+    optionA: { id: 'mentor', text: 'Guiar e transmitir', desc: 'Meu maior prazer está em acompanhar outros, compartilhar experiência e ver quem aprende crescer.' },
+    optionB: { id: 'executor', text: 'Executar e implementar', desc: 'Prefiro estar na linha de frente, fazendo acontecer — o prazer está no resultado concreto que crio com as próprias mãos.' },
+  },
+  {
+    id: 'profundo_vs_amplo',
+    optionA: { id: 'profundo', text: 'Impacto profundo, alcance menor', desc: 'Transformar profundamente a vida de 10 pessoas me satisfaz mais do que ter um impacto leve em 1.000.' },
+    optionB: { id: 'amplo', text: 'Alcance amplo, impacto distribuído', desc: 'Prefiro que minha contribuição chegue ao maior número possível, mesmo que cada contato seja mais superficial.' },
+  },
 ];
 
 export default function Mission4() {
   const navigate = useNavigate();
-  const { state, updateMission, addXP, completeMission } = useApp();
+  const { state, updatePhase, completePhase, addXP } = useApp();
 
-  const sceneDuels = state.mission4?.sceneDuels || {};
-  const environments = state.mission4?.environments || [];
-  const forcedChoices = state.mission4?.forcedChoices || {};
-
-  const isDuelsComplete = DUELS.every(d => sceneDuels[d.id]);
+  const sceneDuels: Record<string, string>    = state.phase4.sceneDuels   ?? {};
+  const environments: string[]               = state.phase4.environments  ?? [];
+  const forcedChoices: Record<string, string> = state.phase4.forcedChoices ?? {};
 
   const [step, setStep] = useState(() => {
-    const m4 = state.mission4;
-    if (!m4) return 0;
-    const duelsOk = DUELS.every(d => m4.sceneDuels?.[d.id]);
-    const envsOk = (m4.environments || []).length >= 2;
-    const forcedOk = Object.keys(m4.forcedChoices || {}).length === FORCED_CHOICES.length;
+    const duelsOk  = DUELS.every(d => sceneDuels[d.id]);
+    const envsOk   = environments.length >= 2;
+    const forcedOk = Object.keys(forcedChoices).length === FORCED_CHOICES.length;
     if (duelsOk && envsOk && forcedOk) return 3;
     if (duelsOk && envsOk) return 2;
     if (duelsOk) return 1;
@@ -270,15 +183,14 @@ export default function Mission4() {
   });
 
   const [currentDuelIndex, setCurrentDuelIndex] = useState(() => {
-    const answered = state.mission4?.sceneDuels || {};
-    const first = DUELS.findIndex(d => !answered[d.id]);
+    const first = DUELS.findIndex(d => !sceneDuels[d.id]);
     return first === -1 ? DUELS.length - 1 : first;
   });
 
   const [selectedSide, setSelectedSide] = useState<'A' | 'B' | null>(null);
 
   const isForcedComplete = Object.keys(forcedChoices).length === FORCED_CHOICES.length;
-  const answeredCount = Object.keys(sceneDuels).filter(k => DUELS.some(d => d.id === k)).length;
+  const answeredCount    = DUELS.filter(d => sceneDuels[d.id]).length;
 
   const handleDuelSelect = (side: 'A' | 'B') => {
     if (selectedSide) return;
@@ -286,7 +198,7 @@ export default function Mission4() {
     const type = duel[side].type;
     setSelectedSide(side);
     const newDuels = { ...sceneDuels, [duel.id]: type };
-    updateMission('mission4', { ...state.mission4, sceneDuels: newDuels });
+    updatePhase('phase4', { sceneDuels: newDuels });
 
     setTimeout(() => {
       if (currentDuelIndex < DUELS.length - 1) {
@@ -303,23 +215,22 @@ export default function Mission4() {
     const newEnvs = environments.includes(env)
       ? environments.filter(e => e !== env)
       : [...environments, env];
-    updateMission('mission4', { ...state.mission4, environments: newEnvs });
+    updatePhase('phase4', { environments: newEnvs });
   };
 
   const handleForcedSelect = (choiceId: string, optionId: string) => {
-    updateMission('mission4', { ...state.mission4, forcedChoices: { ...forcedChoices, [choiceId]: optionId } });
+    updatePhase('phase4', { forcedChoices: { ...forcedChoices, [choiceId]: optionId } });
   };
 
   const handleNextStep = () => {
     if (step === 1 && environments.length >= 2) setStep(2);
     else if (step === 2 && isForcedComplete) {
       addXP(100);
-      completeMission(4);
+      completePhase(4);
       setStep(3);
     }
   };
 
-  // Compute RIASEC scores from answered duels
   const riasecScores = Object.values(sceneDuels).reduce((acc, type) => {
     const t = type as RIASECType;
     if (RIASEC[t]) acc[t] = (acc[t] || 0) + 1;
@@ -334,49 +245,35 @@ export default function Mission4() {
   const hollandCode = topTypes.join('');
 
   const previousSide: 'A' | 'B' | null = (() => {
-    const duel = DUELS[currentDuelIndex];
+    const duel     = DUELS[currentDuelIndex];
     const savedType = sceneDuels[duel.id] as RIASECType | undefined;
     if (!savedType) return null;
-    if (duel.A.type === savedType) return 'A';
-    if (duel.B.type === savedType) return 'B';
-    return null;
+    return duel.A.type === savedType ? 'A' : duel.B.type === savedType ? 'B' : null;
   })();
 
   return (
     <MissionWrapper
-      videoTitle="Duelo de Mundos"
-      videoDescription="Sem pensar demais — qual cenário te atrai? Suas escolhas visuais revelam seu perfil de interesses profissionais."
-      videoId="missao4"
+      videoTitle="Cenários de Vida"
+      videoDescription="Escolha instintivamente — seus padrões de preferência revelam como você quer viver e contribuir."
+      videoId="fase4"
     >
       <div className="flex flex-col min-h-[70vh]">
         <AnimatePresence mode="wait">
 
-          {/* ─── STEP 0: Duel Carousel ─── */}
+          {/* ── STEP 0: Duelos de cenas ── */}
           {step === 0 && (
-            <motion.div
-              key="step0"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col flex-grow"
-            >
-              {/* Progress bar */}
+            <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
+
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex gap-1 flex-1">
                   {DUELS.map((d, i) => (
-                    <button
-                      key={d.id}
+                    <button key={d.id}
                       onClick={() => { if (!selectedSide) { setCurrentDuelIndex(i); setSelectedSide(null); } }}
                       disabled={!!selectedSide}
-                      title={sceneDuels[d.id] ? `Duelo ${i + 1} — respondido` : `Duelo ${i + 1}`}
-                      className={cn(
-                        'h-1.5 rounded-full flex-1 transition-all duration-500',
-                        sceneDuels[d.id]
-                          ? 'bg-[var(--neon-cyan)] hover:opacity-70'
-                          : i === currentDuelIndex
-                            ? 'bg-[var(--color-brand-400)]'
-                            : 'bg-[var(--color-brand-100)] hover:bg-[var(--color-brand-200)]'
-                      )}
+                      className={cn('h-1.5 rounded-full flex-1 transition-all duration-500',
+                        sceneDuels[d.id] ? 'bg-[var(--neon-cyan)] hover:opacity-70'
+                          : i === currentDuelIndex ? 'bg-[var(--color-brand-400)]'
+                          : 'bg-[var(--color-brand-100)] hover:bg-[var(--color-brand-200)]')}
                     />
                   ))}
                 </div>
@@ -385,121 +282,99 @@ export default function Mission4() {
                 </span>
               </div>
 
-              {/* Question */}
               <div className="text-center mb-5">
                 <p className="text-sm text-[var(--color-text-muted)] mb-2">
-                  Sem pensar demais — qual cenário te atrai mais? Confie no seu instinto.
+                  Confie no primeiro impulso — qual dessas formas de viver ressoa mais com você?
                 </p>
                 <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                  ● Escolha 1 cena em cada duelo — {DUELS.length} duelos no total
+                  ● {DUELS.length} duelos — escolha 1 em cada
                 </span>
               </div>
 
-              {/* Duel cards */}
               <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentDuelIndex}
+                <motion.div key={currentDuelIndex}
                   initial={{ opacity: 0, scale: 0.96, x: 30 }}
                   animate={{ opacity: 1, scale: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.96, x: -30 }}
                   transition={{ duration: 0.28 }}
-                  className="relative flex gap-2 md:gap-4 h-[260px] md:h-[380px] mb-auto"
-                >
+                  className="relative flex gap-3 md:gap-5 mb-auto">
+
                   {(['A', 'B'] as const).map(side => {
-                    const opt = DUELS[currentDuelIndex][side];
-                    const isChosen = selectedSide === side;
-                    const isOther = selectedSide !== null && selectedSide !== side;
-                    const isPrev = !selectedSide && previousSide === side;
+                    const opt       = DUELS[currentDuelIndex][side];
+                    const isChosen  = selectedSide === side;
+                    const isOther   = selectedSide !== null && selectedSide !== side;
+                    const isPrev    = !selectedSide && previousSide === side;
+                    const typeInfo  = RIASEC[opt.type];
 
                     return (
-                      <button
-                        key={side}
-                        onClick={() => handleDuelSelect(side)}
-                        disabled={!!selectedSide}
-                        className={cn(
-                          'relative flex-1 rounded-2xl overflow-hidden border-2 transition-all duration-400 text-left',
-                          isChosen
-                            ? 'border-[var(--neon-cyan)] shadow-[0_0_30px_rgba(0,242,255,0.45)] scale-[1.025] z-10'
-                            : isOther
-                              ? 'border-transparent opacity-40 grayscale scale-[0.975]'
-                              : isPrev
-                                ? 'border-[var(--neon-cyan)] opacity-80 hover:opacity-100 hover:scale-[1.01] cursor-pointer'
-                                : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] hover:scale-[1.01] cursor-pointer'
-                        )}
-                      >
-                        <img
-                          src={opt.img}
-                          alt={opt.label}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        {/* Gradient overlay */}
+                      <button key={side} onClick={() => handleDuelSelect(side)} disabled={!!selectedSide}
+                        className={cn('relative flex-1 rounded-2xl overflow-hidden border-2 transition-all duration-300 min-h-[260px] md:min-h-[380px] text-left',
+                          isChosen  ? 'scale-[1.025] z-10'
+                          : isOther ? 'opacity-30 scale-[0.975] grayscale'
+                          : isPrev  ? 'opacity-80 hover:opacity-100 hover:scale-[1.01] cursor-pointer'
+                          : 'hover:scale-[1.01] cursor-pointer')}
+                        style={{
+                          borderColor: isChosen ? typeInfo.color : isPrev ? typeInfo.color + '88' : 'rgba(255,255,255,0.12)',
+                          boxShadow:   isChosen ? `0 0 28px ${typeInfo.color}44` : 'none',
+                        }}>
+
+                        {/* Imagem de fundo */}
+                        <img src={opt.img} alt={opt.label} className="absolute inset-0 w-full h-full object-cover object-top" />
+                        {/* Overlay */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                        {/* Neon flash on select */}
-                        {isChosen && (
-                          <div className="absolute inset-0 bg-[var(--neon-cyan)]/15 animate-pulse" />
-                        )}
-                        {/* Text */}
-                        <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
-                          <div className="font-black text-white text-base md:text-lg mb-1 leading-tight drop-shadow-lg">
+                        {isChosen && <div className="absolute inset-0 animate-pulse" style={{ background: `${typeInfo.color}18` }} />}
+
+                        {/* Badge de tipo */}
+                        <div className="absolute top-3 left-3 text-[10px] font-black px-2 py-0.5 rounded-full bg-black/60 border"
+                          style={{ color: typeInfo.color, borderColor: typeInfo.color + '55' }}>
+                          {typeInfo.full}
+                        </div>
+
+                        {/* Texto na parte inferior */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h3 className="font-black text-white text-base md:text-lg mb-1 leading-tight drop-shadow-lg">
                             {opt.label}
-                          </div>
-                          <p className="text-white/75 text-xs md:text-sm leading-snug drop-shadow-md line-clamp-2">
+                          </h3>
+                          <p className="text-white/70 text-xs md:text-sm leading-snug drop-shadow-md line-clamp-2">
                             {opt.text}
                           </p>
                         </div>
-                        {/* Type badge */}
-                        <div
-                          className="absolute top-3 left-3 text-xs font-black px-2 py-0.5 rounded-full bg-black/60 border"
-                          style={{ color: RIASEC[opt.type].color, borderColor: RIASEC[opt.type].color + '55' }}
-                        >
-                          {opt.type}
-                        </div>
-                        {/* Previously chosen indicator */}
-                        {isPrev && (
-                          <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[var(--neon-cyan)] flex items-center justify-center z-10 shadow-[0_0_8px_rgba(0,242,255,0.6)]">
-                            <span className="text-black text-[10px] font-black">✓</span>
+
+                        {(isPrev || isChosen) && (
+                          <div className="absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center shadow-lg"
+                            style={{ background: typeInfo.color }}>
+                            <span className="text-white text-[10px] font-black">✓</span>
                           </div>
                         )}
                       </button>
                     );
                   })}
 
-                  {/* VS badge */}
                   <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20
-                                  bg-[var(--bg-dark)] border-2 border-[var(--neon-magenta)]
-                                  rounded-full w-9 h-9 flex items-center justify-center
-                                  text-[10px] font-black text-[var(--neon-magenta)] shadow-[0_0_12px_rgba(255,0,200,0.4)]
-                                  pointer-events-none">
+                                  bg-[var(--bg-dark)] border-2 border-[var(--neon-magenta)] rounded-full
+                                  w-9 h-9 flex items-center justify-center text-[10px] font-black
+                                  text-[var(--neon-magenta)] shadow-[0_0_12px_rgba(255,0,200,0.4)] pointer-events-none">
                     VS
                   </div>
                 </motion.div>
               </AnimatePresence>
 
               <div className="flex items-center justify-between mt-5">
-                <button
-                  onClick={() => { setCurrentDuelIndex(prev => prev - 1); setSelectedSide(null); }}
+                <button onClick={() => { setCurrentDuelIndex(prev => prev - 1); setSelectedSide(null); }}
                   disabled={currentDuelIndex === 0 || !!selectedSide}
-                  className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] transition-colors px-3 py-1.5 rounded-lg hover:bg-[var(--glass)] disabled:opacity-25 disabled:pointer-events-none"
-                >
+                  className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] px-3 py-1.5 rounded-lg hover:bg-[var(--glass)] disabled:opacity-25 disabled:pointer-events-none">
                   ← Duelo anterior
                 </button>
-                <p className="text-xs text-[var(--color-text-muted)] font-mono">
-                  Clique na cena que te atrai — sem pensar muito
-                </p>
-                <div className="w-[108px]" />
+                <p className="text-xs text-[var(--color-text-muted)] font-mono">Confie no seu instinto</p>
+                <div className="w-[110px]" />
               </div>
             </motion.div>
           )}
 
-          {/* ─── STEP 1: Environments ─── */}
+          {/* ── STEP 1: Ambientes ── */}
           {step === 1 && (
-            <motion.div
-              key="step1"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col flex-grow"
-            >
+            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
+
               <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-8 flex items-start gap-4">
                 <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
                   <Building className="w-6 h-6" />
@@ -507,7 +382,7 @@ export default function Mission4() {
                 <div>
                   <h3 className="font-bold text-[18px] mb-1">Afinidade por Ambiente</h3>
                   <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
-                    O local onde você passa suas 8 horas diárias importa. Escolha os ambientes onde você poderia trabalhar todos os dias e se sentir bem.
+                    O contexto onde você atua importa tanto quanto o que você faz. Escolha os ambientes onde se sentiria bem todos os dias.
                   </p>
                   <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
                     ● Selecione pelo menos 2 ambientes
@@ -515,61 +390,44 @@ export default function Mission4() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-4 grid-cols-2 gap-4 mb-auto">
+              <div className="grid md:grid-cols-4 grid-cols-2 gap-3 mb-auto">
                 {ENVIRONMENTS.map(env => {
                   const isSelected = environments.includes(env);
                   return (
-                    <button
-                      key={env}
-                      onClick={() => toggleEnvironment(env)}
-                      className={cn(
-                        'p-5 rounded-xl border text-center transition-all font-medium',
+                    <button key={env} onClick={() => toggleEnvironment(env)}
+                      className={cn('p-4 rounded-xl border text-center transition-all font-medium text-sm',
                         isSelected
                           ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] scale-[1.02]'
-                          : 'bg-[var(--glass)] border-[var(--color-brand-100)] text-[var(--text-main)] hover:border-[var(--color-brand-300)]'
-                      )}
-                    >
+                          : 'bg-[var(--glass)] border-[var(--color-brand-100)] text-[var(--text-main)] hover:border-[var(--color-brand-300)]')}>
                       {env}
                     </button>
                   );
                 })}
               </div>
 
-              <div className="mt-12 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
+              <div className="mt-8 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
                 <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}
-                    className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] transition-colors text-left"
-                  >
+                  <button onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}
+                    className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] text-left">
                     ← Refazer duelos
                   </button>
                   <span className="text-sm opacity-60 font-mono">{environments.length} ambientes escolhidos</span>
                 </div>
-                <button
-                  onClick={handleNextStep}
-                  disabled={environments.length < 2}
-                  className={cn(
-                    'px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
+                <button onClick={handleNextStep} disabled={environments.length < 2}
+                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
                     environments.length >= 2
                       ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]'
-                  )}
-                >
+                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
                   Próxima Etapa
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* ─── STEP 2: Forced choices ─── */}
+          {/* ── STEP 2: Escolhas forçadas ── */}
           {step === 2 && (
-            <motion.div
-              key="step2"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex flex-col flex-grow"
-            >
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
+
               <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-8 flex items-start gap-4">
                 <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
                   <GitMerge className="w-6 h-6" />
@@ -577,7 +435,7 @@ export default function Mission4() {
                 <div>
                   <h3 className="font-bold text-[18px] mb-1">Escolha Forçada</h3>
                   <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
-                    Não existe caminho perfeito. Quais dessas opções imperfeitas você estaria mais disposto a tolerar na sua carreira?
+                    Não existe caminho perfeito — só o que combina mais com quem você é. Com qual lado você se identifica mais?
                   </p>
                   <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
                     ● Escolha 1 opção em cada dilema
@@ -585,24 +443,19 @@ export default function Mission4() {
                 </div>
               </div>
 
-              <div className="space-y-6 mb-auto">
+              <div className="space-y-5 mb-auto">
                 {FORCED_CHOICES.map(choice => {
                   const selected = forcedChoices[choice.id];
                   return (
-                    <div key={choice.id} className="grid grid-cols-2 gap-4">
+                    <div key={choice.id} className="grid grid-cols-2 gap-3">
                       {[choice.optionA, choice.optionB].map(opt => (
-                        <button
-                          key={opt.id}
-                          onClick={() => handleForcedSelect(choice.id, opt.id)}
-                          className={cn(
-                            'p-6 rounded-xl border text-left transition-all h-full',
+                        <button key={opt.id} onClick={() => handleForcedSelect(choice.id, opt.id)}
+                          className={cn('p-5 rounded-xl border text-left transition-all h-full',
                             selected === opt.id
                               ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] scale-[1.02]'
-                              : 'bg-[var(--glass)] border-[var(--color-brand-100)] hover:border-[var(--color-brand-400)] text-[var(--text-main)]'
-                          )}
-                        >
-                          <h4 className="font-bold text-lg mb-2">{opt.text}</h4>
-                          <p className={cn('text-sm', selected === opt.id ? 'text-[rgba(0,0,0,0.7)]' : 'text-[var(--color-text-muted)]')}>
+                              : 'bg-[var(--glass)] border-[var(--color-brand-100)] hover:border-[var(--color-brand-400)] text-[var(--text-main)]')}>
+                          <h4 className="font-bold text-base mb-1.5">{opt.text}</h4>
+                          <p className={cn('text-xs leading-relaxed', selected === opt.id ? 'text-[rgba(0,0,0,0.7)]' : 'text-[var(--color-text-muted)]')}>
                             {opt.desc}
                           </p>
                         </button>
@@ -612,38 +465,27 @@ export default function Mission4() {
                 })}
               </div>
 
-              <div className="mt-12 flex justify-end pt-6 border-t border-[var(--color-brand-100)]">
-                <button
-                  onClick={handleNextStep}
-                  disabled={!isForcedComplete}
-                  className={cn(
-                    'px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
+              <div className="mt-8 flex justify-end pt-6 border-t border-[var(--color-brand-100)]">
+                <button onClick={handleNextStep} disabled={!isForcedComplete}
+                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
                     isForcedComplete
                       ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]'
-                  )}
-                >
-                  Concluir Missão
+                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
+                  Ver meu perfil →
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* ─── STEP 3: RIASEC Result ─── */}
+          {/* ── STEP 3: Resultado RIASEC ── */}
           {step === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center flex-grow justify-center py-8"
-            >
+            <motion.div key="step3" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-8">
+
               <div className="w-20 h-20 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-6 shadow-[var(--btn-shadow)]">
                 <Map className="w-10 h-10 text-[var(--neon-cyan)]" />
               </div>
 
-              <h2 className="text-3xl font-serif text-[var(--text-main)] mb-2 text-center">
-                Seu Perfil RIASEC
-              </h2>
+              <h2 className="text-3xl font-serif text-[var(--text-main)] mb-2 text-center">Seu Perfil de Atuação</h2>
 
               {hollandCode && (
                 <div className="mb-4 px-5 py-2 rounded-full bg-[var(--glass)] border border-[var(--neon-cyan)]/40 font-mono font-black text-2xl tracking-[0.3em] text-[var(--neon-cyan)]">
@@ -652,51 +494,33 @@ export default function Mission4() {
               )}
 
               <p className="text-[var(--color-text-muted)] max-w-md text-center leading-relaxed mb-8 text-sm">
-                Seu Código Holland combina os três tipos de interesse dominantes.
-                Quanto mais alinhada for sua carreira a esses tipos, maior tende a ser sua satisfação profissional.
+                Seu código combina os três perfis dominantes. Quanto mais sua atuação se alinhar a esses perfis, mais natural e sustentável ela será.
               </p>
 
-              {/* Top 3 type cards */}
               <div className="flex flex-col gap-4 w-full max-w-lg mb-8">
                 {topTypes.map((type, idx) => {
-                  const info = RIASEC[type];
+                  const info  = RIASEC[type];
                   const score = riasecScores[type] || 0;
                   return (
-                    <motion.div
-                      key={type}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.15 }}
+                    <motion.div key={type} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.15 }}
                       className="bg-[var(--glass)] border rounded-xl p-5 flex items-start gap-4"
-                      style={{ borderColor: info.color + '44' }}
-                    >
-                      <div
-                        className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black border-2"
-                        style={{ borderColor: info.color, color: info.color, background: info.color + '18' }}
-                      >
+                      style={{ borderColor: info.color + '44' }}>
+                      <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black border-2"
+                        style={{ borderColor: info.color, color: info.color, background: info.color + '18' }}>
                         {idx === 0 ? '①' : idx === 1 ? '②' : '③'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-lg">{info.icon}</span>
-                          <span className="font-black text-[var(--text-main)]" style={{ color: info.color }}>
-                            {type} — {info.full}
-                          </span>
-                          <span className="ml-auto text-xs font-mono text-[var(--color-text-muted)]">
-                            {score}/{DUELS.length}
-                          </span>
+                          <span className="font-black" style={{ color: info.color }}>{type} — {info.full}</span>
+                          <span className="ml-auto text-xs font-mono text-[var(--color-text-muted)]">{score}/{DUELS.length}</span>
                         </div>
-                        <p className="text-sm text-[var(--color-text-muted)] leading-snug mb-2">
-                          {info.desc}
-                        </p>
+                        <p className="text-sm text-[var(--color-text-muted)] leading-snug mb-2">{info.desc}</p>
                         <div className="flex flex-wrap gap-1">
-                          {info.careers.slice(0, 3).map(c => (
-                            <span
-                              key={c}
-                              className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-                              style={{ background: info.color + '22', color: info.color }}
-                            >
-                              {c}
+                          {info.roles.slice(0, 3).map(r => (
+                            <span key={r} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                              style={{ background: info.color + '22', color: info.color }}>
+                              {r}
                             </span>
                           ))}
                         </div>
@@ -706,23 +530,18 @@ export default function Mission4() {
                 })}
               </div>
 
-              {/* All 6 scores mini bar */}
               <div className="w-full max-w-lg mb-10">
-                <p className="text-xs font-mono text-[var(--color-text-muted)] mb-3 uppercase tracking-widest text-center">
-                  Distribuição completa
-                </p>
+                <p className="text-xs font-mono text-[var(--color-text-muted)] mb-3 uppercase tracking-widest text-center">Distribuição completa</p>
                 <div className="grid grid-cols-6 gap-2">
                   {(['R', 'I', 'A', 'S', 'E', 'C'] as RIASECType[]).map(t => {
                     const score = riasecScores[t] || 0;
-                    const pct = (score / 4) * 100;
-                    const info = RIASEC[t];
+                    const pct   = (score / 4) * 100;
+                    const info  = RIASEC[t];
                     return (
                       <div key={t} className="flex flex-col items-center gap-1">
                         <div className="w-full bg-[var(--color-brand-100)] rounded-full h-16 relative overflow-hidden">
-                          <div
-                            className="absolute bottom-0 left-0 right-0 rounded-full transition-all duration-700"
-                            style={{ height: `${pct}%`, background: info.color + 'cc' }}
-                          />
+                          <div className="absolute bottom-0 left-0 right-0 rounded-full transition-all duration-700"
+                            style={{ height: `${pct}%`, background: info.color + 'cc' }} />
                         </div>
                         <span className="text-xs font-black" style={{ color: info.color }}>{t}</span>
                         <span className="text-[10px] text-[var(--color-text-muted)] font-mono">{score}</span>
@@ -732,17 +551,13 @@ export default function Mission4() {
                 </div>
               </div>
 
-              <button
-                onClick={() => navigate('/comecar/missao/5')}
-                className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform"
-              >
-                Avançar para Missão 05
+              <button onClick={() => navigate('/comecar/fase/5')}
+                className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform">
+                Avançar para Fase 5 →
               </button>
 
-              <button
-                onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}
-                className="mt-4 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] transition-colors px-4 py-2 rounded-lg hover:bg-[var(--glass)]"
-              >
+              <button onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}
+                className="mt-4 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] px-4 py-2 rounded-lg hover:bg-[var(--glass)]">
                 ← Refazer duelos
               </button>
             </motion.div>

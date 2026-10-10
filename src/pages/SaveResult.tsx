@@ -3,17 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Star, Leaf } from 'lucide-react';
 import { useApp } from '../store';
 import { supabase } from '../supabase';
-import {
-  generateRelatorioHtml,
-  formatMissionDataText,
-  computeCareerCompatibility,
-  computeUserProfile,
-  computeResultLenses,
-  type CareerSuggestion,
-  type LensPick,
-} from '../lib/ikigai-analysis';
-
-type LensViewCareer = { profession: string; area: string; riasec_types: string[]; intelligence_types: string[]; ikigai_pillars: string[] };
 
 export default function SaveResult() {
   const navigate = useNavigate();
@@ -28,24 +17,42 @@ export default function SaveResult() {
     if (!name || !email || submitting) return;
 
     setSubmitting(true);
-    setUserData(name, email);
+    setUserData(name, email, phone);
 
     const id = Date.now().toString(36);
-    // Persiste o id para permitir voltar ao resultado sem refazer o cadastro
-    localStorage.setItem('ikigai_jornada_id', id);
+    localStorage.setItem('reinventar_jornada_id', id);
 
-    const refId = localStorage.getItem('ikigai_ref');
+    const refId = localStorage.getItem('reinventar_ref');
 
-    const mission_data = {
-      mission1: state.mission1,
-      mission2: state.mission2,
-      mission3: state.mission3,
-      mission4: state.mission4,
-      mission5: state.mission5,
-      mission6: state.mission6,
-      mission7: state.mission7,
-      mission8: state.mission8,
+    const phase_data = {
+      phase1: state.phase1,
+      phase2: state.phase2,
+      phase3: state.phase3,
+      phase4: state.phase4,
+      phase5: state.phase5,
+      phase6: state.phase6,
+      phase7: state.phase7,
+      phase8: state.phase8,
     };
+
+    // Webhook fire-and-forget — não bloqueia a navegação se falhar
+    fetch('https://services.leadconnectorhq.com/hooks/AGisM9u9lfUGWGM6q5bE/webhook-trigger/5cd1715e-a3ac-4016-9f33-ad21ecedebb1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        phone: phone || '',
+        guide: state.guide,
+        xp: state.xp,
+        completed_phases: state.completedPhases,
+        referred_by: refId ?? null,
+        letter: state.phase8?.letter ?? '',
+        saved_roles: state.phase7?.savedRoles ?? [],
+        connections: state.phase6?.connections ?? [],
+        intention: state.phase6?.intention ?? '',
+      }),
+    }).catch(() => {});
 
     try {
       await supabase.from('jornadas').insert({
@@ -53,101 +60,14 @@ export default function SaveResult() {
         user_name: name,
         user_email: email,
         user_phone: phone || null,
-        mentor: state.mentor,
-        theme: state.theme,
+        guide: state.guide,
         xp: state.xp,
-        completed_missions: state.completedMissions,
-        mission_data,
+        completed_phases: state.completedPhases,
+        phase_data,
         referred_by: refId ?? null,
       });
     } catch (error) {
       console.error('Error saving jornada:', error);
-    }
-
-    let topCareers: CareerSuggestion[] = [];
-    let lenses: LensPick<LensViewCareer>[] = [];
-    try {
-      const { data: careersData } = await supabase
-        .from('careers')
-        .select('profession, area, description, trend_demand, riasec_types, intelligence_types, ikigai_pillars')
-        .eq('active', true);
-
-      if (careersData && careersData.length > 0) {
-        const { riasecTop3, topIntIds, pillarWeights, ministryArea } = computeUserProfile(state);
-
-        lenses = computeResultLenses<LensViewCareer>(
-          state,
-          careersData.map(c => ({
-            profession: c.profession,
-            area: c.area,
-            riasec_types: c.riasec_types ?? [],
-            intelligence_types: c.intelligence_types ?? [],
-            ikigai_pillars: c.ikigai_pillars ?? [],
-          })),
-        );
-
-        topCareers = careersData
-          .map(c => ({
-            profession: c.profession,
-            area: c.area,
-            description: c.description,
-            trend_demand: c.trend_demand,
-            riasec_types: c.riasec_types ?? [],
-            score: computeCareerCompatibility(
-              { riasec_types: c.riasec_types ?? [], intelligence_types: c.intelligence_types ?? [], ikigai_pillars: c.ikigai_pillars ?? [], area: c.area },
-              riasecTop3,
-              topIntIds,
-              pillarWeights,
-              ministryArea,
-            ),
-          }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 5);
-      }
-    } catch (err) {
-      console.error('Error fetching careers for webhook:', err);
-    }
-
-    try {
-      const relatorio_html = generateRelatorioHtml(name, email, id, state, topCareers, lenses);
-      const rawSurvey = sessionStorage.getItem('ikigai_survey');
-      const survey_data = rawSurvey ?? undefined;
-
-      // Resolve quem indicou (?am_id=) para o GHL receber o e-mail do indicador pronto
-      let referrer_name: string | undefined;
-      let referrer_email: string | undefined;
-      if (refId) {
-        try {
-          const { data: referrer } = await supabase
-            .from('jornadas')
-            .select('user_name, user_email')
-            .eq('id', refId)
-            .maybeSingle();
-          if (referrer && referrer.user_email !== email) {
-            referrer_name = referrer.user_name;
-            referrer_email = referrer.user_email;
-          }
-        } catch (err) {
-          console.error('Error resolving referrer:', err);
-        }
-      }
-
-      await fetch('https://services.leadconnectorhq.com/hooks/AGisM9u9lfUGWGM6q5bE/webhook-trigger/JvfJPbkfjGGyjUhGIoLv', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone: phone || undefined, jornada_id: id, relatorio_html, mission_data: formatMissionDataText(state), survey_data, ref_id: refId ?? undefined, referrer_name, referrer_email }),
-      });
-    } catch (error) {
-      console.error('Error calling GHL webhook:', error);
-    }
-
-    // Avalia regras de recompensa por indicação para quem indicou (fire-and-forget)
-    if (refId) {
-      fetch('/api/referral-evaluate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ referrer_id: refId }),
-      }).catch(err => console.error('Error evaluating referral rules:', err));
     }
 
     navigate(`/resultado/${id}`);
@@ -160,7 +80,7 @@ export default function SaveResult() {
       </div>
 
       <div className="text-[var(--color-brand-500)] mb-4">
-         <Leaf className="w-6 h-6 mx-auto" />
+        <Leaf className="w-6 h-6 mx-auto" />
       </div>
 
       <h1 className="font-serif text-4xl text-[var(--text-main)] mb-2">
@@ -168,8 +88,8 @@ export default function SaveResult() {
         <span className="italic text-[var(--color-brand-500)]">completa</span>
       </h1>
 
-      <p className="text-stone-500 mb-10 leading-relaxed">
-        Insira seu nome e e-mail para salvar seu resultado e receber sua análise personalizada do Ikigai.
+      <p className="text-[var(--color-text-muted)] mb-10 leading-relaxed">
+        Insira seu nome e e-mail para salvar seu resultado e receber sua análise personalizada.
       </p>
 
       <form onSubmit={handleSubmit} className="w-full text-left">

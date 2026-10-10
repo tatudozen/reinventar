@@ -7,14 +7,34 @@ export type ActivityMap = Record<string, EnergyLevel>;
 
 // Fase 5 — arquétipos disponíveis
 export type Archetype =
-  | 'mentor' | 'criador' | 'guardiao'
-  | 'explorador' | 'curador' | 'sabio'
-  | 'conector' | 'realizador';
+  | 'sabio' | 'guardiao' | 'explorador'
+  | 'criador' | 'conector' | 'realizador';
 
 export interface AppState {
   xp: number;
   guide: string;               // guia escolhido na seleção inicial
   completedPhases: number[];
+
+  // Shims de compatibilidade — mirrors para Mission pages (remover ao reescrever cada Fase)
+  mentor: string;
+  theme: string;
+  completedMissions: number[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission1: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission2: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission3: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission4: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission5: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission6: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission7: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  mission8: Record<string, any>;
 
   phase1: {
     energyCards: ActivityMap;  // card sort de atividades
@@ -41,15 +61,23 @@ export interface AppState {
   };
 
   phase5: {
-    archetype: Archetype | '';            // arquétipo selecionado
+    archetype: Archetype | '';
+    ministry: string;
+    cargo: string;
+    savedFigures: string[];
+    discardedFigures: string[];
   };
 
   phase6: {
-    connections: string[];               // tipos de conexão selecionados
+    connections: string[];   // quem você quer impactar
+    modes: string[];         // como prefere se conectar
+    intention: string;       // intenção de relação escrita
   };
 
   phase7: {
-    fields: Record<string, string>;      // campos do formulário "O Próximo Capítulo"
+    fields: Record<string, string>;
+    savedRoles: string[];
+    discardedRoles: string[];
   };
 
   phase8: {
@@ -72,13 +100,18 @@ const initialState: AppState = {
   guide: '',
   completedPhases: [],
 
+  // Shims
+  mentor: '', theme: 'cyber', completedMissions: [],
+  mission1: {}, mission2: {}, mission3: {}, mission4: {},
+  mission5: {}, mission6: {}, mission7: {}, mission8: {},
+
   phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [] },
   phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [] },
   phase3: { impactPoints: {}, uniqueProblem: '' },
   phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
-  phase5: { archetype: '' },
-  phase6: { connections: [] },
-  phase7: { fields: {} },
+  phase5: { archetype: '', ministry: '', cargo: '', savedFigures: [], discardedFigures: [] },
+  phase6: { connections: [], modes: [], intention: '' },
+  phase7: { fields: {}, savedRoles: [], discardedRoles: [] },
   phase8: { letter: '' },
 
   user: { name: '', email: '', phone: '' },
@@ -95,6 +128,10 @@ interface AppContextType {
   setUserData: (name: string, email: string, phone?: string) => void;
   updateAdminConfig: (data: Partial<AppState['adminConfig']>) => void;
   resetJourney: () => void;
+  // Shims de compatibilidade — remover ao reescrever cada Fase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateMission: (key: string, data: Record<string, any>) => void;
+  completeMission: (id: number) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -117,8 +154,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('reinventar_state', JSON.stringify(state));
   }, [state]);
 
-  // Sincroniza adminConfig do Supabase (schema reinventar)
+  // Sincroniza adminConfig do Supabase (schema reinventar) — só se env vars estiverem configuradas
   useEffect(() => {
+    if (!import.meta.env.VITE_SUPABASE_URL) return;
     supabase
       .from('admin_config')
       .select('id, video_urls')
@@ -174,13 +212,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const completePhase = (phaseId: number) => {
     setState((prev) => {
       if (prev.completedPhases.includes(phaseId)) return prev;
-      return { ...prev, completedPhases: [...prev.completedPhases, phaseId] };
+      const updated = [...prev.completedPhases, phaseId];
+      return { ...prev, completedPhases: updated, completedMissions: updated };
     });
   };
 
   const setGuide = (guide: string) => {
-    setState((prev) => ({ ...prev, guide }));
+    setState((prev) => ({ ...prev, guide, mentor: guide }));
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const updateMission = (key: string, data: Record<string, any>) => {
+    setState((prev) => ({
+      ...prev,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      [key]: { ...(prev as Record<string, any>)[key], ...data },
+    }));
+  };
+
+  const completeMission = completePhase;
 
   const setUserData = (name: string, email: string, phone = '') => {
     setState((prev) => ({ ...prev, user: { name, email, phone } }));
@@ -210,6 +260,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setUserData,
         updateAdminConfig,
         resetJourney,
+        updateMission,
+        completeMission,
       }}
     >
       {children}
