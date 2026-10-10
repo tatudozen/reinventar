@@ -1138,6 +1138,205 @@ function SurveyPanel({ token }: { token: string }) {
   );
 }
 
+// ─── TenantPanel ─────────────────────────────────────────────────────────────
+
+interface TenantConfig {
+  host: string;
+  home_url: string;
+  explore_label: string;
+  explore_url: string;
+}
+
+const EMPTY_TENANT: TenantConfig = { host: '', home_url: '', explore_label: '', explore_url: '' };
+
+function TenantPanel({ token }: { token: string }) {
+  const [tenants, setTenants] = useState<TenantConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [flash, setFlash] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [newTenant, setNewTenant] = useState<TenantConfig>(EMPTY_TENANT);
+  const [editHost, setEditHost] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<TenantConfig>(EMPTY_TENANT);
+
+  const authHeaders = useCallback(() => ({
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  }), [token]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin-tenants', { headers: authHeaders() });
+      const data = await res.json();
+      if (data.ok) setTenants(data.tenants);
+      else setError(data.error || 'Erro ao carregar');
+    } catch {
+      setError('Erro de rede');
+    } finally {
+      setLoading(false);
+    }
+  }, [authHeaders]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const showFlash = (msg: string) => { setFlash(msg); setTimeout(() => setFlash(''), 4000); };
+
+  const handleAdd = async () => {
+    if (!newTenant.host.trim() || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin-tenants', {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(newTenant),
+      });
+      const data = await res.json();
+      if (data.ok) { setNewTenant(EMPTY_TENANT); setAdding(false); await load(); showFlash('Tenant adicionado!'); }
+      else setError(data.error || 'Erro ao criar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editHost || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin-tenants', {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(editForm),
+      });
+      const data = await res.json();
+      if (data.ok) { setEditHost(null); await load(); showFlash('Salvo!'); }
+      else setError(data.error || 'Erro ao salvar');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (host: string) => {
+    if (!confirm(`Remover tenant "${host}"?`)) return;
+    await fetch(`/api/admin-tenants?host=${encodeURIComponent(host)}`, { method: 'DELETE', headers: authHeaders() });
+    await load();
+    showFlash('Removido.');
+  };
+
+  const fieldCls = "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-500 focus:ring-1 focus:ring-stone-500";
+  const labelCls = "block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1";
+
+  const TenantForm = ({ form, onChange, onSave, onCancel, saveLabel }: {
+    form: TenantConfig;
+    onChange: (f: TenantConfig) => void;
+    onSave: () => void;
+    onCancel: () => void;
+    saveLabel: string;
+  }) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className={labelCls}>Host (domínio)</label>
+        <input className={fieldCls} placeholder="ex: jornada.parceiro.com.br" value={form.host}
+          onChange={e => onChange({ ...form, host: e.target.value })} disabled={form.host !== '' && saveLabel !== 'Adicionar'} />
+      </div>
+      <div>
+        <label className={labelCls}>home_url</label>
+        <input className={fieldCls} placeholder="https://parceiro.com.br" value={form.home_url}
+          onChange={e => onChange({ ...form, home_url: e.target.value })} />
+      </div>
+      <div>
+        <label className={labelCls}>explore_label</label>
+        <input className={fieldCls} placeholder="Explorar Carreiras" value={form.explore_label}
+          onChange={e => onChange({ ...form, explore_label: e.target.value })} />
+      </div>
+      <div>
+        <label className={labelCls}>explore_url</label>
+        <input className={fieldCls} placeholder="https://parceiro.com.br/explorar" value={form.explore_url}
+          onChange={e => onChange({ ...form, explore_url: e.target.value })} />
+      </div>
+      <div className="md:col-span-2 flex gap-2">
+        <button onClick={onSave} disabled={saving}
+          className="px-5 py-2 bg-stone-800 text-white text-sm font-bold rounded-lg hover:bg-stone-700 disabled:opacity-60 transition-colors">
+          {saving ? 'Salvando...' : saveLabel}
+        </button>
+        <button onClick={onCancel}
+          className="px-5 py-2 bg-stone-200 text-stone-700 text-sm font-bold rounded-lg hover:bg-stone-300 transition-colors">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+
+  if (loading) return (
+    <div className="flex justify-center py-12">
+      <div className="w-6 h-6 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      {error && <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
+      {flash && <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{flash}</div>}
+
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 leading-relaxed">
+        Cada tenant é identificado pelo <strong>hostname</strong> do acesso. Os campos
+        <code> home_url</code>, <code>explore_label</code> e <code>explore_url</code> personalizam
+        os links e botões exibidos no resultado e na pesquisa de satisfação para esse domínio.
+      </div>
+
+      <div className="bg-white border border-stone-200 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4 border-b pb-3">
+          <h2 className="text-lg font-bold text-stone-800">Tenants configurados</h2>
+          <button onClick={() => { setAdding(v => !v); setNewTenant(EMPTY_TENANT); }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-stone-800 text-white text-sm font-bold rounded-lg hover:bg-stone-700 transition-colors">
+            <Plus className="w-4 h-4" /> Novo Tenant
+          </button>
+        </div>
+
+        {adding && (
+          <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-xl">
+            <h3 className="font-bold text-stone-700 mb-4">Novo Tenant</h3>
+            <TenantForm form={newTenant} onChange={setNewTenant} onSave={handleAdd} onCancel={() => setAdding(false)} saveLabel="Adicionar" />
+          </div>
+        )}
+
+        {tenants.length === 0 ? (
+          <p className="text-center py-10 text-stone-400 text-sm">Nenhum tenant cadastrado ainda.</p>
+        ) : (
+          <div className="space-y-3">
+            {tenants.map(t => (
+              <div key={t.host} className="border border-stone-200 rounded-xl overflow-hidden">
+                <div className="flex items-center gap-3 px-4 py-3 bg-stone-50">
+                  <div className="flex-1 min-w-0">
+                    <span className="font-mono text-sm font-medium text-stone-800">{t.host}</span>
+                    {t.explore_label && <span className="ml-3 text-xs text-stone-400">{t.explore_label}</span>}
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <button onClick={() => { setEditHost(t.host); setEditForm({ ...t }); }}
+                      className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200 rounded transition-colors">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => handleDelete(t.host)}
+                      className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+                {editHost === t.host && (
+                  <div className="px-4 py-4 border-t border-stone-100">
+                    <TenantForm form={editForm} onChange={setEditForm} onSave={handleSaveEdit} onCancel={() => setEditHost(null)} saveLabel="Salvar" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 async function apiAuth(body: object): Promise<{ ok: boolean; token?: string; error?: string }> {
   const res = await fetch('/api/admin-auth', {
     method: 'POST',
@@ -1309,7 +1508,7 @@ export default function AdminSettings() {
   const [authed, setAuthed] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [activeTab, setActiveTab] = useState<'videos' | 'curadoria' | 'pesquisa' | 'feedback' | 'indicacoes'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'curadoria' | 'pesquisa' | 'feedback' | 'indicacoes' | 'tenants'>('videos');
 
   // Sincroniza o formulário quando o Supabase terminar de carregar as URLs
   useEffect(() => {
@@ -1474,6 +1673,7 @@ export default function AdminSettings() {
             { id: 'pesquisa', label: 'Pesquisa de Satisfação' },
             { id: 'feedback', label: 'Avaliações' },
             { id: 'indicacoes', label: 'Recompensas de Indicação' },
+            { id: 'tenants', label: 'Tenants' },
           ] as const).map(tab => (
             <button
               key={tab.id}
@@ -1503,6 +1703,10 @@ export default function AdminSettings() {
 
         {activeTab === 'indicacoes' && (
           <ReferralRulesPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
+        )}
+
+        {activeTab === 'tenants' && (
+          <TenantPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
         )}
 
         {activeTab === 'videos' && (
