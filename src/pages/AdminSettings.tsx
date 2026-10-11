@@ -1147,6 +1147,53 @@ interface TenantConfig {
   explore_url: string;
 }
 
+const tenantFieldCls = "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-500 focus:ring-1 focus:ring-stone-500";
+const tenantLabelCls = "block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1";
+
+function TenantForm({ form, onChange, onSave, onCancel, saveLabel, saving }: {
+  form: TenantConfig;
+  onChange: (f: TenantConfig) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  saveLabel: string;
+  saving: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label className={tenantLabelCls}>Host (domínio)</label>
+        <input className={tenantFieldCls} placeholder="ex: jornada.parceiro.com.br" value={form.host}
+          onChange={e => onChange({ ...form, host: e.target.value })} disabled={form.host !== '' && saveLabel !== 'Adicionar'} />
+      </div>
+      <div>
+        <label className={tenantLabelCls}>home_url</label>
+        <input className={tenantFieldCls} placeholder="https://parceiro.com.br" value={form.home_url}
+          onChange={e => onChange({ ...form, home_url: e.target.value })} />
+      </div>
+      <div>
+        <label className={tenantLabelCls}>explore_label</label>
+        <input className={tenantFieldCls} placeholder="Explorar Carreiras" value={form.explore_label}
+          onChange={e => onChange({ ...form, explore_label: e.target.value })} />
+      </div>
+      <div>
+        <label className={tenantLabelCls}>explore_url</label>
+        <input className={tenantFieldCls} placeholder="https://parceiro.com.br/explorar" value={form.explore_url}
+          onChange={e => onChange({ ...form, explore_url: e.target.value })} />
+      </div>
+      <div className="md:col-span-2 flex gap-2">
+        <button onClick={onSave} disabled={saving}
+          className="px-5 py-2 bg-stone-800 text-white text-sm font-bold rounded-lg hover:bg-stone-700 disabled:opacity-60 transition-colors">
+          {saving ? 'Salvando...' : saveLabel}
+        </button>
+        <button onClick={onCancel}
+          className="px-5 py-2 bg-stone-200 text-stone-700 text-sm font-bold rounded-lg hover:bg-stone-300 transition-colors">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 const EMPTY_TENANT: TenantConfig = { host: '', home_url: '', explore_label: '', explore_url: '' };
 
 function TenantPanel({ token }: { token: string }) {
@@ -1224,50 +1271,6 @@ function TenantPanel({ token }: { token: string }) {
     showFlash('Removido.');
   };
 
-  const fieldCls = "w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-700 outline-none focus:border-stone-500 focus:ring-1 focus:ring-stone-500";
-  const labelCls = "block text-xs font-bold text-stone-500 uppercase tracking-wider mb-1";
-
-  const TenantForm = ({ form, onChange, onSave, onCancel, saveLabel }: {
-    form: TenantConfig;
-    onChange: (f: TenantConfig) => void;
-    onSave: () => void;
-    onCancel: () => void;
-    saveLabel: string;
-  }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div>
-        <label className={labelCls}>Host (domínio)</label>
-        <input className={fieldCls} placeholder="ex: jornada.parceiro.com.br" value={form.host}
-          onChange={e => onChange({ ...form, host: e.target.value })} disabled={form.host !== '' && saveLabel !== 'Adicionar'} />
-      </div>
-      <div>
-        <label className={labelCls}>home_url</label>
-        <input className={fieldCls} placeholder="https://parceiro.com.br" value={form.home_url}
-          onChange={e => onChange({ ...form, home_url: e.target.value })} />
-      </div>
-      <div>
-        <label className={labelCls}>explore_label</label>
-        <input className={fieldCls} placeholder="Explorar Carreiras" value={form.explore_label}
-          onChange={e => onChange({ ...form, explore_label: e.target.value })} />
-      </div>
-      <div>
-        <label className={labelCls}>explore_url</label>
-        <input className={fieldCls} placeholder="https://parceiro.com.br/explorar" value={form.explore_url}
-          onChange={e => onChange({ ...form, explore_url: e.target.value })} />
-      </div>
-      <div className="md:col-span-2 flex gap-2">
-        <button onClick={onSave} disabled={saving}
-          className="px-5 py-2 bg-stone-800 text-white text-sm font-bold rounded-lg hover:bg-stone-700 disabled:opacity-60 transition-colors">
-          {saving ? 'Salvando...' : saveLabel}
-        </button>
-        <button onClick={onCancel}
-          className="px-5 py-2 bg-stone-200 text-stone-700 text-sm font-bold rounded-lg hover:bg-stone-300 transition-colors">
-          Cancelar
-        </button>
-      </div>
-    </div>
-  );
-
   if (loading) return (
     <div className="flex justify-center py-12">
       <div className="w-6 h-6 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
@@ -1297,7 +1300,7 @@ function TenantPanel({ token }: { token: string }) {
         {adding && (
           <div className="mb-6 p-4 bg-stone-50 border border-stone-200 rounded-xl">
             <h3 className="font-bold text-stone-700 mb-4">Novo Tenant</h3>
-            <TenantForm form={newTenant} onChange={setNewTenant} onSave={handleAdd} onCancel={() => setAdding(false)} saveLabel="Adicionar" />
+            <TenantForm form={newTenant} onChange={setNewTenant} onSave={handleAdd} onCancel={() => setAdding(false)} saveLabel="Adicionar" saving={saving} />
           </div>
         )}
 
@@ -1325,7 +1328,7 @@ function TenantPanel({ token }: { token: string }) {
                 </div>
                 {editHost === t.host && (
                   <div className="px-4 py-4 border-t border-stone-100">
-                    <TenantForm form={editForm} onChange={setEditForm} onSave={handleSaveEdit} onCancel={() => setEditHost(null)} saveLabel="Salvar" />
+                    <TenantForm form={editForm} onChange={setEditForm} onSave={handleSaveEdit} onCancel={() => setEditHost(null)} saveLabel="Salvar" saving={saving} />
                   </div>
                 )}
               </div>
