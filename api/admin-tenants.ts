@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'GET') {
     if (!verifyToken(token)) return res.status(401).json({ ok: false, error: 'Não autorizado' });
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs?select=host,home_url,explore_label,explore_url&order=host.asc`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs?select=host,home_url,display_name,explore_label,explore_url,created_at&order=host.asc`, {
       headers: supabaseHeaders('read'),
     });
     const tenants = await r.json();
@@ -55,12 +55,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'POST') {
     if (!verifyToken(token)) return res.status(401).json({ ok: false, error: 'Não autorizado' });
-    const { host, home_url, explore_label, explore_url } = req.body || {};
+    const { host, home_url, display_name, explore_label, explore_url } = req.body || {};
     if (!host || typeof host !== 'string') return res.status(400).json({ ok: false, error: 'host é obrigatório' });
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs`, {
       method: 'POST',
       headers: { ...supabaseHeaders('write'), 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ host: host.trim().toLowerCase(), home_url: home_url || '', explore_label: explore_label || '', explore_url: explore_url || '' }),
+      body: JSON.stringify({ host: host.trim().toLowerCase(), home_url: home_url || '', display_name: display_name || null, explore_label: explore_label || '', explore_url: explore_url || '' }),
     });
     if (!r.ok) {
       const detail = await r.text().catch(() => '');
@@ -71,12 +71,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method === 'PUT') {
     if (!verifyToken(token)) return res.status(401).json({ ok: false, error: 'Não autorizado' });
-    const { host, home_url, explore_label, explore_url } = req.body || {};
+    const { host, home_url, display_name, explore_label, explore_url } = req.body || {};
     if (!host) return res.status(400).json({ ok: false, error: 'host é obrigatório' });
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs?host=eq.${encodeURIComponent(host)}`, {
       method: 'PATCH',
       headers: { ...supabaseHeaders('write'), 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ home_url, explore_label, explore_url }),
+      body: JSON.stringify({ home_url, display_name: display_name || null, explore_label, explore_url }),
     });
     if (!r.ok) {
       const detail = await r.text().catch(() => '');
