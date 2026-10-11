@@ -569,31 +569,6 @@ function CuradoriaCareers({ token }: { token: string }) {
   );
 }
 
-// ─── FeedbackPanel component ──────────────────────────────────────────────────
-
-interface FeedbackEntry {
-  id: number;
-  rating: number;
-  comment: string | null;
-  page: string;
-  created_at: string;
-}
-
-function StarDisplay({ rating }: { rating: number }) {
-  return (
-    <span className="flex gap-0.5">
-      {[1, 2, 3, 4, 5].map(s => (
-        <Star
-          key={s}
-          className="w-3.5 h-3.5"
-          fill={s <= rating ? '#f59e0b' : 'transparent'}
-          stroke={s <= rating ? '#f59e0b' : '#d1d5db'}
-        />
-      ))}
-    </span>
-  );
-}
-
 interface ReferralRule {
   id: number;
   name: string;
@@ -770,102 +745,6 @@ function ReferralRulesPanel({ token }: { token: string }) {
           ))}
         </div>
       )}
-    </div>
-  );
-}
-
-function FeedbackPanel({ token }: { token: string }) {
-  const [entries, setEntries] = useState<FeedbackEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    fetch('/api/admin-feedback', {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.ok) setEntries(data.feedback);
-        else setError(data.error || 'Erro ao carregar');
-      })
-      .catch(() => setError('Erro de rede'))
-      .finally(() => setLoading(false));
-  }, [token]);
-
-  if (loading) return (
-    <div className="flex justify-center py-12">
-      <div className="w-6 h-6 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
-    </div>
-  );
-
-  if (error) return (
-    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>
-  );
-
-  if (entries.length === 0) return (
-    <div className="text-center py-12 text-stone-400 text-sm">Nenhuma avaliação recebida ainda.</div>
-  );
-
-  const avg = entries.reduce((sum, e) => sum + e.rating, 0) / entries.length;
-  const dist = [5, 4, 3, 2, 1].map(star => ({
-    star,
-    count: entries.filter(e => e.rating === star).length,
-  }));
-
-  return (
-    <div className="space-y-6">
-      {/* Resumo */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6">
-        <h2 className="text-xl font-bold text-stone-800 mb-5 border-b pb-4">Avaliações de Experiência</h2>
-        <div className="flex flex-col sm:flex-row gap-6 items-start">
-          {/* Média */}
-          <div className="text-center min-w-[80px]">
-            <div className="text-4xl font-bold text-stone-800">{avg.toFixed(1)}</div>
-            <StarDisplay rating={Math.round(avg)} />
-            <div className="text-xs text-stone-400 mt-1">{entries.length} avaliações</div>
-          </div>
-          {/* Distribuição */}
-          <div className="flex-1 space-y-1.5 w-full">
-            {dist.map(({ star, count }) => (
-              <div key={star} className="flex items-center gap-2">
-                <span className="text-xs text-stone-500 w-3">{star}</span>
-                <Star className="w-3 h-3 text-amber-400 fill-amber-400 shrink-0" />
-                <div className="flex-1 h-2 bg-stone-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-400 rounded-full transition-all"
-                    style={{ width: entries.length ? `${(count / entries.length) * 100}%` : '0%' }}
-                  />
-                </div>
-                <span className="text-xs text-stone-400 w-4 text-right">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Lista */}
-      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden">
-        <div className="px-6 py-3 border-b border-stone-100 flex items-center gap-2">
-          <MessageSquare className="w-4 h-4 text-stone-400" />
-          <span className="text-sm font-semibold text-stone-600">Comentários</span>
-        </div>
-        <div className="divide-y divide-stone-100">
-          {entries.map(entry => (
-            <div key={entry.id} className="px-6 py-4 flex items-start gap-4">
-              <StarDisplay rating={entry.rating} />
-              <div className="flex-1 min-w-0">
-                {entry.comment
-                  ? <p className="text-sm text-stone-700 leading-relaxed">{entry.comment}</p>
-                  : <p className="text-xs text-stone-300 italic">sem comentário</p>
-                }
-              </div>
-              <span className="text-xs text-stone-400 shrink-0 whitespace-nowrap">
-                {new Date(entry.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }
@@ -1511,7 +1390,7 @@ export default function AdminSettings() {
   const [authed, setAuthed] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [activeTab, setActiveTab] = useState<'videos' | 'curadoria' | 'pesquisa' | 'feedback' | 'indicacoes' | 'tenants'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'curadoria' | 'pesquisa' | 'indicacoes' | 'tenants'>('videos');
 
   // Sincroniza o formulário quando o Supabase terminar de carregar as URLs
   useEffect(() => {
@@ -1674,7 +1553,6 @@ export default function AdminSettings() {
             { id: 'videos', label: 'Vídeos dos Mentores' },
             { id: 'curadoria', label: 'Curadoria de Carreiras' },
             { id: 'pesquisa', label: 'Pesquisa de Satisfação' },
-            { id: 'feedback', label: 'Avaliações' },
             { id: 'indicacoes', label: 'Recompensas de Indicação' },
             { id: 'tenants', label: 'Tenants' },
           ] as const).map(tab => (
@@ -1698,10 +1576,6 @@ export default function AdminSettings() {
 
         {activeTab === 'pesquisa' && (
           <SurveyPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
-        )}
-
-        {activeTab === 'feedback' && (
-          <FeedbackPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
         )}
 
         {activeTab === 'indicacoes' && (
