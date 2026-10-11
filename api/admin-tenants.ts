@@ -19,11 +19,15 @@ function verifyToken(token: string): boolean {
   }
 }
 
-function supabaseHeaders() {
+function supabaseHeaders(method: 'read' | 'write' = 'read') {
   return {
     'apikey': SUPABASE_SERVICE_ROLE_KEY,
     'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
     'Content-Type': 'application/json',
+    // PostgREST: roteia para o schema correto (não-public)
+    ...(method === 'read'
+      ? { 'Accept-Profile': 'reinventar' }
+      : { 'Content-Profile': 'reinventar' }),
   };
 }
 
@@ -43,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'GET') {
     if (!verifyToken(token)) return res.status(401).json({ ok: false, error: 'Não autorizado' });
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs?select=host,home_url,explore_label,explore_url&order=host.asc`, {
-      headers: supabaseHeaders(),
+      headers: supabaseHeaders('read'),
     });
     const tenants = await r.json();
     return res.json({ ok: true, tenants: Array.isArray(tenants) ? tenants : [] });
@@ -55,7 +59,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!host || typeof host !== 'string') return res.status(400).json({ ok: false, error: 'host é obrigatório' });
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs`, {
       method: 'POST',
-      headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' },
+      headers: { ...supabaseHeaders('write'), 'Prefer': 'return=minimal' },
       body: JSON.stringify({ host: host.trim().toLowerCase(), home_url: home_url || '', explore_label: explore_label || '', explore_url: explore_url || '' }),
     });
     if (!r.ok) {
@@ -71,7 +75,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!host) return res.status(400).json({ ok: false, error: 'host é obrigatório' });
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs?host=eq.${encodeURIComponent(host)}`, {
       method: 'PATCH',
-      headers: { ...supabaseHeaders(), 'Prefer': 'return=minimal' },
+      headers: { ...supabaseHeaders('write'), 'Prefer': 'return=minimal' },
       body: JSON.stringify({ home_url, explore_label, explore_url }),
     });
     if (!r.ok) {
@@ -87,7 +91,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!host) return res.status(400).json({ ok: false, error: 'host é obrigatório' });
     const r = await fetch(`${SUPABASE_URL}/rest/v1/tenant_configs?host=eq.${encodeURIComponent(host)}`, {
       method: 'DELETE',
-      headers: supabaseHeaders(),
+      headers: supabaseHeaders('write'),
     });
     if (!r.ok) {
       const detail = await r.text().catch(() => '');
