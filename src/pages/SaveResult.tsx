@@ -74,7 +74,6 @@ export default function SaveResult() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        tenant_host: window.location.hostname,
         app: 'reinventar',
         nome: name,
         email,
