@@ -70,6 +70,20 @@ export default function SaveResult() {
       console.error('Error saving jornada:', error);
     }
 
+    fetch('/api/submit-lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenant_host: window.location.hostname,
+        app: 'reinventar',
+        nome: name,
+        email,
+        telefone: phone || null,
+        am_id: refId || null,
+        resultado: phase_data,
+      }),
+    }).catch(() => {});
+
     navigate(`/resultado/${id}`);
   };
 
