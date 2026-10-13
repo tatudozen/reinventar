@@ -12,8 +12,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!LEADS_API_KEY) return res.status(500).json({ ok: false, error: 'LEADS_API_KEY não configurada' });
 
-  // Derive tenant_host from the server's own Host header — never trust client-supplied value
-  const tenant_host = ((req.headers.host as string) || '').split(':')[0];
+  // tenant_host must be set at deploy time via env var — Host header can be forged
+  const tenant_host = process.env.TENANT_HOST;
+  if (!tenant_host) return res.status(500).json({ ok: false, error: 'TENANT_HOST não configurada' });
+
   const { app, nome, email, telefone, am_id, resultado } = req.body || {};
 
   const r = await fetch(`${CRM_URL}/api/leads`, {
