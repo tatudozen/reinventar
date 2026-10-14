@@ -1168,8 +1168,18 @@ export function generateReinventarRelatorioHtml(
   const { phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8 } = state;
 
   // ── Helpers ───────────────────────────────────────────────────────────────
+  const esc = (s: string) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+  // dict() resolves a key from a trusted map; falls back to the raw key, always escaped
+  const dict = (map: Record<string, string>, key: string) => esc(map[key] || key);
+
   const tags = (items: string[], bg: string, fg: string) =>
-    items.map(i => `<span style="display:inline-block;background:${bg};color:${fg};border-radius:999px;padding:3px 10px;font-size:12px;margin:2px 3px 2px 0;border:1px solid ${bg}">${i}</span>`).join('');
+    items.map(i => `<span style="display:inline-block;background:${bg};color:${fg};border-radius:999px;padding:3px 10px;font-size:12px;margin:2px 3px 2px 0;border:1px solid ${bg}">${esc(i)}</span>`).join('');
 
   const section = (title: string, accent: string, sub: string, body: string) => `
     <div style="border-radius:12px;padding:18px 20px;background:#fff;border:1px solid #e5e7eb;margin-bottom:16px">
@@ -1214,7 +1224,7 @@ export function generateReinventarRelatorioHtml(
       const pct = Math.round((val / 5) * 100);
       return `<div style="margin-bottom:6px">
         <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
-          <span style="color:#374151">${REINVENTAR_COMPETENCIES[id] || id}</span>
+          <span style="color:#374151">${dict(REINVENTAR_COMPETENCIES, id)}</span>
           <span style="color:#6b7280;font-family:monospace">${val}/5</span>
         </div>
         <div style="height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden">
@@ -1243,7 +1253,7 @@ export function generateReinventarRelatorioHtml(
     const pct = Math.round((coins / maxCoins) * 100);
     return `<div style="margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-        <span style="color:#365314;font-weight:500">${REINVENTAR_CAUSES[id] || id}</span>
+        <span style="color:#365314;font-weight:500">${dict(REINVENTAR_CAUSES, id)}</span>
         <span style="color:#84cc16;font-family:monospace">${coins} moeda${coins !== 1 ? 's' : ''}</span>
       </div>
       <div style="height:5px;background:#f0fdf4;border-radius:3px;overflow:hidden">
@@ -1255,7 +1265,7 @@ export function generateReinventarRelatorioHtml(
   const phase3Html = section('Fase 3', '#16a34a', 'A Grande Causa — onde quer deixar sua marca', `
     ${causeBarsHtml}
     ${uniqueProblem ? sublabel('Problema que mais te mobiliza', '#16a34a') +
-      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;margin:4px 0">${REINVENTAR_PROBLEMS[uniqueProblem] || uniqueProblem}</p>` : ''}
+      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;margin:4px 0">${dict(REINVENTAR_PROBLEMS, uniqueProblem)}</p>` : ''}
   `);
 
   // ── Phase 4 — Duelo de Mundos ─────────────────────────────────────────────
@@ -1273,7 +1283,7 @@ export function generateReinventarRelatorioHtml(
   const riasecBarsHtml = riasecSorted.map(([type, count]) => {
     const pct = Math.round((count / (riasecSorted[0]?.[1] || 1)) * 100);
     return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-      <span style="width:130px;font-size:12px;color:#374151">${riasecLabels[type] || type}</span>
+      <span style="width:130px;font-size:12px;color:#374151">${dict(riasecLabels, type)}</span>
       <div style="flex:1;height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden">
         <div style="height:100%;width:${pct}%;background:#f59e0b;border-radius:3px"></div>
       </div>
@@ -1283,7 +1293,7 @@ export function generateReinventarRelatorioHtml(
 
   const forcedChoicesHtml = Object.entries(forcedChoices).map(([questionId, choiceId]) => {
     const q = REINVENTAR_FORCED[questionId];
-    const label = q?.[choiceId] || choiceId;
+    const label = esc(q?.[choiceId] || choiceId);
     return `<div style="font-size:12px;color:#374151;padding:5px 10px;background:#fffbeb;border-radius:6px;margin-bottom:4px;border:1px solid #fde68a">✓ ${label}</div>`;
   }).join('');
 
@@ -1302,17 +1312,17 @@ export function generateReinventarRelatorioHtml(
   const figuresHtml = savedFigures.length > 0
     ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${
         savedFigures.map(id =>
-          `<span style="display:inline-block;background:#fdf4ff;color:#7e22ce;border-radius:999px;padding:3px 10px;font-size:12px;border:1px solid #e9d5ff">${REINVENTAR_FIGURES[id] || id}</span>`
+          `<span style="display:inline-block;background:#fdf4ff;color:#7e22ce;border-radius:999px;padding:3px 10px;font-size:12px;border:1px solid #e9d5ff">${dict(REINVENTAR_FIGURES, id)}</span>`
         ).join('')
       }</div>` : '';
 
   const phase5Html = section('Fase 5', '#7e22ce', 'Ministério dos Sonhos — sua missão maior', `
     ${archetype ? sublabel('Arquétipo', '#7e22ce') +
-      `<span style="display:inline-block;font-size:15px;font-weight:700;color:#7e22ce;padding:6px 14px;background:#fdf4ff;border-radius:8px;border:1px solid #e9d5ff">${REINVENTAR_ARCHETYPES[archetype] || archetype}</span>` : ''}
+      `<span style="display:inline-block;font-size:15px;font-weight:700;color:#7e22ce;padding:6px 14px;background:#fdf4ff;border-radius:8px;border:1px solid #e9d5ff">${dict(REINVENTAR_ARCHETYPES, archetype)}</span>` : ''}
     ${ministry ? sublabel('Área de impacto', '#7e22ce') +
-      `<p style="font-size:14px;color:#374151;margin:4px 0">${REINVENTAR_MINISTRIES[ministry] || ministry}</p>` : ''}
+      `<p style="font-size:14px;color:#374151;margin:4px 0">${dict(REINVENTAR_MINISTRIES, ministry)}</p>` : ''}
     ${cargo ? sublabel('Papel preferido', '#7e22ce') +
-      `<p style="font-size:13px;color:#6b21a8;margin:4px 0">${REINVENTAR_CARGOS[cargo] || cargo}</p>` : ''}
+      `<p style="font-size:13px;color:#6b21a8;margin:4px 0">${dict(REINVENTAR_CARGOS, cargo)}</p>` : ''}
     ${savedFigures.length > 0 ? sublabel(`Figuras inspiradoras (${savedFigures.length})`, '#4b5563') + figuresHtml : ''}
   `);
 
@@ -1325,7 +1335,7 @@ export function generateReinventarRelatorioHtml(
     ${connections.length > 0 ? sublabel('Quem você quer impactar', '#0891b2') + tags(connections.map(id => REINVENTAR_WHO[id] || id), '#ecfeff', '#0e7490') : ''}
     ${modes.length > 0 ? sublabel('Como prefere se conectar', '#4b5563') + tags(modes.map(id => REINVENTAR_HOW[id] || id), '#f0f9ff', '#0369a1') : ''}
     ${intention ? sublabel('Intenção de relação', '#0891b2') +
-      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#ecfeff;border-left:3px solid #0891b2;border-radius:4px;margin:4px 0">"${intention}"</p>` : ''}
+      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#ecfeff;border-left:3px solid #0891b2;border-radius:4px;margin:4px 0">"${esc(intention)}"</p>` : ''}
   `);
 
   // ── Phase 7 — O Garimpo ───────────────────────────────────────────────────
@@ -1343,7 +1353,7 @@ export function generateReinventarRelatorioHtml(
   const letter = phase8?.letter ?? '';
   const letterSection = letter
     ? section('Fase 8', '#dc2626', 'A Carta para o Futuro', `
-        <div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap;font-style:italic;padding:12px;background:#fff5f5;border-radius:8px;border:1px solid #fecaca">${letter.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+        <div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap;font-style:italic;padding:12px;background:#fff5f5;border-radius:8px;border:1px solid #fecaca">${esc(letter)}</div>
       `) : '';
 
   // ── Compose ───────────────────────────────────────────────────────────────
@@ -1351,16 +1361,16 @@ export function generateReinventarRelatorioHtml(
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Jornada Reinventar — ${name}</title>
+  <title>Jornada Reinventar — ${esc(name)}</title>
 </head>
 <body style="margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:#1f2937;max-width:700px;margin:0 auto">
 
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#7c3aed,#0891b2);border-radius:16px;padding:28px 24px;margin-bottom:24px;color:#fff">
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:3px;opacity:0.8;margin-bottom:4px">Jornada Reinventar</div>
-    <h1 style="margin:0 0 4px;font-size:26px;font-weight:700">${name}</h1>
-    <div style="font-size:13px;opacity:0.8">${email}</div>
-    <div style="font-size:11px;opacity:0.6;margin-top:8px;font-family:monospace">ID: ${id} · ${new Date().toLocaleDateString('pt-BR')}</div>
+    <h1 style="margin:0 0 4px;font-size:26px;font-weight:700">${esc(name)}</h1>
+    <div style="font-size:13px;opacity:0.8">${esc(email)}</div>
+    <div style="font-size:11px;opacity:0.6;margin-top:8px;font-family:monospace">ID: ${esc(id)} · ${new Date().toLocaleDateString('pt-BR')}</div>
   </div>
 
   ${phase1Html}
