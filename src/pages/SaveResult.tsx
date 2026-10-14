@@ -59,20 +59,19 @@ export default function SaveResult() {
       }),
     }).catch(() => {});
 
-    try {
-      await supabase.from('jornadas').insert({
-        id,
-        user_name: name,
-        user_email: email,
-        user_phone: phone || null,
-        guide: state.guide,
-        xp: state.xp,
-        completed_phases: state.completedPhases,
-        phase_data,
-        referred_by: refId ?? null,
-      });
-    } catch (error) {
-      console.error('Error saving jornada:', error);
+    const { error: insertError } = await supabase.from('jornadas').insert({
+      id,
+      user_name: name,
+      user_email: email,
+      user_phone: phone || null,
+      guide: state.guide,
+      xp: state.xp,
+      completed_phases: state.completedPhases,
+      phase_data,
+      referred_by: refId ?? null,
+    });
+    if (insertError) {
+      console.error('Error saving jornada:', insertError.code, insertError.message, insertError.details);
     }
 
     try {
