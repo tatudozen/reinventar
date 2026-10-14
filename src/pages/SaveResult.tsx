@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Star, Leaf } from 'lucide-react';
 import { useApp } from '../store';
 import { supabase } from '../supabase';
+import { generateReinventarRelatorioHtml } from '../lib/ikigai-analysis';
 
 export default function SaveResult() {
   const navigate = useNavigate();
@@ -23,6 +24,8 @@ export default function SaveResult() {
     localStorage.setItem('reinventar_jornada_id', id);
 
     const refId = localStorage.getItem('reinventar_ref');
+
+    const relatorio_html = generateReinventarRelatorioHtml(name, email, id, state);
 
     const phase_data = {
       phase1: state.phase1,
@@ -51,6 +54,7 @@ export default function SaveResult() {
         saved_roles: state.phase7?.savedRoles ?? [],
         connections: state.phase6?.connections ?? [],
         intention: state.phase6?.intention ?? '',
+        relatorio_html,
       }),
     }).catch(() => {});
 

@@ -1019,3 +1019,364 @@ export function generateRelatorioHtml(
 </body>
 </html>`;
 }
+
+// ─── Reinventar Report ────────────────────────────────────────────────────────
+
+const REINVENTAR_COMPETENCIES: Record<string, string> = {
+  lideranca:     'Liderança e Gestão',
+  comunicacao:   'Comunicação e Persuasão',
+  resolucao:     'Resolução de Problemas',
+  empatia:       'Relações e Empatia',
+  planejamento:  'Planejamento e Organização',
+  conhecimento:  'Conhecimento Especializado',
+  criatividade:  'Criatividade e Inovação',
+  sabedoria:     'Autoconhecimento e Sabedoria',
+};
+
+const REINVENTAR_CAUSES: Record<string, string> = {
+  solidao:          'Solidão e Isolamento',
+  educacao:         'Educação e Formação',
+  saude:            'Saúde e Longevidade',
+  cuidado:          'Cuidado com Idosos',
+  desigualdade:     'Desigualdade Social',
+  meio_ambiente:    'Meio Ambiente e Legado',
+  saude_mental:     'Saúde Mental',
+  empreendedorismo: 'Empreendedorismo',
+  cultura:          'Arte, Cultura e Memória',
+  intergeracoes:    'Conexão entre Gerações',
+};
+
+const REINVENTAR_PROBLEMS: Record<string, string> = {
+  solidao_idosos:           'Idosos sozinhos sem apoio ou companhia',
+  conhecimento_perdido:     'Conhecimento que se perde sem ser transmitido',
+  cuidadores:               'Cuidadores sobrecarregados e sem suporte',
+  jovens_sem_mentores:      'Jovens sem mentores ou referências',
+  saude_acesso:             'Comunidades sem acesso à saúde de qualidade',
+  experiencia_desvalorizada: 'Desvalorização de quem tem mais experiência',
+};
+
+const REINVENTAR_ARCHETYPES: Record<string, string> = {
+  sabio:      'Sábio(a)',
+  guardiao:   'Guardião(ã)',
+  explorador: 'Explorador(a)',
+  criador:    'Criador(a)',
+  conector:   'Conector(a)',
+  realizador: 'Realizador(a)',
+};
+
+const REINVENTAR_MINISTRIES: Record<string, string> = {
+  economia:               '💰 Economia',
+  saude:                  '🏥 Saúde',
+  ciencia_tecnologia:     '🔬 Ciência e Tecnologia',
+  educacao:               '📚 Educação',
+  justica:                '⚖️ Justiça',
+  cultura:                '🎭 Cultura',
+  meio_ambiente:          '🌱 Meio Ambiente',
+  infraestrutura:         '🏗️ Infraestrutura',
+  desenvolvimento_social: '🤝 Desenvolvimento Social',
+  comunicacoes:           '📡 Comunicações',
+};
+
+const REINVENTAR_CARGOS: Record<string, string> = {
+  ministro:             'Ministro(a)',
+  consultor_tecnico:    'Consultor(a) Técnico(a)',
+  assessor_comunicacao: 'Assessor(a) de Comunicação',
+  diretor_operacoes:    'Diretor(a) de Operações',
+  coordenador_campo:    'Coordenador(a) de Campo',
+  secretario_social:    'Secretário(a) de Bem-Estar',
+};
+
+const REINVENTAR_ROLES: Record<string, string> = {
+  mentor:       'Mentor(a)',
+  escritora:    'Escritor(a)',
+  consultor:    'Consultor(a)',
+  professor:    'Professor(a)',
+  voluntario:   'Voluntário(a)',
+  podcast:      'Podcaster',
+  artesao:      'Artesão/ã',
+  coach:        'Coach',
+  cuidador:     'Cuidador(a)',
+  guia:         'Guia de Viagem',
+  horta:        'Cultivador(a)',
+  genealogia:   'Genealogista',
+  facilitador:  'Facilitador(a)',
+  fotografo:    'Fotógrafo(a)',
+  mediador:     'Mediador(a)',
+  narrador:     'Contador(a) de histórias',
+  idiomas:      'Prof. de Idiomas',
+  palestrante:  'Palestrante',
+  acompanhante: 'Acompanhante Terapêutico(a)',
+  curador:      'Curador(a)',
+  produtor:     'Produtor(a)',
+  terapeuta:    'Terapeuta',
+  embaixador:   'Embaixador(a)',
+  empreendedor: 'Empreendedor(a)',
+};
+
+const REINVENTAR_WHO: Record<string, string> = {
+  jovens:        '🧒 Crianças e jovens',
+  adultos:       '🔄 Adultos em transição',
+  pares:         '🤝 Pessoas da minha geração (55+)',
+  idosos:        '👴 Idosos (75+)',
+  familia:       '🏠 Minha família',
+  comunidade:    '🏘️ Minha comunidade local',
+  vulneraveis:   '🫂 Grupos vulneráveis',
+  profissionais: '💼 Profissionais da minha área',
+  estudantes:    '📖 Estudantes e aprendizes',
+  cuidadores:    '❤️‍🩹 Cuidadores e famílias',
+};
+
+const REINVENTAR_HOW: Record<string, string> = {
+  presencial: '🤲 Presencialmente',
+  online:     '💻 Online / Digital',
+  grupos:     '👥 Em grupos e encontros',
+  individual: '🫀 Um a um (1:1)',
+  escrito:    '✍️ Por escrito',
+  arte:       '🎨 Através da arte',
+  sistema:    '⚙️ Indiretamente (sistemas)',
+  eventos:    '🎤 Em eventos e palestras',
+};
+
+const REINVENTAR_FORCED: Record<string, Record<string, string>> = {
+  estrutura_vs_liberdade: { estrutura: 'Estrutura e equipe', liberdade: 'Autonomia e ritmo próprio' },
+  mentor_vs_executor:     { mentor: 'Guiar e transmitir', executor: 'Executar e implementar' },
+  profundo_vs_amplo:      { profundo: 'Impacto profundo, alcance menor', amplo: 'Alcance amplo, impacto distribuído' },
+};
+
+const REINVENTAR_FIGURES: Record<string, string> = {
+  sanders:     'Colonel Sanders', child:      'Julia Child',
+  moses:       'Vovó Moses',      kroc:       'Ray Kroc',
+  mandela:     'Nelson Mandela',  frankl:     'Viktor Frankl',
+  marco:       'Marco Aurélio',   gandhi:     'Mahatma Gandhi',
+  curie:       'Marie Curie',     sagan:      'Carl Sagan',
+  attenborough: 'David Attenborough', davinci: 'Leonardo da Vinci',
+  kahlo:       'Frida Kahlo',     tolkien:    'J.R.R. Tolkien',
+  niemeyer:    'Oscar Niemeyer',  drummond:   'Carlos Drummond',
+  freire:      'Paulo Freire',    evaristo:   'Conceição Evaristo',
+  clarice:     'Clarice Lispector', teresa:   'Madre Teresa',
+  wangari:     'Wangari Maathai', malala:     'Malala Yousafzai',
+  drucker:     'Peter Drucker',   buffett:    'Warren Buffett',
+  aristoteles: 'Aristóteles',
+};
+
+export function generateReinventarRelatorioHtml(
+  name: string,
+  email: string,
+  id: string,
+  state: AppState,
+): string {
+  const { phase1, phase2, phase3, phase4, phase5, phase6, phase7, phase8 } = state;
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  const tags = (items: string[], bg: string, fg: string) =>
+    items.map(i => `<span style="display:inline-block;background:${bg};color:${fg};border-radius:999px;padding:3px 10px;font-size:12px;margin:2px 3px 2px 0;border:1px solid ${bg}">${i}</span>`).join('');
+
+  const section = (title: string, accent: string, sub: string, body: string) => `
+    <div style="border-radius:12px;padding:18px 20px;background:#fff;border:1px solid #e5e7eb;margin-bottom:16px">
+      <div style="font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:${accent};margin-bottom:2px">${title}</div>
+      <div style="font-size:12px;color:#9ca3af;margin-bottom:12px">${sub}</div>
+      ${body}
+    </div>`;
+
+  const sublabel = (text: string, color = '#6b7280') =>
+    `<div style="font-size:11px;font-weight:600;color:${color};margin:10px 0 5px;text-transform:uppercase;letter-spacing:1px">${text}</div>`;
+
+  // ── Phase 1 — Mapa de Energia ─────────────────────────────────────────────
+  const energyCards: Record<string, string> = phase1?.energyCards ?? {};
+  const flowActs    = Object.entries(energyCards).filter(([, q]) => q === 'flow').map(([a]) => a);
+  const boostActs   = Object.entries(energyCards).filter(([, q]) => q === 'boost').map(([a]) => a);
+  const neutralActs = Object.entries(energyCards).filter(([, q]) => q === 'neutral').map(([a]) => a);
+  const drainActs   = Object.entries(energyCards).filter(([, q]) => q === 'drain').map(([a]) => a);
+  const maturityVerbs  = phase1?.maturityVerbs ?? [];
+  const curiosityThemes = phase1?.curiosityThemes ?? [];
+
+  const phase1Html = section('Fase 1', '#7c3aed', 'Mapa de Energia — o que te dá vida', `
+    ${flowActs.length > 0 ? sublabel('⚡ Flow — não vejo o tempo passar', '#7c3aed') + tags(flowActs, '#f5f3ff', '#6d28d9') : ''}
+    ${boostActs.length > 0 ? sublabel('🔋 Energiza', '#d97706') + tags(boostActs, '#fffbeb', '#b45309') : ''}
+    ${neutralActs.length > 0 ? sublabel('😐 Neutro', '#6b7280') + tags(neutralActs, '#f9fafb', '#4b5563') : ''}
+    ${drainActs.length > 0 ? sublabel('🔴 Drena', '#dc2626') + tags(drainActs, '#fef2f2', '#b91c1c') : ''}
+    ${maturityVerbs.length > 0 ? sublabel('Verbos da maturidade', '#4b5563') + tags(maturityVerbs, '#f9fafb', '#374151') : ''}
+    ${curiosityThemes.length > 0 ? sublabel('Temas de curiosidade', '#7c3aed') + tags(curiosityThemes, '#f5f3ff', '#6d28d9') : ''}
+  `);
+
+  // ── Phase 2 — Talentos na Mochila ────────────────────────────────────────
+  const skillRatings: Record<string, number> = phase2?.skillRatings ?? {};
+  const topSkills = Object.entries(skillRatings)
+    .filter(([, v]) => v >= 4)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, v]) => `${REINVENTAR_COMPETENCIES[id] || id} (${v}/5)`);
+  const whoAsksYou    = phase2?.whoAsksYou ?? [];
+  const hiddenTalents = phase2?.hiddenTalents ?? [];
+
+  const skillBarsHtml = Object.entries(skillRatings)
+    .sort((a, b) => b[1] - a[1])
+    .map(([id, val]) => {
+      const pct = Math.round((val / 5) * 100);
+      return `<div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">
+          <span style="color:#374151">${REINVENTAR_COMPETENCIES[id] || id}</span>
+          <span style="color:#6b7280;font-family:monospace">${val}/5</span>
+        </div>
+        <div style="height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:#7c3aed;border-radius:3px"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+  const phase2Html = section('Fase 2', '#c2410c', 'Talentos na Mochila — seus pontos fortes', `
+    ${skillBarsHtml}
+    ${topSkills.length > 0 ? sublabel('Competências de destaque (≥4/5)', '#c2410c') + tags(topSkills, '#fff7ed', '#c2410c') : ''}
+    ${whoAsksYou.length > 0 ? sublabel('Pedidos que você recebe', '#4b5563') + tags(whoAsksYou, '#f9fafb', '#374151') : ''}
+    ${hiddenTalents.length > 0 ? sublabel('Talentos ocultos', '#6b7280') + tags(hiddenTalents, '#f9fafb', '#4b5563') : ''}
+  `);
+
+  // ── Phase 3 — A Grande Causa ──────────────────────────────────────────────
+  const impactPoints: Record<string, number> = phase3?.impactPoints ?? {};
+  const uniqueProblem = phase3?.uniqueProblem ?? '';
+  const topCauses = Object.entries(impactPoints)
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  const maxCoins = topCauses[0]?.[1] ?? 1;
+
+  const causeBarsHtml = topCauses.map(([id, coins]) => {
+    const pct = Math.round((coins / maxCoins) * 100);
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="color:#365314;font-weight:500">${REINVENTAR_CAUSES[id] || id}</span>
+        <span style="color:#84cc16;font-family:monospace">${coins} moeda${coins !== 1 ? 's' : ''}</span>
+      </div>
+      <div style="height:5px;background:#f0fdf4;border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:#16a34a;border-radius:3px"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const phase3Html = section('Fase 3', '#16a34a', 'A Grande Causa — onde quer deixar sua marca', `
+    ${causeBarsHtml}
+    ${uniqueProblem ? sublabel('Problema que mais te mobiliza', '#16a34a') +
+      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;margin:4px 0">${REINVENTAR_PROBLEMS[uniqueProblem] || uniqueProblem}</p>` : ''}
+  `);
+
+  // ── Phase 4 — Duelo de Mundos ─────────────────────────────────────────────
+  const sceneDuels: Record<string, string>    = phase4?.sceneDuels ?? {};
+  const environments: string[]               = phase4?.environments ?? [];
+  const forcedChoices: Record<string, string> = phase4?.forcedChoices ?? {};
+
+  const riasecCount: Record<string, number> = {};
+  Object.values(sceneDuels).forEach(type => { riasecCount[type] = (riasecCount[type] || 0) + 1; });
+  const riasecSorted = Object.entries(riasecCount).sort((a, b) => b[1] - a[1]);
+  const riasecLabels: Record<string, string> = {
+    R: '🛠️ Prático', I: '🔬 Investigativo', A: '🎨 Artístico',
+    S: '🤝 Social',  E: '🚀 Empreendedor', C: '📊 Estruturador',
+  };
+  const riasecBarsHtml = riasecSorted.map(([type, count]) => {
+    const pct = Math.round((count / (riasecSorted[0]?.[1] || 1)) * 100);
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <span style="width:130px;font-size:12px;color:#374151">${riasecLabels[type] || type}</span>
+      <div style="flex:1;height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:#f59e0b;border-radius:3px"></div>
+      </div>
+      <span style="width:20px;font-size:11px;color:#9ca3af;font-family:monospace">${count}</span>
+    </div>`;
+  }).join('');
+
+  const forcedChoicesHtml = Object.entries(forcedChoices).map(([questionId, choiceId]) => {
+    const q = REINVENTAR_FORCED[questionId];
+    const label = q?.[choiceId] || choiceId;
+    return `<div style="font-size:12px;color:#374151;padding:5px 10px;background:#fffbeb;border-radius:6px;margin-bottom:4px;border:1px solid #fde68a">✓ ${label}</div>`;
+  }).join('');
+
+  const phase4Html = section('Fase 4', '#d97706', 'Duelo de Mundos — perfil e preferências', `
+    ${riasecSorted.length > 0 ? sublabel('Perfil RIASEC (preferências de atuação)', '#d97706') + riasecBarsHtml : ''}
+    ${environments.length > 0 ? sublabel('Ambientes preferidos', '#4b5563') + tags(environments, '#fffbeb', '#92400e') : ''}
+    ${Object.keys(forcedChoices).length > 0 ? sublabel('Escolhas de estilo de vida', '#d97706') + forcedChoicesHtml : ''}
+  `);
+
+  // ── Phase 5 — Ministério dos Sonhos ──────────────────────────────────────
+  const archetype     = phase5?.archetype ?? '';
+  const ministry      = phase5?.ministry ?? '';
+  const cargo         = phase5?.cargo ?? '';
+  const savedFigures  = phase5?.savedFigures ?? [];
+
+  const figuresHtml = savedFigures.length > 0
+    ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${
+        savedFigures.map(id =>
+          `<span style="display:inline-block;background:#fdf4ff;color:#7e22ce;border-radius:999px;padding:3px 10px;font-size:12px;border:1px solid #e9d5ff">${REINVENTAR_FIGURES[id] || id}</span>`
+        ).join('')
+      }</div>` : '';
+
+  const phase5Html = section('Fase 5', '#7e22ce', 'Ministério dos Sonhos — sua missão maior', `
+    ${archetype ? sublabel('Arquétipo', '#7e22ce') +
+      `<span style="display:inline-block;font-size:15px;font-weight:700;color:#7e22ce;padding:6px 14px;background:#fdf4ff;border-radius:8px;border:1px solid #e9d5ff">${REINVENTAR_ARCHETYPES[archetype] || archetype}</span>` : ''}
+    ${ministry ? sublabel('Área de impacto', '#7e22ce') +
+      `<p style="font-size:14px;color:#374151;margin:4px 0">${REINVENTAR_MINISTRIES[ministry] || ministry}</p>` : ''}
+    ${cargo ? sublabel('Papel preferido', '#7e22ce') +
+      `<p style="font-size:13px;color:#6b21a8;margin:4px 0">${REINVENTAR_CARGOS[cargo] || cargo}</p>` : ''}
+    ${savedFigures.length > 0 ? sublabel(`Figuras inspiradoras (${savedFigures.length})`, '#4b5563') + figuresHtml : ''}
+  `);
+
+  // ── Phase 6 — Conexões ────────────────────────────────────────────────────
+  const connections = phase6?.connections ?? [];
+  const modes       = phase6?.modes ?? [];
+  const intention   = phase6?.intention ?? '';
+
+  const phase6Html = section('Fase 6', '#0891b2', 'Conexões que Importam — com quem e como', `
+    ${connections.length > 0 ? sublabel('Quem você quer impactar', '#0891b2') + tags(connections.map(id => REINVENTAR_WHO[id] || id), '#ecfeff', '#0e7490') : ''}
+    ${modes.length > 0 ? sublabel('Como prefere se conectar', '#4b5563') + tags(modes.map(id => REINVENTAR_HOW[id] || id), '#f0f9ff', '#0369a1') : ''}
+    ${intention ? sublabel('Intenção de relação', '#0891b2') +
+      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#ecfeff;border-left:3px solid #0891b2;border-radius:4px;margin:4px 0">"${intention}"</p>` : ''}
+  `);
+
+  // ── Phase 7 — O Garimpo ───────────────────────────────────────────────────
+  const savedRoles    = phase7?.savedRoles ?? [];
+  const discardedRoles = phase7?.discardedRoles ?? [];
+
+  const phase7Html = section('Fase 7', '#059669', 'O Garimpo — papéis que ressoam', `
+    ${savedRoles.length > 0 ? sublabel(`✓ Ressoam (${savedRoles.length})`, '#059669') +
+      tags(savedRoles.map(id => REINVENTAR_ROLES[id] || id), '#ecfdf5', '#065f46') : ''}
+    ${discardedRoles.length > 0 ? sublabel(`✗ Descartados (${discardedRoles.length})`, '#9ca3af') +
+      tags(discardedRoles.map(id => REINVENTAR_ROLES[id] || id), '#f9fafb', '#6b7280') : ''}
+  `);
+
+  // ── Phase 8 — A Carta ─────────────────────────────────────────────────────
+  const letter = phase8?.letter ?? '';
+  const letterSection = letter
+    ? section('Fase 8', '#dc2626', 'A Carta para o Futuro', `
+        <div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap;font-style:italic;padding:12px;background:#fff5f5;border-radius:8px;border:1px solid #fecaca">${letter.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+      `) : '';
+
+  // ── Compose ───────────────────────────────────────────────────────────────
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jornada Reinventar — ${name}</title>
+</head>
+<body style="margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:#1f2937;max-width:700px;margin:0 auto">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#7c3aed,#0891b2);border-radius:16px;padding:28px 24px;margin-bottom:24px;color:#fff">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:3px;opacity:0.8;margin-bottom:4px">Jornada Reinventar</div>
+    <h1 style="margin:0 0 4px;font-size:26px;font-weight:700">${name}</h1>
+    <div style="font-size:13px;opacity:0.8">${email}</div>
+    <div style="font-size:11px;opacity:0.6;margin-top:8px;font-family:monospace">ID: ${id} · ${new Date().toLocaleDateString('pt-BR')}</div>
+  </div>
+
+  ${phase1Html}
+  ${phase2Html}
+  ${phase3Html}
+  ${phase4Html}
+  ${phase5Html}
+  ${phase6Html}
+  ${phase7Html}
+  ${letterSection}
+
+  <!-- Footer -->
+  <div style="text-align:center;margin-top:32px;padding-top:20px;border-top:1px solid #e5e7eb">
+    <p style="font-style:italic;color:#9ca3af;font-size:13px">"A maturidade não é o fim da jornada — é onde ela começa de verdade."</p>
+    <p style="font-size:11px;color:#d1d5db;margin-top:8px">Reinventar · ${new Date().getFullYear()}</p>
+  </div>
+</body>
+</html>`;
+}
