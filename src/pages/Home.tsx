@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Leaf, Play, BookOpen, Shield, Compass, Palette, Users, Target } from 'lucide-react';
+import { Leaf, BookOpen, Compass, Palette, Target } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../store';
 import { getEmbedUrl, isSafeEmbedUrl } from '../components/MentorVideo';
@@ -165,50 +165,6 @@ export default function Home() {
 
         <div className="border-t border-stone-200" />
 
-        {/* Guias */}
-        <section className="max-w-5xl mx-auto px-6 py-24">
-          <div className="text-center mb-12">
-            <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
-              Guias de Jornada
-            </div>
-            <h2 className="font-serif text-4xl text-[var(--color-brand-800)]">
-              Escolha quem vai te acompanhar
-            </h2>
-            <p className="text-[var(--color-text-muted)] mt-3 max-w-md mx-auto">
-              Cada guia representa uma forma de olhar para este momento da vida. Não existe certo ou errado — existe o que ressoa com você agora.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {[
-              { id: 'sabio',      name: 'O Sábio',      color: '#d4af37', icon: <BookOpen className="w-5 h-5" />,  essence: 'Calma e profundidade' },
-              { id: 'guardiao',   name: 'O Guardião',   color: '#33ccff', icon: <Shield className="w-5 h-5" />,    essence: 'Presença e cuidado' },
-              { id: 'explorador', name: 'O Explorador', color: '#ffcc00', icon: <Compass className="w-5 h-5" />,   essence: 'Curiosidade e descoberta' },
-              { id: 'criador',    name: 'O Criador',    color: '#c084fc', icon: <Palette className="w-5 h-5" />,   essence: 'Expressão e criação' },
-              { id: 'conector',   name: 'O Conector',   color: '#34d399', icon: <Users className="w-5 h-5" />,     essence: 'Relações e comunidade' },
-              { id: 'realizador', name: 'O Realizador', color: '#fb923c', icon: <Target className="w-5 h-5" />,    essence: 'Ação e resultados' },
-            ].map(g => (
-              <div
-                key={g.id}
-                className="flex items-center gap-3 p-4 border border-stone-200 rounded-xl bg-stone-50 hover:border-[var(--color-brand-300)] transition-colors"
-              >
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: `${g.color}22`, color: g.color, border: `1px solid ${g.color}44` }}
-                >
-                  {g.icon}
-                </div>
-                <div>
-                  <p className="font-semibold text-stone-800 text-sm leading-tight">{g.name}</p>
-                  <p className="text-stone-500 text-xs">{g.essence}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <div className="border-t border-stone-200" />
-
         {/* As 8 Fases */}
         <section className="py-24">
           <div className="max-w-5xl mx-auto px-6">
@@ -229,7 +185,7 @@ export default function Home() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: parseInt(n, 10) * 0.05 }}
-                  className="p-6 border border-stone-200 rounded-xl hover:border-[var(--color-brand-300)] hover:bg-stone-50 transition-colors"
+                  className="p-6 border border-stone-200 rounded-xl hover:border-[var(--color-brand-300)] transition-colors"
                 >
                   <span className="text-stone-300 font-mono text-sm block mb-3">{n}</span>
                   <h3 className="font-serif text-base text-stone-800 mb-2 leading-snug font-semibold">{title}</h3>
