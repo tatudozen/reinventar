@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
 const PHASE_TITLES: Record<string, string> = {
-  '/comecar/guia':   'Escolha do Guia',
+  '/comecar/guia':   'Intenções de Jornada',
   '/comecar/fase/1': 'Mapa de Energia',
   '/comecar/fase/2': 'Talentos na Mochila',
   '/comecar/fase/3': 'A Grande Causa',

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { CheckCircle2, Feather } from 'lucide-react';
 import { useApp } from '../store';
 import { cn } from '../lib/utils';
@@ -16,7 +15,8 @@ export default function GuideSelection() {
   const { setGuide, addXP } = useApp();
   const [accepted, setAccepted] = useState<number[]>([]);
 
-  useEffect(() => { setGuide('explorador'); }, [setGuide]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { setGuide('explorador'); }, []);
 
   const toggle = (idx: number) =>
     setAccepted(prev => prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]);
@@ -68,15 +68,16 @@ export default function GuideSelection() {
           })}
         </div>
 
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: accepted.length === INTENTIONS.length ? 1 : 0.3 }}
-          disabled={accepted.length !== INTENTIONS.length}
+        <button
           onClick={handleStart}
-          className="w-full bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-[1.02] transition-all disabled:pointer-events-none"
+          disabled={accepted.length !== INTENTIONS.length}
+          className={cn(
+            'w-full bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] px-8 py-4 rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-[1.02] transition-all',
+            accepted.length === INTENTIONS.length ? 'opacity-100' : 'opacity-30 cursor-not-allowed pointer-events-none',
+          )}
         >
           Começar minha Jornada
-        </motion.button>
+        </button>
       </div>
     </div>
   );
