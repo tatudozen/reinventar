@@ -16,12 +16,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const tenant_host = process.env.TENANT_HOST;
   if (!tenant_host) return res.status(500).json({ ok: false, error: 'TENANT_HOST não configurada' });
 
-  const { app, nome, email, telefone, am_id, resultado } = req.body || {};
+  const { app, nome, email, telefone, am_id, source_lead_id, resultado } = req.body || {};
 
   const r = await fetch(`${CRM_URL}/api/leads`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Api-Key': LEADS_API_KEY },
-    body: JSON.stringify({ tenant_host, app, nome, email, telefone, am_id, resultado }),
+    body: JSON.stringify({ tenant_host, app, nome, email, telefone, am_id, source_lead_id, resultado }),
   });
   const data = await r.json().catch(() => ({}));
   return res.status(r.ok ? 200 : r.status).json(data);

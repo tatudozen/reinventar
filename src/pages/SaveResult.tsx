@@ -70,18 +70,36 @@ export default function SaveResult() {
       console.error('Error saving jornada:', error);
     }
 
-    fetch('/api/submit-lead', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        app: 'reinventar',
-        nome: name,
-        email,
-        telefone: phone || null,
-        am_id: refId || null,
-        resultado: phase_data,
-      }),
-    }).catch(() => {});
+    try {
+      const crmResponse = await fetch('/api/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          app: 'reinventar',
+          nome: name,
+          email,
+          telefone: phone || null,
+          am_id: refId || null,
+          source_lead_id: id,
+          resultado: phase_data,
+        }),
+      });
+      if (!crmResponse.ok) {
+        const detail = await crmResponse.text().catch(() => '');
+        console.error('Error saving lead in CRM:', crmResponse.status, detail);
+      }
+    } catch (error) {
+      console.error('Error saving lead in CRM:', error);
+    }
+
+    // Avalia regras de recompensa por indicação (fire-and-forget)
+    if (refId) {
+      fetch('/api/referral-evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ referrer_id: refId, tenant_host: window.location.hostname }),
+      }).catch(err => console.error('Error evaluating referral rules:', err));
+    }
 
     navigate(`/resultado/${id}`);
   };
