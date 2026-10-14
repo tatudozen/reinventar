@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Star, Leaf, Mail, Flame, Zap, TrendingUp, Heart, Users } from 'lucide-react';
+import { Star, Leaf, Mail, Flame, Zap, TrendingUp, Heart, Users, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { useApp } from '../store';
 import { supabase } from '../supabase';
 import { ShareQuizLink } from '../components/ShareQuizLink';
@@ -109,6 +109,23 @@ const CARGO_LABELS: Record<string, string> = {
   coordenador_campo: 'Coordenador(a) de Campo', secretario_social: 'Secretário(a) de Bem-Estar',
 };
 
+// ── Cross-signal maps ──────────────────────────────────────────────────────────
+
+const SKILL_RIASEC: Record<string, RIASECType> = {
+  lideranca: 'E', comunicacao: 'A', resolucao: 'I',
+  empatia: 'S', planejamento: 'C', conhecimento: 'I',
+  criatividade: 'A', sabedoria: 'S',
+};
+
+const ROLE_RIASEC: Record<string, RIASECType> = {
+  mentor: 'S', escritora: 'A', consultor: 'E', professor: 'S',
+  voluntario: 'S', podcast: 'A', artesao: 'A', coach: 'S',
+  cuidador: 'S', guia: 'E', horta: 'R', genealogia: 'I',
+  facilitador: 'S', fotografo: 'A', mediador: 'S', narrador: 'A',
+  idiomas: 'S', palestrante: 'E', acompanhante: 'S', curador: 'A',
+  produtor: 'E', terapeuta: 'S', embaixador: 'E', empreendedor: 'E',
+};
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface JornadaRow {
@@ -127,12 +144,114 @@ interface JornadaRow {
   }> | null;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+interface CrossSignal {
+  type: RIASECType;
+  sources: string[];
+  strength: number;
+}
+
+interface Tension {
+  title: string;
+  body: string;
+}
+
+// ── Analysis helpers ───────────────────────────────────────────────────────────
 
 function computeRIASECScores(duels: Record<string, string>): Record<RIASECType, number> {
   const scores: Record<RIASECType, number> = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
   Object.values(duels).forEach(t => { if (t in scores) scores[t as RIASECType]++; });
   return scores;
+}
+
+function buildCrossSignals(
+  riasecTop3: RIASECType[],
+  topSkillIds: string[],
+  savedRoles: string[],
+): CrossSignal[] {
+  const sources: Record<RIASECType, string[]> = { R: [], I: [], A: [], S: [], E: [], C: [] };
+
+  riasecTop3.slice(0, 3).forEach((t, i) => {
+    const labels = ['tipo principal', 'tipo secundário', 'terceiro tipo'];
+    sources[t].push(`Duelos de Cenas (${labels[i]})`);
+  });
+
+  topSkillIds.forEach(id => {
+    const t = SKILL_RIASEC[id];
+    if (t) sources[t].push(`Competência: ${COMPETENCY_LABELS[id] || id}`);
+  });
+
+  savedRoles.forEach(role => {
+    const t = ROLE_RIASEC[role];
+    if (t) sources[t].push(`Papel salvo: ${ROLE_LABELS[role] ? ROLE_LABELS[role].split(' ').slice(0, 3).join(' ') + '…' : role}`);
+  });
+
+  return (Object.entries(sources) as [RIASECType, string[]][])
+    .map(([type, srcs]) => ({ type, sources: srcs, strength: srcs.length }))
+    .sort((a, b) => b.strength - a.strength)
+    .filter(s => s.strength > 0);
+}
+
+function detectTensions(
+  riasecTop3: RIASECType[],
+  savedRoles: string[],
+  topSkillIds: string[],
+): Tension[] {
+  const tensions: Tension[] = [];
+  if (riasecTop3.length === 0) return tensions;
+  const topSet = new Set(riasecTop3.slice(0, 2));
+
+  // Papéis salvos sugerem tipo diferente do RIASEC principal
+  const roleTypes = savedRoles.map(r => ROLE_RIASEC[r]).filter(Boolean) as RIASECType[];
+  const roleOutside = roleTypes.filter(t => !topSet.has(t));
+  if (roleTypes.length >= 2 && roleOutside.length >= Math.ceil(roleTypes.length * 0.7)) {
+    tensions.push({
+      title: 'Papéis escolhidos vs. perfil natural',
+      body: `Os papéis que mais te atraíram apontam para um perfil diferente do seu código Holland dominante (${RIASEC[riasecTop3[0]]?.full}). Isso pode indicar que você está sendo atraído por aspirações de crescimento — uma expansão consciente, não uma contradição. Vale perguntar: em que contextos você já atuou assim?`,
+    });
+  }
+
+  // Top skill RIASEC diverge do RIASEC principal
+  if (topSkillIds.length >= 2) {
+    const skillTypes = topSkillIds.map(s => SKILL_RIASEC[s]).filter(Boolean) as RIASECType[];
+    const freq: Partial<Record<RIASECType, number>> = {};
+    skillTypes.forEach(t => { freq[t] = (freq[t] || 0) + 1; });
+    const dominantSkillType = (Object.entries(freq) as [RIASECType, number][])
+      .sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (dominantSkillType && !topSet.has(dominantSkillType) && (freq[dominantSkillType] || 0) >= 2) {
+      tensions.push({
+        title: 'Competências vs. preferências de personalidade',
+        body: `Suas competências mais destacadas convergem para o perfil ${RIASEC[dominantSkillType]?.full}, enquanto seus Duelos de Cenas indicam preferência por ${RIASEC[riasecTop3[0]]?.full}. Às vezes desenvolvemos habilidades pelo que a vida exigiu — diferente do que genuinamente nos energiza. Esse contraste é um dado valioso sobre onde você pode querer crescer.`,
+      });
+    }
+  }
+
+  // Perfil muito concentrado (3 tipos iguais) — baixa diversidade
+  const analyticalTypes: RIASECType[] = ['I', 'C'];
+  const allAnalytical = riasecTop3.slice(0, 2).every(t => analyticalTypes.includes(t));
+  if (allAnalytical && savedRoles.some(r => ['facilitador', 'mentor', 'coach', 'professor', 'mediador'].includes(r))) {
+    tensions.push({
+      title: 'Perfil analítico com aspiração relacional',
+      body: 'Seu código Holland é predominantemente analítico, mas vários papéis que você salvou têm forte componente de conexão humana. Isso sugere um híbrido valioso: a combinação de rigor e cuidado é rara e muito necessária em papéis de mentoria, facilitação e consultoria.',
+    });
+  }
+
+  return tensions;
+}
+
+function buildSynthesisSentence(
+  riasecTop3: RIASECType[],
+  topCauseLabel: string,
+  topRole: string,
+  flowActivities: string[],
+): string {
+  if (riasecTop3.length === 0) return '';
+  const primary = RIASEC[riasecTop3[0]];
+  const secondary = riasecTop3[1] ? RIASEC[riasecTop3[1]] : null;
+  const causeText = topCauseLabel ? ` com interesse especial em ${topCauseLabel.toLowerCase()}` : '';
+  const roleText = topRole ? `. O papel que mais ressoou — ${ROLE_LABELS[topRole]?.split(' ').slice(0, 4).join(' ')}... — é uma pista concreta sobre o próximo capítulo` : '';
+  const energyText = flowActivities.length > 0 ? `. Atividades como "${flowActivities[0]}" estão no centro do que te energiza` : '';
+  const secondaryText = secondary ? ` e inclinação para o perfil ${secondary.full.toLowerCase()}` : '';
+  return `Você tem um perfil predominantemente ${primary.full.toLowerCase()}${secondaryText}${causeText}${energyText}${roleText}.`;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -141,6 +260,7 @@ export default function ResultDashboard() {
   const { id } = useParams<{ id: string }>();
   const { state } = useApp();
   const [remoteData, setRemoteData] = useState<JornadaRow | null>(null);
+  const [loading, setLoading] = useState(!!id);
   const [tenantConfig, setTenantConfig] = useState<{ home_url: string; explore_label: string; explore_url: string } | null>(null);
 
   useEffect(() => {
@@ -161,8 +281,22 @@ export default function ResultDashboard() {
       .select('id, user_name, survey_completed, phase_data')
       .eq('id', id)
       .single()
-      .then(({ data }) => { if (data) setRemoteData(data as JornadaRow); });
+      .then(({ data }) => {
+        if (data) setRemoteData(data as JornadaRow);
+        setLoading(false);
+      });
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-light)] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--color-brand-400)] mx-auto mb-3" />
+          <p className="text-sm text-stone-400">Carregando seu resultado...</p>
+        </div>
+      </div>
+    );
+  }
 
   const name = remoteData?.user_name || state.user?.name || 'Viajante';
   const pd   = remoteData?.phase_data;
@@ -176,14 +310,14 @@ export default function ResultDashboard() {
   const phase7 = pd?.phase7 ?? state.phase7;
   const phase8 = pd?.phase8 ?? state.phase8;
 
-  // ── Phase 1: O que te Move ──────────────────────────────────────────────────
-  const energyCards    = phase1?.energyCards    ?? {};
-  const maturityVerbs  = phase1?.maturityVerbs  ?? [];
+  // ── Phase 1 ─────────────────────────────────────────────────────────────────
+  const energyCards     = phase1?.energyCards    ?? {};
+  const maturityVerbs   = phase1?.maturityVerbs  ?? [];
   const curiosityThemes = phase1?.curiosityThemes ?? [];
   const flowActivities  = Object.entries(energyCards).filter(([, q]) => q === 'flow').map(([a]) => a);
   const boostActivities = Object.entries(energyCards).filter(([, q]) => q === 'boost').map(([a]) => a);
 
-  // ── Phase 2: O que Você Sabe Fazer ─────────────────────────────────────────
+  // ── Phase 2 ─────────────────────────────────────────────────────────────────
   const skillRatings  = phase2?.skillRatings  ?? {};
   const whoAsksYou    = phase2?.whoAsksYou    ?? [];
   const hiddenTalents = phase2?.hiddenTalents ?? [];
@@ -191,9 +325,10 @@ export default function ResultDashboard() {
     .sort(([, a], [, b]) => (b as number) - (a as number))
     .filter(([, s]) => (s as number) >= 3)
     .slice(0, 5)
-    .map(([skillId, score]) => ({ label: COMPETENCY_LABELS[skillId] || skillId, score: score as number }));
+    .map(([skillId, score]) => ({ label: COMPETENCY_LABELS[skillId] || skillId, score: score as number, id: skillId }));
+  const topSkillIds = topSkills.map(s => s.id);
 
-  // ── Phase 3: O que o Mundo Precisa ─────────────────────────────────────────
+  // ── Phase 3 ─────────────────────────────────────────────────────────────────
   const uniqueProblem = phase3?.uniqueProblem ?? '';
   const impactPoints  = phase3?.impactPoints  ?? {};
   const topCauses = Object.entries(impactPoints)
@@ -201,8 +336,9 @@ export default function ResultDashboard() {
     .filter(([, v]) => (v as number) > 0)
     .slice(0, 5);
   const maxCoins = (topCauses[0]?.[1] as number) || 1;
+  const topCauseLabel = topCauses[0] ? (CAUSE_LABELS[topCauses[0][0]] || topCauses[0][0]) : '';
 
-  // ── Phase 4: RIASEC ─────────────────────────────────────────────────────────
+  // ── Phase 4 ─────────────────────────────────────────────────────────────────
   const riasecScores = computeRIASECScores(phase4?.sceneDuels ?? {});
   const riasecTop3 = (Object.entries(riasecScores) as [RIASECType, number][])
     .sort((a, b) => b[1] - a[1])
@@ -211,21 +347,45 @@ export default function ResultDashboard() {
     .map(([t]) => t);
   const hollandCode = riasecTop3.join('');
 
-  // ── Phase 5: Figuras & Iniciativa ───────────────────────────────────────────
+  // ── Phase 5 ─────────────────────────────────────────────────────────────────
   const savedFigures = phase5?.savedFigures ?? [];
   const ministry     = phase5?.ministry ?? '';
   const cargo        = phase5?.cargo ?? '';
 
-  // ── Phase 6: Conexões ───────────────────────────────────────────────────────
+  // ── Phase 6 ─────────────────────────────────────────────────────────────────
   const connections = phase6?.connections ?? [];
   const modes       = phase6?.modes       ?? [];
   const intention   = phase6?.intention   ?? '';
 
-  // ── Phase 7: Possibilidades ─────────────────────────────────────────────────
+  // ── Phase 7 ─────────────────────────────────────────────────────────────────
   const savedRoles = phase7?.savedRoles ?? [];
+  const topRole = savedRoles[0] ?? '';
 
-  // ── Phase 8: Carta ──────────────────────────────────────────────────────────
+  // ── Phase 8 ─────────────────────────────────────────────────────────────────
   const letter = phase8?.letter ?? '';
+
+  // ── Cross-phase analysis ────────────────────────────────────────────────────
+  const crossSignals   = buildCrossSignals(riasecTop3, topSkillIds, savedRoles);
+  const topSignal      = crossSignals[0];
+  const tensions       = detectTensions(riasecTop3, savedRoles, topSkillIds);
+  const synthesisSentence = buildSynthesisSentence(riasecTop3, topCauseLabel, topRole, flowActivities);
+  const hasAnalysis    = riasecTop3.length > 0 || crossSignals.length > 0;
+
+  // Convergência: quando RIASEC, skills E roles apontam para o mesmo tipo
+  const skillDominant = (() => {
+    const freq: Partial<Record<RIASECType, number>> = {};
+    topSkillIds.forEach(s => { const t = SKILL_RIASEC[s]; if (t) freq[t] = (freq[t] || 0) + 1; });
+    return (Object.entries(freq) as [RIASECType, number][]).sort((a, b) => b[1] - a[1])[0]?.[0];
+  })();
+  const roleDominant = (() => {
+    const freq: Partial<Record<RIASECType, number>> = {};
+    savedRoles.forEach(r => { const t = ROLE_RIASEC[r]; if (t) freq[t] = (freq[t] || 0) + 1; });
+    return (Object.entries(freq) as [RIASECType, number][]).sort((a, b) => b[1] - a[1])[0]?.[0];
+  })();
+  const strongConvergence =
+    riasecTop3[0] &&
+    skillDominant === riasecTop3[0] &&
+    roleDominant === riasecTop3[0];
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-light)]">
@@ -264,18 +424,85 @@ export default function ResultDashboard() {
           </p>
         </div>
 
-        {/* ── Carta ao Eu de Amanhã ── */}
-        {letter && (
-          <div className="bg-amber-950 border border-amber-800 shadow-lg rounded-xl p-8 mb-16 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 rounded-l-xl" />
-            <div className="absolute top-5 right-6 text-amber-600 opacity-40">
-              <Mail className="w-9 h-9" />
+        {/* ── Síntese da Reinvenção + Carta ── */}
+        <div className="flex flex-col lg:flex-row gap-8 mb-16 items-stretch">
+
+          {/* Síntese card */}
+          {riasecTop3.length > 0 && (
+            <div className="bg-white border border-stone-200 rounded-xl p-8 w-full lg:w-1/2 flex flex-col gap-5">
+              <div className="text-[10px] font-mono text-[var(--color-brand-500)] tracking-widest uppercase">Síntese da Reinvenção</div>
+
+              {/* Dominant RIASEC type */}
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl border-2 shrink-0"
+                  style={{ borderColor: RIASEC[riasecTop3[0]].color, background: RIASEC[riasecTop3[0]].color + '18' }}>
+                  {RIASEC[riasecTop3[0]].icon}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="font-bold text-lg" style={{ color: RIASEC[riasecTop3[0]].color }}>
+                      {RIASEC[riasecTop3[0]].full}
+                    </span>
+                    {hollandCode && (
+                      <span className="font-mono font-black text-xs tracking-widest px-2 py-0.5 rounded bg-stone-100 border border-stone-300 text-stone-700">
+                        {hollandCode}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-500">{RIASEC[riasecTop3[0]].desc}</p>
+                </div>
+              </div>
+
+              {/* Synthesis sentence */}
+              {synthesisSentence && (
+                <p className="text-sm text-stone-600 leading-relaxed border-l-2 border-[var(--color-brand-300)] pl-3 italic">
+                  {synthesisSentence}
+                </p>
+              )}
+
+              {/* Key attributes from across phases */}
+              <div className="grid grid-cols-2 gap-3 border-t border-stone-100 pt-4">
+                {topCauseLabel && (
+                  <div className="bg-lime-50 border border-lime-200 rounded-lg p-3">
+                    <div className="text-[10px] font-mono text-lime-600 uppercase tracking-wider mb-1">Principal causa</div>
+                    <p className="text-sm font-medium text-lime-900 leading-tight">{topCauseLabel}</p>
+                  </div>
+                )}
+                {topRole && (
+                  <div className="bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-lg p-3">
+                    <div className="text-[10px] font-mono text-[var(--color-brand-600)] uppercase tracking-wider mb-1">Papel que ressoou</div>
+                    <p className="text-xs font-medium text-[var(--color-brand-900)] leading-tight">{ROLE_LABELS[topRole] || topRole}</p>
+                  </div>
+                )}
+                {flowActivities.length > 0 && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                    <div className="text-[10px] font-mono text-orange-600 uppercase tracking-wider mb-1">Energia máxima em</div>
+                    <p className="text-xs font-medium text-orange-900 leading-tight">{flowActivities.slice(0, 2).join(' · ')}</p>
+                  </div>
+                )}
+                {topSkills.length > 0 && (
+                  <div className="bg-stone-50 border border-stone-200 rounded-lg p-3">
+                    <div className="text-[10px] font-mono text-stone-500 uppercase tracking-wider mb-1">Competência forte</div>
+                    <p className="text-xs font-medium text-stone-800 leading-tight">{topSkills[0].label}</p>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="text-[10px] font-mono text-amber-500 tracking-widest uppercase mb-3 pl-3">Carta ao Eu de Amanhã</div>
-            <h3 className="font-serif text-xl pb-4 mb-5 text-amber-100 border-b border-amber-800 pl-3">Uma mensagem para você mesmo(a)</h3>
-            <div className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-amber-100 pl-3">{letter}</div>
-          </div>
-        )}
+          )}
+
+          {/* Carta ao Eu de Amanhã */}
+          {letter && (
+            <div className={`bg-amber-950 border border-amber-800 shadow-lg rounded-xl p-8 relative overflow-hidden ${riasecTop3.length > 0 ? 'w-full lg:w-1/2' : 'w-full'}`}>
+              <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 rounded-l-xl" />
+              <div className="absolute top-5 right-6 text-amber-600 opacity-40">
+                <Mail className="w-9 h-9" />
+              </div>
+              <div className="text-[10px] font-mono text-amber-500 tracking-widest uppercase mb-3 pl-3">Carta ao Eu de Amanhã</div>
+              <h3 className="font-serif text-xl pb-4 mb-5 text-amber-100 border-b border-amber-800 pl-3">Uma mensagem para você mesmo(a)</h3>
+              <div className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-amber-100 pl-3">{letter}</div>
+            </div>
+          )}
+        </div>
 
         {/* ── Possibilidades que Ressoaram ── */}
         {savedRoles.length > 0 && (
@@ -486,6 +713,100 @@ export default function ResultDashboard() {
             )}
           </div>
         </div>
+
+        {/* ── Análise de Convergência ── */}
+        {hasAnalysis && (
+          <section className="mb-16">
+            <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-2 text-center lg:text-left">Análise de Convergência</h2>
+            <p className="text-stone-500 mb-8 text-center lg:text-left">
+              Cruzando os dados de todas as fases para revelar padrões, tendências e oportunidades.
+            </p>
+
+            {/* Strong convergence banner */}
+            {strongConvergence && riasecTop3[0] && (
+              <div className="mb-6 flex items-start gap-3 bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-xl p-4">
+                <Sparkles className="w-5 h-5 text-[var(--color-brand-600)] shrink-0 mt-0.5" />
+                <p className="text-sm text-stone-600 leading-relaxed">
+                  <strong className="text-[var(--color-brand-700)]">Seus sinais convergem fortemente.</strong>{' '}
+                  Seu perfil de personalidade, suas competências destacadas e os papéis que você escolheu apontam todos para o mesmo tipo —{' '}
+                  <strong style={{ color: RIASEC[riasecTop3[0]].color }}>{RIASEC[riasecTop3[0]].full}</strong>.
+                  Quando quem você é, o que sabe fazer e como quer atuar se alinham, é um forte sinal de clareza sobre o próximo capítulo.
+                </p>
+              </div>
+            )}
+
+            {/* Dominant signal */}
+            {topSignal && (
+              <div className="bg-white border border-stone-200 rounded-xl p-6 mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-4 h-4 text-[var(--color-brand-600)]" />
+                  <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Tendência Principal</span>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-2xl border-2 font-black"
+                    style={{ borderColor: RIASEC[topSignal.type]?.color, background: RIASEC[topSignal.type]?.color + '18' }}>
+                    {RIASEC[topSignal.type]?.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-[var(--color-brand-900)] mb-1">
+                      Perfil <span style={{ color: RIASEC[topSignal.type]?.color }}>{RIASEC[topSignal.type]?.full}</span>
+                      {topSignal.strength >= 4 ? ' — convergência forte' : topSignal.strength >= 2 ? ' — tendência consistente' : ''}
+                    </h3>
+                    <p className="text-sm text-stone-600 mb-3">{RIASEC[topSignal.type]?.desc}</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {topSignal.sources.map((s, i) => (
+                        <span key={i} className="text-xs px-2 py-0.5 bg-stone-100 text-stone-600 rounded-full border border-stone-200">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* All signals bar chart */}
+                {crossSignals.length > 1 && (
+                  <div className="mt-5 pt-4 border-t border-stone-100">
+                    <div className="text-xs font-mono text-stone-400 uppercase tracking-wider mb-3">Força de sinal por tipo (quantas fontes convergem)</div>
+                    <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                      {(['R', 'I', 'A', 'S', 'E', 'C'] as RIASECType[]).map(t => {
+                        const sig = crossSignals.find(s => s.type === t);
+                        const strength = sig?.strength || 0;
+                        const maxStr = crossSignals[0]?.strength || 1;
+                        return (
+                          <div key={t} className="text-center">
+                            <div className="text-xs font-mono mb-1" style={{ color: RIASEC[t].color }}>{t}</div>
+                            <div className="h-10 bg-stone-100 rounded mx-auto w-full relative overflow-hidden">
+                              <div className="absolute bottom-0 left-0 right-0 rounded transition-all"
+                                style={{ height: `${(strength / maxStr) * 100}%`, background: RIASEC[t].color + 'cc' }} />
+                            </div>
+                            <div className="text-[10px] text-stone-400 mt-0.5">{strength}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tensions */}
+            {tensions.length > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <span className="text-xs font-mono text-amber-700 tracking-wider uppercase">Pontos de Atenção</span>
+                </div>
+                <p className="text-xs text-amber-700 mb-4">Tensões não são problemas — são convites para explorar com mais profundidade.</p>
+                <div className="space-y-4">
+                  {tensions.map((t, i) => (
+                    <div key={i} className="border-l-2 border-amber-400 pl-4">
+                      <h4 className="font-semibold text-sm text-amber-900 mb-1">{t.title}</h4>
+                      <p className="text-sm text-amber-800 leading-relaxed">{t.body}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* ── Suas Conexões ── */}
         {(connections.length > 0 || modes.length > 0 || intention) && (
