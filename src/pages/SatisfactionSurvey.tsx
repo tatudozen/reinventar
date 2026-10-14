@@ -6,57 +6,54 @@ import { useApp } from '../store';
 import { MentorVideo } from '../components/MentorVideo';
 import { ShareQuizLink } from '../components/ShareQuizLink';
 
-// Webhook do N8N que gera o Relatório Profundo (agente de IA) a partir da jornada.
-// Substitui o antigo disparo para o GHL.
-const SURVEY_WEBHOOK_URL = 'https://webhook.alquimiazen.com.br/webhook/ikigai-report';
-
-// O campo Celular é livre/opcional: o usuário digita em qualquer formato
-// ("(21) 98181-8696", "21981818696"...). A Evolution API exige o número com
-// código do país. Normaliza para dígitos e garante o 55 (Brasil) quando o
-// telefone vier no formato local (DDD + 8/9 dígitos).
-function normalizePhoneBR(raw: string): string {
-  const digits = (raw || '').replace(/\D/g, '');
-  if (!digits) return '';
-  if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) return digits;
-  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
-  return digits; // fallback: envia os dígitos como estão
-}
+// Webhook do N8N que gera o Relatório Profundo via IA.
+// Recebe apenas o jornada_id; N8N busca nome/e-mail/dados com service_role.
+const SURVEY_WEBHOOK_URL = 'https://webhook.alquimiazen.com.br/webhook/reinventar-report';
 
 const PERFIL_OPTIONS = [
-  'Estudante escolhendo curso/carreira',
-  'Jovem já na faculdade ou trabalhando',
-  'Pai/mãe que fez pelo filho(a) ou junto com ele(a)',
-  'Educador/orientador',
-  'Curioso de outra idade 😄',
+  'Aposentado(a) buscando novo propósito',
+  'Ainda trabalhando, mas planejando a transição',
+  'Empreendedor(a) querendo reinventar o negócio ou a carreira',
+  'Cuidador(a) retomando a própria vida (filhos crescidos, luto, etc.)',
+  'Outro momento de transição ou mudança',
 ];
 
 const CLAREZA_OPTIONS = [
-  'Com MAIS clareza sobre meus caminhos',
+  'Com MAIS clareza sobre meus próximos passos',
   'Igual — nada mudou',
   'Com MAIS dúvidas do que antes',
 ];
 
-const MISSOES = [
-  '01 — Mapa de Energia',
-  '02 — Talentos na Mochila',
-  '03 — A Grande Causa',
-  '04 — Duelo de Mundos',
-  '05 — Ministério dos Sonhos',
-  '06 — O Arquétipo',
-  '07 — O Garimpo',
-  '08 — A Carta para o Futuro',
+const FASES = [
+  'Fase 1 — Mapa de Energia',
+  'Fase 2 — Talentos e Competências',
+  'Fase 3 — Causas que Importam',
+  'Fase 4 — Duelos de Cenas',
+  'Fase 5 — Figuras Inspiradoras e Missão',
+  'Fase 6 — Conexões e Intenção',
+  'Fase 7 — Papéis que Ressoaram',
+  'Fase 8 — Carta ao Eu de Amanhã',
 ];
 
 const PRECISAO_OPTIONS = [
   'Muito eu — me reconheci na hora',
   'Parcialmente eu — acertou umas coisas, errou outras',
-  'Não me reconheci',
+  'Não me reconheci no resultado',
 ];
 
 const TAMANHO_OPTIONS = [
-  'Poderia ser MAIOR — queria mais missões',
+  'Poderia ser MAIOR — queria explorar mais',
   'Está no tamanho certo',
   'Poderia ser MENOR — senti que foi longa',
+];
+
+const SUPORTE_OPTIONS = [
+  'Mentoria individual com especialista',
+  'Grupo de pessoas na mesma fase de vida',
+  'Cursos ou formações online',
+  'Oportunidades de voluntariado',
+  'Networking com pessoas da minha área',
+  'Conteúdo sobre como usar IA no dia a dia',
 ];
 
 const optionCls = (selected: boolean) =>
@@ -70,8 +67,8 @@ export default function SatisfactionSurvey() {
   const navigate = useNavigate();
   const { state } = useApp();
   const [searchParams] = useSearchParams();
-  // id da jornada: vem pela URL (robusto entre dispositivos) com fallback no localStorage
-  const jornadaId = searchParams.get('id') || localStorage.getItem('ikigai_jornada_id');
+  const jornadaId = searchParams.get('id') || localStorage.getItem('reinventar_jornada_id');
+
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [alreadyCompleted, setAlreadyCompleted] = useState<boolean | null>(null);
@@ -89,128 +86,69 @@ export default function SatisfactionSurvey() {
   }, []);
 
   useEffect(() => {
-    if (!jornadaId) {
-      setAlreadyCompleted(false);
-      return;
-    }
+    if (!jornadaId) { setAlreadyCompleted(false); return; }
     supabase
-      .from('jornadas')
-      .select('survey_completed')
-      .eq('id', jornadaId)
-      .maybeSingle()
-      .then(({ data }) => {
-        setAlreadyCompleted(data?.survey_completed === true);
-      });
+      .rpc('is_survey_completed', { p_id: jornadaId })
+      .then(({ data }) => setAlreadyCompleted(data === true));
   }, [jornadaId]);
 
-  const [perfil, setPerfil] = useState('');
-  const [nps, setNps] = useState<number | null>(null);
-  const [clareza, setClareza] = useState('');
-  const [missaoFav, setMissaoFav] = useState('');
-  const [dificuldade, setDificuldade] = useState('');
-  const [precisao, setPrecisao] = useState('');
-  const [tamanhoJornada, setTamanhoJornada] = useState('');
-  const [sugestao, setSugestao] = useState('');
-  const [comunidadeIA, setComunidadeIA] = useState<boolean | null>(null);
+  // Form state
+  const [perfil,        setPerfil]        = useState('');
+  const [nps,           setNps]           = useState<number | null>(null);
+  const [clareza,       setClareza]       = useState('');
+  const [faseFav,       setFaseFav]       = useState('');
+  const [dificuldade,   setDificuldade]   = useState('');
+  const [precisao,      setPrecisao]      = useState('');
+  const [tamanho,       setTamanho]       = useState('');
+  const [sugestao,      setSugestao]      = useState('');
+  const [comunidadeIA,  setComunidadeIA]  = useState<boolean | null>(null);
+  const [suporte,       setSuporte]       = useState<string[]>([]);
 
-  // Q9 — cursos em dúvida (opcional)
-  const [cursosDuvida, setCursosDuvida] = useState<string[]>([]);
-  const [courseQuery, setCourseQuery] = useState('');
-  const [courseIndex, setCourseIndex] = useState<{ name: string; count: number }[]>([]);
+  const toggleSuporte = (opt: string) =>
+    setSuporte(prev => prev.includes(opt) ? prev.filter(o => o !== opt) : [...prev, opt]);
 
-  useEffect(() => {
-    supabase.from('courses').select('name').then(({ data }) => {
-      if (!data) return;
-      const counts = new Map<string, number>();
-      (data as { name: string }[]).forEach(r => counts.set(r.name, (counts.get(r.name) || 0) + 1));
-      setCourseIndex(
-        Array.from(counts.entries())
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
-      );
-    });
-  }, []);
-
-  const toggleCurso = (name: string) =>
-    setCursosDuvida(prev => (prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]));
-
-  const q = courseQuery.trim().toLowerCase();
-  const visibleCursos = q
-    ? courseIndex.filter(c => c.name.toLowerCase().includes(q)).slice(0, 40)
-    : [
-        ...courseIndex.filter(c => cursosDuvida.includes(c.name) && !courseIndex.slice(0, 20).some(t => t.name === c.name)),
-        ...courseIndex.slice(0, 20),
-      ];
-
-  const canSubmit = perfil && nps !== null && clareza && missaoFav && precisao && tamanhoJornada && comunidadeIA !== null;
+  const canSubmit = perfil && nps !== null && clareza && faseFav && precisao && tamanho && comunidadeIA !== null;
 
   const handleSubmit = async () => {
     if (!canSubmit || submitting) return;
     setSubmitting(true);
-    const surveyData = {
+
+    const { error: insertError } = await supabase.from('jornada_surveys').insert({
+      jornada_id:       jornadaId ?? null,
       perfil,
       nps,
       clareza,
-      missao_fav: missaoFav,
-      dificuldade: dificuldade.trim() || null,
+      fase_fav:         faseFav,
+      dificuldade:      dificuldade.trim() || null,
       precisao,
-      tamanho_jornada: tamanhoJornada,
-      sugestao: sugestao.trim() || null,
-      comunidade_ia: comunidadeIA,
-      cursos_duvida: cursosDuvida.length ? cursosDuvida : null,
-    };
-    try {
-      await supabase.from('jornada_surveys').insert(surveyData);
-      sessionStorage.setItem('ikigai_survey', JSON.stringify(surveyData));
-      if (jornadaId) {
-        await supabase.from('jornadas').update({ survey_completed: true }).eq('id', jornadaId);
-      }
-    } catch (error) {
-      console.error('Erro ao salvar pesquisa:', error);
+      tamanho_jornada:  tamanho,
+      sugestao:         sugestao.trim() || null,
+      comunidade_ia:    comunidadeIA,
+      suporte_desejado: suporte.length ? suporte : null,
+    });
+    if (insertError) {
+      console.error('Erro ao salvar pesquisa:', insertError.code, insertError.message);
     }
 
-    // Dispara o webhook do N8N que gera o Relatório Profundo a partir da jornada.
-    // Nome/e-mail/telefone vivem na tabela `jornadas` (robusto entre dispositivos);
-    // o telefone só existe lá, então buscamos sempre que houver jornada_id.
+    // Dispara N8N para gerar relatório aprofundado — N8N busca nome/e-mail com service_role
     try {
-      let name = state.user?.name || '';
-      let email = state.user?.email || '';
-      let phone = '';
-      if (jornadaId) {
-        const { data } = await supabase
-          .from('jornadas')
-          .select('user_name, user_email, user_phone')
-          .eq('id', jornadaId)
-          .maybeSingle();
-        if (data) {
-          name = name || data.user_name;
-          email = email || data.user_email;
-          phone = data.user_phone || '';
-        }
-      }
-      const firstName = name.trim().split(/\s+/)[0] || '';
-      const phoneE164 = normalizePhoneBR(phone);
-      if (email) {
-        await fetch(SURVEY_WEBHOOK_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jornada_id: jornadaId ?? undefined,
-            first_name: firstName || undefined,
-            email,
-            phone: phoneE164 || undefined,
-            duvidas_curso: cursosDuvida.length ? cursosDuvida.join(', ') : undefined,
-          }),
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao enviar pesquisa ao webhook:', error);
+      await fetch(SURVEY_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jornada_id:  jornadaId ?? undefined,
+          first_name:  state.user?.name?.trim().split(/\s+/)[0] || undefined,
+        }),
+      });
+    } catch (err) {
+      console.error('Erro ao disparar webhook de relatório:', err);
     }
 
     setSubmitted(true);
     setSubmitting(false);
   };
 
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (alreadyCompleted === null && !submitted) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -219,6 +157,7 @@ export default function SatisfactionSurvey() {
     );
   }
 
+  // ── Já respondeu ─────────────────────────────────────────────────────────────
   if (alreadyCompleted && !submitted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto px-4">
@@ -227,12 +166,12 @@ export default function SatisfactionSurvey() {
         </div>
         <h2 className="font-serif text-3xl text-[var(--text-main)] mb-3">Pesquisa já Respondida</h2>
         <p className="text-stone-500 mb-8 leading-relaxed">
-          Você já respondeu a pesquisa. Caso queira responder novamente, faça a jornada novamente.
+          Você já respondeu a pesquisa desta jornada. Em breve você receberá seu relatório aprofundado.
         </p>
         {jornadaId && (
           <button
             onClick={() => navigate(`/resultado/${jornadaId}`)}
-            className="px-6 py-3 bg-[var(--color-brand-600)] text-white rounded-[4px] font-medium hover:bg-[var(--color-brand-700)] transition-colors inline-flex items-center gap-2"
+            className="px-6 py-3 bg-[var(--color-brand-600)] text-white rounded-[4px] font-medium hover:bg-[var(--color-brand-700)] transition-colors"
           >
             Voltar ao Resultado →
           </button>
@@ -241,6 +180,7 @@ export default function SatisfactionSurvey() {
     );
   }
 
+  // ── Confirmação pós-envio ─────────────────────────────────────────────────────
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center max-w-md mx-auto px-4">
@@ -249,7 +189,8 @@ export default function SatisfactionSurvey() {
         </div>
         <h2 className="font-serif text-3xl text-[var(--text-main)] mb-3">Obrigado!</h2>
         <p className="text-stone-500 mb-8 leading-relaxed">
-          Sua opinião vai nos ajudar a tornar a Jornada ainda melhor para quem vem a seguir.
+          Sua opinião vai nos ajudar a tornar a Jornada ainda melhor. Em breve você receberá seu
+          relatório aprofundado gerado por IA.
         </p>
 
         <MentorVideo
@@ -268,7 +209,7 @@ export default function SatisfactionSurvey() {
           {jornadaId && (
             <button
               onClick={() => navigate(`/resultado/${jornadaId}`)}
-              className="px-6 py-3 bg-[var(--color-brand-600)] text-white rounded-[4px] font-medium hover:bg-[var(--color-brand-700)] transition-colors inline-flex items-center gap-2"
+              className="px-6 py-3 bg-[var(--color-brand-600)] text-white rounded-[4px] font-medium hover:bg-[var(--color-brand-700)] transition-colors"
             >
               Voltar ao Resultado →
             </button>
@@ -282,10 +223,8 @@ export default function SatisfactionSurvey() {
               {tenantConfig.explore_label}
             </a>
           ) : (
-            <button
-              onClick={() => navigate('/')}
-              className="px-6 py-3 border border-stone-200 text-stone-600 rounded-[4px] font-medium hover:bg-stone-50 transition-colors"
-            >
+            <button onClick={() => navigate('/')}
+              className="px-6 py-3 border border-stone-200 text-stone-600 rounded-[4px] font-medium hover:bg-stone-50 transition-colors">
               Retornar ao Início
             </button>
           )}
@@ -294,6 +233,7 @@ export default function SatisfactionSurvey() {
     );
   }
 
+  // ── Formulário ────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-xl mx-auto py-6 px-4">
       <div className="mb-8">
@@ -301,7 +241,7 @@ export default function SatisfactionSurvey() {
           Pesquisa de Satisfação
         </p>
         <h1 className="font-serif text-3xl text-[var(--text-main)] mb-2">Como foi sua Jornada?</h1>
-        <p className="text-stone-500 text-sm">Leva menos de 2 minutos. Sua resposta molda as próximas versões.</p>
+        <p className="text-stone-500 text-sm">Leva menos de 2 minutos. Sua resposta molda as próximas versões e libera seu relatório aprofundado.</p>
       </div>
 
       <div className="space-y-8">
@@ -309,7 +249,7 @@ export default function SatisfactionSurvey() {
         {/* Q1 — Perfil */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
-            1. Quem é você na Jornada?
+            1. Qual é o seu momento de vida agora?
           </p>
           <div className="space-y-2">
             {PERFIL_OPTIONS.map(opt => (
@@ -323,7 +263,7 @@ export default function SatisfactionSurvey() {
         {/* Q2 — NPS */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
-            2. De 0 a 10, o quanto você recomendaria a Jornada Ikigai para um amigo?
+            2. De 0 a 10, o quanto você recomendaria o Reinventar para um amigo ou familiar?
           </p>
           <div className="flex gap-1.5 flex-wrap">
             {Array.from({ length: 11 }, (_, i) => (
@@ -360,14 +300,14 @@ export default function SatisfactionSurvey() {
           </div>
         </div>
 
-        {/* Q4 — Missão favorita */}
+        {/* Q4 — Fase favorita */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
-            4. Qual missão você MAIS gostou?
+            4. Qual fase você MAIS gostou?
           </p>
           <div className="space-y-2">
-            {MISSOES.map(opt => (
-              <button key={opt} onClick={() => setMissaoFav(opt)} className={optionCls(missaoFav === opt)}>
+            {FASES.map(opt => (
+              <button key={opt} onClick={() => setFaseFav(opt)} className={optionCls(faseFav === opt)}>
                 {opt}
               </button>
             ))}
@@ -383,7 +323,7 @@ export default function SatisfactionSurvey() {
           <textarea
             value={dificuldade}
             onChange={e => setDificuldade(e.target.value)}
-            placeholder="Ex: Na missão 3 não entendi bem o que fazer..."
+            placeholder="Ex: Na fase 3 não entendi bem o que fazer..."
             rows={3}
             className="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm outline-none focus:border-[var(--color-brand-400)] transition-colors resize-none"
           />
@@ -392,7 +332,7 @@ export default function SatisfactionSurvey() {
         {/* Q6 — Precisão */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
-            6. O resultado final (Mandala + caminhos sugeridos) pareceu...
+            6. O resultado final (Síntese da Reinvenção + análise de convergência) pareceu...
           </p>
           <div className="space-y-2">
             {PRECISAO_OPTIONS.map(opt => (
@@ -403,14 +343,14 @@ export default function SatisfactionSurvey() {
           </div>
         </div>
 
-        {/* Q7 — Tamanho da Jornada */}
+        {/* Q7 — Tamanho */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
             7. E o tamanho da Jornada? Você achou que ela...
           </p>
           <div className="space-y-2">
             {TAMANHO_OPTIONS.map(opt => (
-              <button key={opt} onClick={() => setTamanhoJornada(opt)} className={optionCls(tamanhoJornada === opt)}>
+              <button key={opt} onClick={() => setTamanho(opt)} className={optionCls(tamanho === opt)}>
                 {opt}
               </button>
             ))}
@@ -420,13 +360,13 @@ export default function SatisfactionSurvey() {
         {/* Q8 — Sugestão (opcional) */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-1">
-            8. O que faltou? Se você pudesse adicionar UMA coisa na Jornada, o que seria? Sentiu falta de alguma profissão ou curso?
+            8. O que faltou? Se você pudesse adicionar UMA coisa na Jornada, o que seria?
           </p>
           <p className="text-xs text-stone-400 mb-3">Opcional</p>
           <textarea
             value={sugestao}
             onChange={e => setSugestao(e.target.value)}
-            placeholder="Ex: senti falta da profissão X / do curso Y..."
+            placeholder="Ex: gostaria de ter explorado mais o tema X..."
             rows={3}
             className="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm outline-none focus:border-[var(--color-brand-400)] transition-colors resize-none"
           />
@@ -435,58 +375,42 @@ export default function SatisfactionSurvey() {
         {/* Q9 — Comunidade IA */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
-            9. Você teria interesse em participar de uma comunidade gratuita para aprender como a inteligência artificial pode te ajudar na sua jornada?
+            9. Você teria interesse em participar de uma comunidade gratuita com pessoas
+            na mesma fase de vida, explorando o uso de IA para avançar no próximo capítulo?
           </p>
           <div className="flex gap-3">
-            <button
-              onClick={() => setComunidadeIA(true)}
-              className={optionCls(comunidadeIA === true) + ' flex-1'}
-            >
-              Sim, tenho interesse!
-            </button>
-            <button
-              onClick={() => setComunidadeIA(false)}
-              className={optionCls(comunidadeIA === false) + ' flex-1'}
-            >
-              Não por enquanto
-            </button>
+            <button onClick={() => setComunidadeIA(true)}  className={optionCls(comunidadeIA === true)  + ' flex-1'}>Sim, tenho interesse!</button>
+            <button onClick={() => setComunidadeIA(false)} className={optionCls(comunidadeIA === false) + ' flex-1'}>Não por enquanto</button>
           </div>
         </div>
 
-        {/* Q10 — Cursos em dúvida (opcional) */}
+        {/* Q10 — Suporte desejado (multi-select, opcional) */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-1">
-            10. Ainda em dúvida sobre qual curso fazer? Selecione abaixo e a gente te ajuda a decidir.
+            10. Que tipo de suporte ajudaria você a avançar no próximo capítulo?
           </p>
           <p className="text-xs text-stone-400 mb-3">Opcional · escolha quantos quiser</p>
-          <input
-            type="text"
-            value={courseQuery}
-            onChange={e => setCourseQuery(e.target.value)}
-            placeholder="Buscar curso (ex: Direito, Medicina, Design)..."
-            className="w-full mb-3 p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm outline-none focus:border-[var(--color-brand-400)] transition-colors"
-          />
-          <div className="flex flex-wrap gap-2">
-            {visibleCursos.map(({ name }) => {
-              const active = cursosDuvida.includes(name);
+          <div className="space-y-2">
+            {SUPORTE_OPTIONS.map(opt => {
+              const active = suporte.includes(opt);
               return (
                 <button
-                  key={name}
-                  onClick={() => toggleCurso(name)}
-                  className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                  key={opt}
+                  onClick={() => toggleSuporte(opt)}
+                  className={`w-full text-left px-4 py-3 rounded-lg border text-sm transition-colors ${
                     active
-                      ? 'bg-[var(--color-brand-600)] text-white border-[var(--color-brand-600)]'
-                      : 'bg-white text-stone-600 border-stone-200 hover:border-[var(--color-brand-300)]'
+                      ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-50)] text-[var(--color-brand-700)] font-medium'
+                      : 'border-stone-200 text-stone-600 hover:border-[var(--color-brand-300)] hover:bg-stone-50'
                   }`}
                 >
-                  {name}
+                  <span className="mr-2">{active ? '✓' : '○'}</span>{opt}
                 </button>
               );
             })}
           </div>
-          {cursosDuvida.length > 0 && (
+          {suporte.length > 0 && (
             <p className="text-xs text-[var(--color-brand-600)] mt-2 font-medium">
-              {cursosDuvida.length} curso{cursosDuvida.length > 1 ? 's' : ''} selecionado{cursosDuvida.length > 1 ? 's' : ''}
+              {suporte.length} opç{suporte.length > 1 ? 'ões selecionadas' : 'ão selecionada'}
             </p>
           )}
         </div>
@@ -498,7 +422,7 @@ export default function SatisfactionSurvey() {
           className="w-full py-3.5 bg-[var(--color-brand-600)] text-white text-sm rounded-[4px] font-medium hover:bg-[var(--color-brand-700)] transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Send className="w-4 h-4" />
-          {submitting ? 'Enviando...' : 'Enviar Pesquisa'}
+          {submitting ? 'Enviando...' : 'Enviar e Receber Relatório Aprofundado'}
         </button>
 
         <div className="text-center pb-8">

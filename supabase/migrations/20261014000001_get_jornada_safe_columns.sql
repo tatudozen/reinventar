@@ -9,6 +9,9 @@
 -- — os únicos campos consumidos pelo ResultDashboard público.
 -- =============================================================================
 
+-- DROP necessário: CREATE OR REPLACE não aceita mudança de tipo de retorno
+drop function if exists reinventar.get_jornada(text);
+
 create or replace function reinventar.get_jornada(p_id text)
 returns table(
   id            text,
