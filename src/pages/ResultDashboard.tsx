@@ -131,7 +131,6 @@ const ROLE_RIASEC: Record<string, RIASECType> = {
 interface JornadaRow {
   id: string;
   user_name: string;
-  survey_completed?: boolean;
   phase_data: Partial<{
     phase1: AppState['phase1'];
     phase2: AppState['phase2'];
@@ -885,20 +884,16 @@ export default function ResultDashboard() {
                 {tenantConfig.explore_label}
               </a>
             )}
-            {!remoteData?.survey_completed && (
-              <Link
-                to={`/comecar/pesquisa${id ? `?id=${id}` : ''}`}
-                className="inline-block px-6 py-2.5 border border-[var(--color-brand-300)] text-[var(--color-brand-600)] hover:bg-[var(--color-brand-50)] rounded-full font-medium transition-colors"
-              >
-                Pesquisa de Satisfação
-              </Link>
-            )}
+            <Link
+              to={`/comecar/pesquisa${id ? `?id=${id}` : ''}`}
+              className="inline-block px-6 py-2.5 border border-[var(--color-brand-300)] text-[var(--color-brand-600)] hover:bg-[var(--color-brand-50)] rounded-full font-medium transition-colors"
+            >
+              Pesquisa de Satisfação
+            </Link>
           </div>
-          {!remoteData?.survey_completed && (
-            <p className="mt-3 text-sm text-stone-500">
-              Responda a pesquisa para receber o seu relatório aprofundado ✨
-            </p>
-          )}
+          <p className="mt-3 text-sm text-stone-500">
+            Responda a pesquisa para receber o seu relatório aprofundado ✨
+          </p>
           {id && (
             <div className="mt-6">
               <ShareQuizLink jornadaId={id} homeUrl={tenantConfig?.home_url} />
