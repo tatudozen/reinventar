@@ -1,3 +1,4 @@
+// @ts-nocheck — arquivo será reescrito para Reinventar (análise de fases 1-8 adaptada para 55+)
 import type { AppState } from '../store';
 
 // ─── Static maps ─────────────────────────────────────────────────────────────

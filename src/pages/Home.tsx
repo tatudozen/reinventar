@@ -1,8 +1,26 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Leaf, Play } from 'lucide-react';
+import { Leaf, Play, BookOpen, Shield, Compass, Palette, Users, Target } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useApp } from '../store';
 import { getEmbedUrl, isSafeEmbedUrl } from '../components/MentorVideo';
+
+const PHASES = [
+  { n: '01', title: 'Mapa de Energia',        desc: 'Descubra quais atividades ainda te fazem brilhar — e o que drena sua vitalidade sem você perceber.' },
+  { n: '02', title: 'Talentos na Mochila',    desc: 'Reconheça as competências acumuladas em décadas de vida que você ainda não chamou de talento.' },
+  { n: '03', title: 'A Grande Causa',         desc: 'Identifique o problema do mundo que te move — aquele que você não consegue ignorar.' },
+  { n: '04', title: 'Cenários de Vida',       desc: 'Explore contextos e ambientes onde você se sente mais vivo e produtivo.' },
+  { n: '05', title: 'O Arquétipo',            desc: 'Descubra qual força interior guia suas escolhas — e como ela pode orientar seus próximos passos.' },
+  { n: '06', title: 'Conexões que Importam', desc: 'Mapeie as relações e comunidades que podem sustentar sua reinvenção.' },
+  { n: '07', title: 'O Próximo Capítulo',     desc: 'Esboce com clareza o que você quer construir — e o que está pronto para deixar para trás.' },
+  { n: '08', title: 'Carta ao Eu de Amanhã', desc: 'Escreva uma carta de você para você — do presente que já sabe para o futuro que está nascendo.' },
+];
+
+const PILLARS = [
+  { icon: <BookOpen className="w-5 h-5" />, title: 'Experiência',  desc: 'Décadas de vida são material bruto, não peso a carregar.' },
+  { icon: <Compass className="w-5 h-5" />,  title: 'Curiosidade',  desc: 'Quem ainda se pergunta não parou de crescer.' },
+  { icon: <Palette className="w-5 h-5" />,  title: 'Expressão',    desc: 'O que você sempre quis criar ainda está esperando.' },
+  { icon: <Target className="w-5 h-5" />,   title: 'Propósito',    desc: 'A clareza que a vida ensina com o tempo.' },
+];
 
 export default function Home() {
   const navigate = useNavigate();
@@ -12,17 +30,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-transparent text-[var(--text-main)]">
+
+      {/* Header */}
       <header className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[var(--color-brand-600)] font-serif font-medium">
+        <div className="flex items-center gap-2 text-[var(--color-brand-600)] font-serif font-medium text-lg">
           <Leaf className="w-5 h-5" />
-          <span>Jornada Ikigai</span>
+          <span>Reinventar</span>
         </div>
         <div className="flex items-center gap-6">
-          <button className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-brand-900)] transition-colors">
+          <button
+            onClick={() => navigate('/admin')}
+            className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-brand-900)] transition-colors"
+          >
             Facilitadores
           </button>
-          <button 
-            onClick={() => navigate('/comecar/mentor')}
+          <button
+            onClick={() => navigate('/comecar/guia')}
             className="text-sm font-medium bg-[var(--color-brand-600)] text-white px-5 py-2 rounded-[3px] hover:bg-[var(--color-brand-700)] transition-colors"
           >
             Começar
@@ -31,15 +54,15 @@ export default function Home() {
       </header>
 
       <main>
-        {/* Hero Section */}
-        <div className="max-w-5xl mx-auto px-6 pt-24 pb-32 flex flex-col items-center text-center">
-          <motion.div 
+        {/* Hero */}
+        <div className="max-w-5xl mx-auto px-6 pt-20 pb-28 flex flex-col items-center text-center">
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="w-12 h-12 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-600)] flex items-center justify-center mb-8"
+            className="w-14 h-14 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-600)] flex items-center justify-center mb-8"
           >
-            <Leaf className="w-6 h-6" />
+            <Leaf className="w-7 h-7" />
           </motion.div>
 
           <motion.div
@@ -48,28 +71,32 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
-              Bússola de Autoconhecimento
+              Jornada de Autoconhecimento · 55+
             </div>
             <h1 className="font-serif text-5xl md:text-6xl text-[var(--color-brand-800)] mb-6 leading-tight">
-              Descubra a profissão <br/>
-              <span className="italic text-[var(--color-brand-500)]">que combina com Você</span>
+              Descubra quem você<br/>
+              <span className="italic text-[var(--color-brand-500)]">está se tornando</span>
             </h1>
-            <p className="text-[var(--color-text-muted)] max-w-lg mx-auto mb-10 text-lg leading-relaxed">
-              Uma jornada de 8 encontros guiados para adolescentes. Não é um teste vocacional — é um processo profundo de autoconhecimento baseado na filosofia japonesa do Ikigai.
+            <p className="text-[var(--color-text-muted)] max-w-xl mx-auto mb-10 text-lg leading-relaxed">
+              Uma jornada de 8 encontros para quem tem 55+ e quer escrever o próximo capítulo da vida com clareza, propósito e sem pressa.
             </p>
 
             <button
-              onClick={() => navigate('/comecar/mentor')}
-              className="bg-[var(--color-brand-600)] text-white px-8 py-3.5 rounded-[4px] font-medium text-lg hover:bg-[var(--color-brand-700)] transition-all transform hover:scale-105 inline-flex items-center gap-2 shadow-sm"
+              onClick={() => navigate('/comecar/guia')}
+              className="bg-[var(--color-brand-600)] text-white px-10 py-4 rounded-[4px] font-medium text-lg hover:bg-[var(--color-brand-700)] transition-all transform hover:scale-105 inline-flex items-center gap-2 shadow-sm"
             >
-              Iniciar a Jornada
+              Iniciar minha Jornada
               <span>→</span>
             </button>
+
+            <p className="text-xs text-[var(--color-text-muted)] mt-4">
+              Gratuito · Sem cadastro prévio · Leva cerca de 40 minutos
+            </p>
           </motion.div>
         </div>
 
-        {/* Vídeo — logo abaixo da hero (configurável no painel admin) */}
-        <section className="max-w-4xl mx-auto px-6 pb-24 -mt-12">
+        {/* Vídeo de apresentação */}
+        <section className="max-w-4xl mx-auto px-6 pb-24 -mt-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -86,90 +113,139 @@ export default function Home() {
                   allowFullScreen
                 />
               </div>
-            ) : (
-              <div className="aspect-[9/16] w-full max-w-sm md:max-w-md mx-auto rounded-xl border-2 border-[var(--color-brand-300)] bg-stone-100 flex flex-col items-center justify-center text-center gap-3 shadow-sm">
-                <div className="w-16 h-16 rounded-full bg-white/80 text-[var(--color-brand-600)] flex items-center justify-center shadow-sm">
-                  <Play className="w-7 h-7 ml-1" fill="currentColor" />
-                </div>
-                <span className="text-sm font-mono tracking-widest uppercase text-[var(--color-text-muted)]">
-                  Vídeo em breve
-                </span>
-              </div>
-            )}
+            ) : null}
           </motion.div>
         </section>
 
-        <div className="border-t border-stone-200"></div>
+        <div className="border-t border-stone-200" />
 
-        {/* What is Ikigai */}
+        {/* Por que agora */}
         <section className="max-w-6xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-16 items-center">
-           <div>
-             <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
-               O que é Ikigai
-             </div>
-             <h2 className="font-serif text-4xl text-[var(--color-brand-800)] mb-6 leading-tight">
-               A razão de existir<br/>que os japoneses<br/>chamam de <span className="italic text-[var(--color-brand-500)]">Ikigai</span>
-             </h2>
-             <div className="text-stone-600 space-y-4 leading-relaxed max-w-md">
-               <p>
-                 Na ilha de Okinawa, onde vivem algumas das pessoas mais longevas do mundo, o Ikigai é a interseção de quatro pilares: o que você <strong>ama</strong>, no que você é <strong>bom</strong>, o que o <strong>mundo precisa</strong>, e pelo que você pode ser <strong>remunerado</strong>.
-               </p>
-               <p>
-                 Não é um destino fixo. É uma bússola — que se ajusta conforme você cresce.
-               </p>
-             </div>
-           </div>
-           
-           <div className="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center">
-              <div className="relative w-72 h-72">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full border mix-blend-multiply flex flex-col items-center justify-start pt-6 c-love">
-                  <span className="text-[10px] font-mono text-white opacity-80 uppercase tracking-wider text-center">O que você<br/>AMA</span>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
+              Por que agora?
+            </div>
+            <h2 className="font-serif text-4xl text-[var(--color-brand-800)] mb-6 leading-tight">
+              A vida não para<br/>aos 55 — ela
+              <span className="italic text-[var(--color-brand-500)]"> muda de fase</span>
+            </h2>
+            <div className="text-stone-600 space-y-4 leading-relaxed max-w-md text-base">
+              <p>
+                Você chegou até aqui com décadas de experiência, relações construídas e aprendizados que nenhum curso ensina. Mas talvez esteja se perguntando: <strong>e agora, o que eu faço com tudo isso?</strong>
+              </p>
+              <p>
+                O Reinventar é uma jornada guiada de autoconhecimento criada especificamente para este momento — sem pressa, sem julgamento, e com toda a seriedade que sua história merece.
+              </p>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="grid grid-cols-2 gap-4"
+          >
+            {PILLARS.map(({ icon, title, desc }) => (
+              <div key={title} className="p-6 border border-stone-200 rounded-xl bg-stone-50 hover:border-[var(--color-brand-300)] transition-colors">
+                <div className="w-10 h-10 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-600)] flex items-center justify-center mb-4">
+                  {icon}
                 </div>
-                <div className="absolute top-1/2 right-0 -translate-y-1/2 w-40 h-40 rounded-full border mix-blend-multiply flex flex-col items-end justify-center pr-6 c-good">
-                  <span className="text-[10px] font-mono text-white opacity-80 uppercase tracking-wider text-right">No que é<br/>BOM</span>
-                </div>
-                <div className="absolute top-1/2 left-0 -translate-y-1/2 w-40 h-40 rounded-full border mix-blend-multiply flex flex-col items-start justify-center pl-6 c-world">
-                  <span className="text-[10px] font-mono text-white opacity-80 uppercase tracking-wider text-left">Mundo<br/>PRECISA</span>
-                </div>
-                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full border mix-blend-multiply flex flex-col items-center justify-end pb-6 c-paid">
-                  <span className="text-[10px] font-mono text-white opacity-80 uppercase tracking-wider text-center">Pode ser<br/>PAGO</span>
-                </div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white text-black p-4 rounded-full font-black text-lg shadow-2xl border-4 border-cyan-400 z-10">
-                  IKIGAI
-                </div>
+                <h3 className="font-serif text-base text-stone-800 mb-1 font-semibold">{title}</h3>
+                <p className="text-stone-500 text-xs leading-relaxed">{desc}</p>
               </div>
-           </div>
+            ))}
+          </motion.div>
         </section>
 
-        {/* The Journey */}
-        <section className="py-24 border-t border-stone-200">
+        <div className="border-t border-stone-200" />
+
+        {/* Guias */}
+        <section className="max-w-5xl mx-auto px-6 py-24">
+          <div className="text-center mb-12">
+            <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
+              Guias de Jornada
+            </div>
+            <h2 className="font-serif text-4xl text-[var(--color-brand-800)]">
+              Escolha quem vai te acompanhar
+            </h2>
+            <p className="text-[var(--color-text-muted)] mt-3 max-w-md mx-auto">
+              Cada guia representa uma forma de olhar para este momento da vida. Não existe certo ou errado — existe o que ressoa com você agora.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { id: 'sabio',      name: 'O Sábio',      color: '#d4af37', icon: <BookOpen className="w-5 h-5" />,  essence: 'Calma e profundidade' },
+              { id: 'guardiao',   name: 'O Guardião',   color: '#33ccff', icon: <Shield className="w-5 h-5" />,    essence: 'Presença e cuidado' },
+              { id: 'explorador', name: 'O Explorador', color: '#ffcc00', icon: <Compass className="w-5 h-5" />,   essence: 'Curiosidade e descoberta' },
+              { id: 'criador',    name: 'O Criador',    color: '#c084fc', icon: <Palette className="w-5 h-5" />,   essence: 'Expressão e criação' },
+              { id: 'conector',   name: 'O Conector',   color: '#34d399', icon: <Users className="w-5 h-5" />,     essence: 'Relações e comunidade' },
+              { id: 'realizador', name: 'O Realizador', color: '#fb923c', icon: <Target className="w-5 h-5" />,    essence: 'Ação e resultados' },
+            ].map(g => (
+              <div
+                key={g.id}
+                className="flex items-center gap-3 p-4 border border-stone-200 rounded-xl bg-stone-50 hover:border-[var(--color-brand-300)] transition-colors"
+              >
+                <div
+                  className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: `${g.color}22`, color: g.color, border: `1px solid ${g.color}44` }}
+                >
+                  {g.icon}
+                </div>
+                <div>
+                  <p className="font-semibold text-stone-800 text-sm leading-tight">{g.name}</p>
+                  <p className="text-stone-500 text-xs">{g.essence}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <div className="border-t border-stone-200" />
+
+        {/* As 8 Fases */}
+        <section className="py-24">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-16">
               <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
                 A Jornada
               </div>
               <h2 className="font-serif text-4xl text-[var(--color-brand-800)]">
-                8 encontros, 8 descobertas
+                8 fases, 8 descobertas
               </h2>
             </div>
 
             <div className="grid md:grid-cols-4 grid-cols-2 gap-4">
-              {[
-                { n: '01', title: 'Mapa de Energia',           desc: 'Mapeie o que te dá energia e o que drena sua energia no cotidiano.' },
-                { n: '02', title: 'Talentos na Mochila',       desc: 'Identifique suas inteligências naturais e talentos mais latentes.' },
-                { n: '03', title: 'A Grande Causa',            desc: 'Descubra para qual causa do mundo você quer direcionar sua energia.' },
-                { n: '04', title: 'Duelo de Mundos',           desc: 'Explore os contextos e ambientes onde você performa melhor.' },
-                { n: '05', title: 'Ministério dos Sonhos',     desc: 'Você foi convidado para o governo: escolha o ministério, o cargo e monte a equipe dos seus sonhos.' },
-                { n: '06', title: 'O Arquétipo',               desc: 'Conecte seu arquétipo ao problema que deseja resolver no mundo.' },
-                { n: '07', title: 'O Garimpo',                 desc: 'Explore profissões em alta e filtre as que mais combinam com você.' },
-                { n: '08', title: 'A Carta para o Futuro',     desc: 'Visualize onde você quer estar daqui a 10 anos e escreva essa carta.' },
-              ].map(({ n, title, desc }) => (
-                <div key={n} className="p-6 border border-stone-200 rounded-xl hover:border-[var(--color-brand-300)] transition-colors">
+              {PHASES.map(({ n, title, desc }) => (
+                <motion.div
+                  key={n}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: parseInt(n, 10) * 0.05 }}
+                  className="p-6 border border-stone-200 rounded-xl hover:border-[var(--color-brand-300)] hover:bg-stone-50 transition-colors"
+                >
                   <span className="text-stone-300 font-mono text-sm block mb-3">{n}</span>
-                  <h3 className="font-serif text-lg text-stone-800 mb-2 leading-snug">{title}</h3>
+                  <h3 className="font-serif text-base text-stone-800 mb-2 leading-snug font-semibold">{title}</h3>
                   <p className="text-stone-500 text-xs leading-relaxed">{desc}</p>
-                </div>
+                </motion.div>
               ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <button
+                onClick={() => navigate('/comecar/guia')}
+                className="bg-[var(--color-brand-600)] text-white px-10 py-4 rounded-[4px] font-medium text-base hover:bg-[var(--color-brand-700)] transition-all inline-flex items-center gap-2 shadow-sm"
+              >
+                Quero começar agora
+                <span>→</span>
+              </button>
             </div>
           </div>
         </section>
@@ -177,8 +253,10 @@ export default function Home() {
         {/* Footer */}
         <footer className="border-t border-stone-200 py-12">
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-xs text-stone-500 gap-4">
-            <div className="font-serif text-[var(--color-brand-600)] text-sm">Jornada Ikigai</div>
-            <div>© 2026 — Uma bússola de autoconhecimento para a Geração Z</div>
+            <div className="font-serif text-[var(--color-brand-600)] text-sm flex items-center gap-1.5">
+              <Leaf className="w-4 h-4" /> Reinventar
+            </div>
+            <div>© 2026 — Uma jornada de autoconhecimento para quem tem 55+</div>
             <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
               <Link to="/politica-de-privacidade" className="hover:text-stone-800 transition-colors">Política de Privacidade</Link>
               <Link to="/termos-de-uso" className="hover:text-stone-800 transition-colors">Termos de Uso</Link>

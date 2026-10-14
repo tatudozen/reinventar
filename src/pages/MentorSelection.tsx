@@ -138,7 +138,7 @@ export default function MentorSelection() {
       setStep(2);
     } else if (step === 2 && acceptedContracts.length === CONTRACTS.length) {
       addXP(50);
-      navigate('/comecar/missao/1');
+      navigate('/comecar/fase/1');
     }
   };
 

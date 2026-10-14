@@ -59,11 +59,10 @@ export function isSafeEmbedUrl(url: string | undefined): boolean {
 
 export function MentorVideo({ onComplete, title = "Mensagem do Mentor", description = "Instruções da Missão", videoUrl: defaultVideoUrl, videoId }: MentorVideoProps) {
   const { state } = useApp();
-  const mentorId = state.mentor || 'sabio';
-  const imgName = mentorId === 'criadora' ? 'criador' : mentorId;
+  const guideId = state.guide || 'sabio';
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const configUrl = videoId ? state.adminConfig?.videoUrls?.[`${mentorId}_${videoId}`] : undefined;
+  const configUrl = videoId ? state.adminConfig?.videoUrls?.[`${guideId}_${videoId}`] : undefined;
   const rawVideoUrl = configUrl || defaultVideoUrl;
   const embedUrl = getEmbedUrl(rawVideoUrl);
   const videoUrl = isSafeEmbedUrl(embedUrl) ? embedUrl : undefined;
@@ -93,7 +92,7 @@ export function MentorVideo({ onComplete, title = "Mensagem do Mentor", descript
   return (
     <div className="relative w-full max-w-sm md:max-w-md mx-auto aspect-[9/16] border-2 border-[var(--color-brand-300)] rounded-xl overflow-hidden bg-[var(--bg-dark)] shadow-[var(--btn-shadow)] flex items-center justify-center group mb-8">
       <div className="absolute inset-0 bg-cover bg-center opacity-30 grayscale group-hover:grayscale-0 transition-all duration-700" 
-        style={{ backgroundImage: `url(/mentors/${imgName}.png?v=3)` }}
+        style={{ backgroundImage: `url(/guides/${guideId}.png?v=1)` }}
       />
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
       

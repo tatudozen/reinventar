@@ -13,7 +13,7 @@ if (refId) {
 }
 import Home from './pages/Home';
 import Layout from './components/Layout';
-import MentorSelection from './pages/MentorSelection';
+import GuideSelection from './pages/GuideSelection';
 import Mission1 from './pages/Mission1';
 import Mission2 from './pages/Mission2';
 import Mission3 from './pages/Mission3';
@@ -25,8 +25,6 @@ import Mission8 from './pages/Mission8';
 import SaveResult from './pages/SaveResult';
 import ResultDashboard from './pages/ResultDashboard';
 import AdminSettings from './pages/AdminSettings';
-import ExplorarCursos from './pages/ExplorarCursos';
-import ExplorarPorCurso from './pages/ExplorarPorCurso';
 import SatisfactionSurvey from './pages/SatisfactionSurvey';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfUse from './pages/TermsOfUse';
@@ -39,21 +37,19 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<AdminSettings />} />
           <Route path="/comecar" element={<Layout />}>
-            <Route path="mentor" element={<MentorSelection />} />
-            <Route path="missao/1" element={<Mission1 />} />
-            <Route path="missao/2" element={<Mission2 />} />
-            <Route path="missao/3" element={<Mission3 />} />
-            <Route path="missao/4" element={<Mission4 />} />
-            <Route path="missao/5" element={<Mission5 />} />
-            <Route path="missao/6" element={<Mission6 />} />
-            <Route path="missao/7" element={<Mission7 />} />
-            <Route path="missao/8" element={<Mission8 />} />
+            <Route path="guia" element={<GuideSelection />} />
+            <Route path="fase/1" element={<Mission1 />} />
+            <Route path="fase/2" element={<Mission2 />} />
+            <Route path="fase/3" element={<Mission3 />} />
+            <Route path="fase/4" element={<Mission4 />} />
+            <Route path="fase/5" element={<Mission5 />} />
+            <Route path="fase/6" element={<Mission6 />} />
+            <Route path="fase/7" element={<Mission7 />} />
+            <Route path="fase/8" element={<Mission8 />} />
             <Route path="salvar" element={<SaveResult />} />
             <Route path="pesquisa" element={<SatisfactionSurvey />} />
           </Route>
           <Route path="/resultado/:id" element={<ResultDashboard />} />
-          <Route path="/explorar-cursos" element={<ExplorarCursos />} />
-          <Route path="/explorar-por-curso" element={<ExplorarPorCurso />} />
           <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
           <Route path="/termos-de-uso" element={<TermsOfUse />} />
         </Routes>
