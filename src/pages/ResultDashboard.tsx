@@ -277,11 +277,10 @@ export default function ResultDashboard() {
   useEffect(() => {
     if (!id) return;
     supabase
-      .from('jornadas')
-      .select('id, user_name, survey_completed, phase_data')
-      .eq('id', id)
+      .rpc('get_jornada', { p_id: id })
       .single()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) console.error('Error loading jornada:', error.code, error.message);
         if (data) setRemoteData(data as JornadaRow);
         setLoading(false);
       });
