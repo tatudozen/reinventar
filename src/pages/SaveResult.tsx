@@ -75,7 +75,6 @@ export default function SaveResult() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          app: 'reinventar',
           nome: name,
           email,
           telefone: phone || null,

@@ -48,7 +48,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 1. Conta quantas indicações o indicador gerou
+    // 1. Resolve origin pelo hostname para obter origin_id e tenant_id
+    let origin_id: string | null = null;
+    let tenant_id: string | null = null;
+    if (tenant_host) {
+      const originRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/lead_origins?host=eq.${encodeURIComponent(tenant_host.toLowerCase())}&active=eq.true&select=id,tenant_id&limit=1`,
+        { headers: crmHeaders() },
+      );
+      const origins: { id: string; tenant_id: string }[] = originRes.ok ? await originRes.json() : [];
+      if (origins[0]) {
+        origin_id = origins[0].id;
+        tenant_id = origins[0].tenant_id;
+      }
+    }
+
+    // 2. Conta quantas indicações o indicador gerou
     const countRes = await fetch(
       `${SUPABASE_URL}/rest/v1/jornadas?referred_by=eq.${encodeURIComponent(referrer_id)}&select=id`,
       { headers: reinventarHeaders({ 'Prefer': 'count=exact', 'Range-Unit': 'items', 'Range': '0-0' }) },
@@ -57,18 +72,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const referral_count = parseInt(contentRange.split('/')[1] || '0', 10);
     if (!referral_count) return res.json({ ok: true, fired: 0, referral_count: 0 });
 
-    // 2. Regras ativas cujo limiar já foi atingido, filtradas por tenant
-    const tenantFilter = tenant_host
-      ? `&tenant_host=eq.${encodeURIComponent(tenant_host)}`
-      : '&tenant_host=is.null';
+    // 3. Regras ativas cujo limiar foi atingido:
+    //    regras da origem específica OU regras de todo o tenant (origin_id nulo)
+    let rulesFilter = `active=eq.true&threshold=lte.${referral_count}`;
+    if (origin_id && tenant_id) {
+      rulesFilter += `&or=(origin_id.eq.${encodeURIComponent(origin_id)},and(origin_id.is.null,tenant_id.eq.${encodeURIComponent(tenant_id)}))`;
+    } else if (tenant_id) {
+      rulesFilter += `&tenant_id=eq.${encodeURIComponent(tenant_id)}`;
+    }
     const rulesRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/referral_rules?active=eq.true&threshold=lte.${referral_count}${tenantFilter}&select=id,name,threshold,webhook_url`,
+      `${SUPABASE_URL}/rest/v1/referral_rules?${rulesFilter}&select=id,name,threshold,webhook_url`,
       { headers: crmHeaders() },
     );
     const rules: ReferralRule[] = await rulesRes.json();
     if (!Array.isArray(rules) || rules.length === 0) return res.json({ ok: true, fired: 0, referral_count });
 
-    // 3. Dados do indicador para o payload do webhook
+    // 4. Dados do indicador para o payload do webhook
     const refRes = await fetch(
       `${SUPABASE_URL}/rest/v1/jornadas?id=eq.${encodeURIComponent(referrer_id)}&select=user_name,user_email`,
       { headers: reinventarHeaders() },
@@ -76,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const refData = await refRes.json();
     const referrer = Array.isArray(refData) ? refData[0] : null;
 
-    // 4. Para cada regra, reivindica o disparo (idempotente) e chama o webhook
+    // 5. Para cada regra, reivindica o disparo (idempotente) e chama o webhook
     let fired = 0;
     for (const rule of rules) {
       const claimRes = await fetch(`${SUPABASE_URL}/rest/v1/referral_rule_fires`, {
