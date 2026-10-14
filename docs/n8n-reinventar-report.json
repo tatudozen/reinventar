@@ -43,7 +43,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "={{ 'https://supabase.alquimiazen.com.br/rest/v1/jornadas?id=eq.' + $json.jornada_id + '&select=user_email,user_phone&limit=1' }}",
+        "url": "={{ 'https://supabase.alquimiazen.com.br/rest/v1/jornadas?id=eq.' + encodeURIComponent($json.jornada_id) + '&select=user_email,user_phone&limit=1' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -116,7 +116,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 4a40994d23398303a635caa0eab194b2d82191148a1e0e3eaea712be133faae4"
+              "value": "Bearer SEU_DEEP_REPORT_SECRET"
             },
             {
               "name": "Content-Type",
@@ -258,7 +258,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "0E2D29D24200-4888-AFF6-881CF59ABC8D"
+              "value": "SEU_EVOLUTION_API_KEY"
             }
           ]
         },
@@ -303,7 +303,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "0E2D29D24200-4888-AFF6-881CF59ABC8D"
+              "value": "SEU_EVOLUTION_API_KEY"
             }
           ]
         },
