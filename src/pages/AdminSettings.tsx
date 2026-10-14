@@ -4,25 +4,20 @@ import { Settings, Save, ArrowLeft, Lock, LogOut, KeyRound, Plus, Trash2, Pencil
 import { Link } from 'react-router-dom';
 
 const MENTORS = [
-  { id: 'sabio', name: 'O Sábio' },
-  { id: 'heroi', name: 'O Herói' },
-  { id: 'rebelde', name: 'O Rebelde' },
-  { id: 'curadora', name: 'A Curadora' },
-  { id: 'exploradora', name: 'A Exploradora' },
-  { id: 'criadora', name: 'A Criadora' }
+  { id: 'explorador', name: 'Explorador' },
 ];
 
 const PHASES = [
-  { id: 'fase0', name: 'Fase 0 (Onboarding)' },
-  { id: 'missao1', name: 'Missão 1' },
-  { id: 'missao2', name: 'Missão 2' },
-  { id: 'missao3', name: 'Missão 3' },
-  { id: 'missao4', name: 'Missão 4' },
-  { id: 'missao5', name: 'Missão 5' },
-  { id: 'missao6', name: 'Missão 6' },
-  { id: 'missao7', name: 'Missão 7' },
-  { id: 'missao8', name: 'Missão 8' },
-  { id: 'missao_concluida', name: 'Missão Concluída' },
+  { id: 'fase0',           name: 'Fase 0 — Boas-vindas' },
+  { id: 'fase1',           name: 'Fase 1 — Mapa de Energia' },
+  { id: 'fase2',           name: 'Fase 2 — Talentos e Competências' },
+  { id: 'fase3',           name: 'Fase 3 — Causas que Importam' },
+  { id: 'fase4',           name: 'Fase 4 — Duelos de Cenas' },
+  { id: 'fase5',           name: 'Fase 5 — Figuras e Missão' },
+  { id: 'fase6',           name: 'Fase 6 — Conexões e Intenção' },
+  { id: 'fase7',           name: 'Fase 7 — Papéis que Ressoaram' },
+  { id: 'fase8',           name: 'Fase 8 — Carta ao Eu de Amanhã' },
+  { id: 'concluida',       name: 'Jornada Concluída' },
   { id: 'pesquisa_obrigado', name: 'Pesquisa — Obrigado' },
 ];
 
@@ -756,13 +751,13 @@ interface SurveyEntry {
   perfil: string | null;
   nps: number | null;
   clareza: string | null;
-  missao_fav: string | null;
+  fase_fav: string | null;
   dificuldade: string | null;
   precisao: string | null;
   tamanho_jornada: string | null;
   sugestao: string | null;
   comunidade_ia: boolean | null;
-  cursos_duvida: string[] | null;
+  suporte_desejado: string[] | null;
   created_at: string;
 }
 
@@ -873,17 +868,17 @@ function SurveyPanel({ token }: { token: string }) {
 
   const total = entries.length;
 
-  // NPS: promotores (9-10) − detratores (0-6), ignorando quem não respondeu.
-  const npsRated = entries.filter(e => e.nps != null);
-  const promoters = npsRated.filter(e => (e.nps as number) >= 9).length;
-  const passives = npsRated.filter(e => (e.nps as number) >= 7 && (e.nps as number) <= 8).length;
+  // NPS
+  const npsRated   = entries.filter(e => e.nps != null);
+  const promoters  = npsRated.filter(e => (e.nps as number) >= 9).length;
+  const passives   = npsRated.filter(e => (e.nps as number) >= 7 && (e.nps as number) <= 8).length;
   const detractors = npsRated.filter(e => (e.nps as number) <= 6).length;
-  const npsScore = npsRated.length ? Math.round(((promoters - detractors) / npsRated.length) * 100) : 0;
+  const npsScore   = npsRated.length ? Math.round(((promoters - detractors) / npsRated.length) * 100) : 0;
 
   // Interesse na comunidade de IA
   const iaRated = entries.filter(e => e.comunidade_ia != null);
-  const iaYes = iaRated.filter(e => e.comunidade_ia === true).length;
-  const iaPct = iaRated.length ? Math.round((iaYes / iaRated.length) * 100) : 0;
+  const iaYes   = iaRated.filter(e => e.comunidade_ia === true).length;
+  const iaPct   = iaRated.length ? Math.round((iaYes / iaRated.length) * 100) : 0;
 
   const tamanhoColor = (label: string) =>
     label.startsWith('Está no tamanho') ? '#10b981'
@@ -895,7 +890,15 @@ function SurveyPanel({ token }: { token: string }) {
     entries.map(e => ({ id: e.id, text: pick(e), date: e.created_at })).filter(x => x.text);
 
   const dificuldades = textAnswers(e => e.dificuldade);
-  const sugestoes = textAnswers(e => e.sugestao);
+  const sugestoes    = textAnswers(e => e.sugestao);
+
+  // Suporte desejado (array field — conta cada opção individualmente)
+  const suporteCounts = new Map<string, number>();
+  entries.forEach(e => (e.suporte_desejado ?? []).forEach(s => suporteCounts.set(s, (suporteCounts.get(s) || 0) + 1)));
+  const suporteDist = Array.from(suporteCounts.entries())
+    .map(([label, count]) => ({ label, count }))
+    .sort((a, b) => b.count - a.count);
+  const suporteTotal = entries.filter(e => e.suporte_desejado?.length).length;
 
   return (
     <div className="space-y-6">
@@ -923,14 +926,14 @@ function SurveyPanel({ token }: { token: string }) {
         </div>
       </div>
 
-      {/* Destaque: tamanho da Jornada */}
+      {/* Tamanho da Jornada */}
       <DistCard
         title="A Jornada deveria ser..."
         icon={<Ruler className="w-4 h-4 text-stone-400" />}
         entries={entries}
         pick={e => e.tamanho_jornada}
         order={[
-          'Poderia ser MAIOR — queria mais missões',
+          'Poderia ser MAIOR — queria explorar mais',
           'Está no tamanho certo',
           'Poderia ser MENOR — senti que foi longa',
         ]}
@@ -944,7 +947,7 @@ function SurveyPanel({ token }: { token: string }) {
           entries={entries}
           pick={e => e.clareza}
           order={[
-            'Com MAIS clareza sobre meus caminhos',
+            'Com MAIS clareza sobre meus próximos passos',
             'Igual — nada mudou',
             'Com MAIS dúvidas do que antes',
           ]}
@@ -956,7 +959,7 @@ function SurveyPanel({ token }: { token: string }) {
           order={[
             'Muito eu — me reconheci na hora',
             'Parcialmente eu — acertou umas coisas, errou outras',
-            'Não me reconheci',
+            'Não me reconheci no resultado',
           ]}
         />
         <DistCard
@@ -966,12 +969,27 @@ function SurveyPanel({ token }: { token: string }) {
           pick={e => e.perfil}
         />
         <DistCard
-          title="Missão favorita"
+          title="Fase favorita"
           icon={<Star className="w-4 h-4 text-stone-400" />}
           entries={entries}
-          pick={e => e.missao_fav}
+          pick={e => e.fase_fav}
         />
       </div>
+
+      {/* Suporte desejado (Q10) */}
+      {suporteDist.length > 0 && (
+        <div className="bg-white border border-stone-200 rounded-xl p-6">
+          <h3 className="text-sm font-bold text-stone-800 mb-4">
+            Suporte desejado para o próximo capítulo
+            <span className="ml-2 text-xs font-normal text-stone-400">({suporteTotal} respostas com seleção)</span>
+          </h3>
+          <div className="space-y-2.5">
+            {suporteDist.map(d => (
+              <BarRow key={d.label} label={d.label} count={d.count} total={suporteTotal} />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Respostas abertas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1398,7 +1416,7 @@ export default function AdminSettings() {
   const [authed, setAuthed] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [activeTab, setActiveTab] = useState<'videos' | 'curadoria' | 'pesquisa' | 'indicacoes' | 'tenants'>('videos');
+  const [activeTab, setActiveTab] = useState<'videos' | 'curadoria' | 'pesquisa'>('videos');
 
   // Sincroniza o formulário quando o Supabase terminar de carregar as URLs
   useEffect(() => {
@@ -1558,11 +1576,9 @@ export default function AdminSettings() {
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-stone-200">
           {([
-            { id: 'videos', label: 'Vídeos dos Mentores' },
+            { id: 'videos',    label: 'Vídeos do Guia' },
             { id: 'curadoria', label: 'Curadoria de Carreiras' },
-            { id: 'pesquisa', label: 'Pesquisa de Satisfação' },
-            { id: 'indicacoes', label: 'Recompensas de Indicação' },
-            { id: 'tenants', label: 'Tenants' },
+            { id: 'pesquisa',  label: 'Pesquisa de Satisfação' },
           ] as const).map(tab => (
             <button
               key={tab.id}
@@ -1586,25 +1602,11 @@ export default function AdminSettings() {
           <SurveyPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
         )}
 
-        {activeTab === 'indicacoes' && (
-          <ReferralRulesPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
-        )}
-
-        {activeTab === 'tenants' && (
-          <TenantPanel token={sessionStorage.getItem(SESSION_KEY) || ''} />
-        )}
-
         {activeTab === 'videos' && (
           <>
             <div className="bg-white border text-left p-6 border-stone-200 rounded-xl shadow-sm mb-6">
               <div className="flex items-center justify-between mb-6 border-b pb-4">
-                <h2 className="text-xl font-bold text-stone-800">URLs dos Vídeos dos Mentores</h2>
-                <button
-                  onClick={handleImportPlanilha}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 text-white text-sm font-bold rounded-lg hover:bg-emerald-800 transition-colors"
-                >
-                  ↓ Importar da Planilha
-                </button>
+                <h2 className="text-xl font-bold text-stone-800">URLs dos Vídeos do Guia</h2>
               </div>
 
               <div className="space-y-8">
