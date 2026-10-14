@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Wifi, Heart, Sparkles } from 'lucide-react';
+import { Users, Wifi, Sparkles } from 'lucide-react';
 import { useApp } from '../store';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
@@ -36,10 +36,8 @@ export default function Mission6() {
 
   const connections: string[] = state.phase6.connections ?? [];
   const modes: string[]       = state.phase6.modes       ?? [];
-  const intention: string     = state.phase6.intention   ?? '';
 
   const [step, setStep] = useState(() => {
-    if (connections.length > 0 && modes.length > 0 && intention.length > 5) return 3;
     if (connections.length > 0 && modes.length > 0) return 2;
     if (connections.length > 0) return 1;
     return 0;
@@ -62,7 +60,7 @@ export default function Mission6() {
   const handleFinish = () => {
     addXP(100);
     completePhase(6);
-    setStep(3);
+    setStep(2);
   };
 
   return (
@@ -163,52 +161,9 @@ export default function Mission6() {
                 <button onClick={() => setStep(0)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">
                   ← Voltar
                 </button>
-                <button onClick={() => setStep(2)} disabled={modes.length === 0}
+                <button onClick={handleFinish} disabled={modes.length === 0}
                   className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
                     modes.length > 0
-                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                  Próxima Etapa
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Step 2: Intenção de relação ── */}
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-5 mb-6 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0">
-                  <Heart className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-1">A relação que quer cultivar</h3>
-                  <p className="text-[var(--color-text-muted)] text-sm leading-relaxed">
-                    Nesta fase da vida, qual relação você quer cultivar com mais intenção — e o que isso exigirá de você?
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex-grow flex flex-col">
-                <textarea
-                  value={intention}
-                  onChange={e => updatePhase('phase6', { intention: e.target.value })}
-                  placeholder="Ex: Quero cultivar uma relação de mentoria com jovens da minha área. Isso exige que eu crie espaço na minha agenda e aprenda a escutar mais do que falar..."
-                  rows={7}
-                  className="w-full rounded-xl border border-[var(--color-brand-200)] bg-[var(--glass)] text-[var(--text-main)] p-4 text-sm leading-relaxed placeholder:text-[var(--color-text-muted)]/50 focus:outline-none focus:border-[var(--color-brand-500)] resize-none flex-grow"
-                />
-                <p className="text-xs text-[var(--color-text-muted)] mt-2 text-right font-mono">
-                  {intention.length} caracteres
-                </p>
-              </div>
-
-              <div className="flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
-                <button onClick={() => setStep(1)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">
-                  ← Voltar
-                </button>
-                <button onClick={handleFinish} disabled={intention.length < 10}
-                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    intention.length >= 10
                       ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
                       : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
                   Concluir Fase →
@@ -217,8 +172,8 @@ export default function Mission6() {
             </motion.div>
           )}
 
-          {/* ── Step 3: Conclusão ── */}
-          {step === 3 && (
+          {/* ── Step 2: Conclusão ── */}
+          {step === 2 && (
             <motion.div key="step3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-10">
               <div className="w-24 h-24 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-8 shadow-[var(--btn-shadow)]">
                 <Sparkles className="w-12 h-12 text-[var(--neon-cyan)]" />
