@@ -43,6 +43,7 @@ export default function SaveResult() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        jornada_id: id,
         name,
         email,
         phone: phone || '',
