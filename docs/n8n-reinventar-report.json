@@ -1,0 +1,471 @@
+{
+  "name": "Reinventar Relatório Profundo via Zap",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "reinventar-report",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "r001-webhook",
+      "name": "Webhook",
+      "webhookId": "00000000-0001-4000-8000-000000000001"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f001",
+              "name": "jornada_id",
+              "value": "={{ $json.body.jornada_id }}",
+              "type": "string"
+            },
+            {
+              "id": "f002",
+              "name": "first_name",
+              "value": "={{ $json.body.first_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [240, 0],
+      "id": "r002-editfields",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://supabase.alquimiazen.com.br/rest/v1/jornadas?id=eq.' + $json.jornada_id + '&select=user_email,user_phone&limit=1' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "SEU_SUPABASE_SERVICE_ROLE_KEY"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer SEU_SUPABASE_SERVICE_ROLE_KEY"
+            },
+            {
+              "name": "Accept-Profile",
+              "value": "reinventar"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 0],
+      "id": "r003-busca",
+      "name": "Busca Contato (Supabase)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "m001",
+              "name": "jornada_id",
+              "value": "={{ $('Edit Fields').item.json.jornada_id }}",
+              "type": "string"
+            },
+            {
+              "id": "m002",
+              "name": "first_name",
+              "value": "={{ $('Edit Fields').item.json.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "m003",
+              "name": "user_email",
+              "value": "={{ (Array.isArray($json) ? $json[0] : $json)?.user_email ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "m004",
+              "name": "user_phone",
+              "value": "={{ (Array.isArray($json) ? $json[0] : $json)?.user_phone ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [720, 0],
+      "id": "r004-merge",
+      "name": "Merge Dados"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://reinventar.simplesescolhas.com.br/api/deep-report",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 4a40994d23398303a635caa0eab194b2d82191148a1e0e3eaea712be133faae4"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ jornada_id: $json.jornada_id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 0],
+      "id": "r005-gera",
+      "name": "Gera Relatório (API)"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * Converte o Markdown do Relatório Profundo em HTML estilizado para e-mail.\n * Adaptado da Jornada Ikigai para Reinventar (público 55+).\n *\n *  - Entrada:  markdown em $('Gera Relatório (API)').first().json.report\n *  - Saída:    adiciona $json.report_html, pronto para o corpo do e-mail (GHL).\n */\n\nconst P = { bg:'#faf8f5', text:'#2a2620', muted:'#7c756a', accent:'#7c3aed', line:'#ece7df', head:'#1c1a16' };\nconst esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\n\nfunction inline(t){\n  t = esc(t);\n  t = t.replace(/\\*\\*(.+?)\\*\\*/g, `<strong style=\\"color:${P.head}\\">$1</strong>`);\n  t = t.replace(/(^|[^*])\\*(?!\\s)(.+?)\\*/g, '$1<em>$2</em>');\n  t = t.replace(/`([^`]+?)`/g, `<code style=\\"background:#f0ebe3;padding:1px 5px;border-radius:4px;font-size:90%\\">$1</code>`);\n  t = t.replace(/\\[([^\\]]+?)\\]\\((https?:\\/\\/[^)\\s]+|mailto:[^)\\s]+)\\)/g,\n    `<a href=\\"$2\\" style=\\"color:${P.accent};text-decoration:underline\\" target=\\"_blank\\" rel=\\"noopener noreferrer\\">$1</a>`);\n  return t;\n}\n\nfunction mdToEmailHtml(md){\n  const lines = String(md||'').replace(/\\r\\n/g,'\\n').split('\\n');\n  const out = [];\n  let i = 0;\n  const flushListOpen = { ul:false, ol:false };\n  const closeLists = () => {\n    if (flushListOpen.ul){ out.push('</ul>'); flushListOpen.ul=false; }\n    if (flushListOpen.ol){ out.push('</ol>'); flushListOpen.ol=false; }\n  };\n\n  while (i < lines.length){\n    let line = lines[i];\n    if (!line.trim()){ closeLists(); i++; continue; }\n\n    if (line.includes('|') && i+1 < lines.length && /^\\s*\\|?[\\s:|-]+\\|?\\s*$/.test(lines[i+1]) && lines[i+1].includes('-')){\n      closeLists();\n      const parseRow = r => r.trim().replace(/^\\||\\|$/g,'').split('|').map(c=>c.trim());\n      const headers = parseRow(line);\n      i += 2;\n      let thead = '<tr>'+headers.map(h=>`<th style=\\"text-align:left;padding:9px 10px;border-bottom:2px solid ${P.accent};font-family:Georgia,serif;color:${P.head}\\">${inline(h)}</th>`).join('')+'</tr>';\n      let rows = '';\n      let odd = false;\n      while (i < lines.length && lines[i].includes('|') && lines[i].trim()){\n        const cells = parseRow(lines[i]);\n        const bg = odd ? 'background:#f3efe8;' : '';\n        rows += '<tr>'+cells.map(c=>`<td style=\\"${bg}text-align:left;padding:9px 10px;border-bottom:1px solid ${P.line};vertical-align:top\\">${inline(c)}</td>`).join('')+'</tr>';\n        odd = !odd; i++;\n      }\n      out.push(`<table role=\\"presentation\\" width=\\"100%\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"width:100%;border-collapse:collapse;margin:16px 0;font-size:14px\\">${thead}${rows}</table>`);\n      continue;\n    }\n\n    let m;\n    if ((m = line.match(/^###\\s+(.*)/))){ closeLists(); out.push(`<h3 style=\\"font-family:Georgia,serif;font-size:18px;line-height:1.3;color:${P.head};margin:24px 0 8px\\">${inline(m[1])}</h3>`); i++; continue; }\n    if ((m = line.match(/^##\\s+(.*)/))){ closeLists(); out.push(`<h2 style=\\"font-family:Georgia,serif;font-size:22px;line-height:1.25;color:${P.head};margin:34px 0 12px;padding-top:20px;border-top:1px solid ${P.line}\\">${inline(m[1])}</h2>`); i++; continue; }\n    if ((m = line.match(/^#\\s+(.*)/))){ closeLists(); out.push(`<h1 style=\\"font-family:Georgia,serif;font-size:30px;line-height:1.2;color:${P.head};margin:0 0 10px\\">${inline(m[1])}</h1>`); i++; continue; }\n\n    if (/^\\s*([-*_])\\1\\1+\\s*$/.test(line)){ closeLists(); out.push(`<hr style=\\"border:0;border-top:1px solid ${P.line};margin:28px 0\\">`); i++; continue; }\n    if ((m = line.match(/^>\\s?(.*)/))){ closeLists(); out.push(`<blockquote style=\\"margin:16px 0;padding:4px 16px;border-left:3px solid ${P.accent};color:${P.muted};font-style:italic\\">${inline(m[1])}</blockquote>`); i++; continue; }\n\n    if ((m = line.match(/^\\s*[-*+]\\s+(.*)/))){\n      if (flushListOpen.ol){ out.push('</ol>'); flushListOpen.ol=false; }\n      if (!flushListOpen.ul){ out.push(`<ul style=\\"margin:0 0 16px;padding-left:22px\\">`); flushListOpen.ul=true; }\n      out.push(`<li style=\\"margin-bottom:6px\\">${inline(m[1])}</li>`); i++; continue;\n    }\n    if ((m = line.match(/^\\s*\\d+\\.\\s+(.*)/))){\n      if (flushListOpen.ul){ out.push('</ul>'); flushListOpen.ul=false; }\n      if (!flushListOpen.ol){ out.push(`<ol style=\\"margin:0 0 16px;padding-left:22px\\">`); flushListOpen.ol=true; }\n      out.push(`<li style=\\"margin-bottom:6px\\">${inline(m[1])}</li>`); i++; continue;\n    }\n\n    closeLists();\n    let para = line;\n    i++;\n    while (i < lines.length && lines[i].trim() && !/^(#{1,3}\\s|>\\s?|\\s*[-*+]\\s|\\s*\\d+\\.\\s|\\s*([-*_])\\2\\2)/.test(lines[i]) && !lines[i].includes('|')){\n      para += ' ' + lines[i]; i++;\n    }\n    out.push(`<p style=\\"margin:0 0 16px\\">${inline(para)}</p>`);\n  }\n  closeLists();\n\n  const body = out.join('\\n');\n  return `<div style=\\"background:${P.bg};padding:24px 0;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif\\">\n  <table role=\\"presentation\\" width=\\"100%\\" cellspacing=\\"0\\" cellpadding=\\"0\\"><tr><td align=\\"center\\">\n  <table role=\\"presentation\\" width=\\"600\\" cellspacing=\\"0\\" cellpadding=\\"0\\" style=\\"width:600px;max-width:600px\\">\n  <tr><td style=\\"padding:32px 28px;background:#ffffff;border-radius:14px;color:${P.text};font-size:16px;line-height:1.7\\">\n  <div style=\\"font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${P.accent};font-weight:600;margin-bottom:20px\\">Relatório Profundo · Jornada Reinventar</div>\n  ${body}\n  <div style=\\"margin-top:40px;padding-top:18px;border-top:1px solid ${P.line};text-align:center;color:${P.muted};font-size:13px\\">AlquimiaZen · ${new Date().getFullYear()}</div>\n  </td></tr></table>\n  </td></tr></table>\n  </div>`;\n}\n\nconst md = $('Gera Relatório (API)').first().json.report ?? '';\nconst html = mdToEmailHtml(md);\nconst rows = $input.all();\nfor (const row of rows){\n  row.json.report_html = html;\n}\nreturn rows;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 0],
+      "id": "r006-code",
+      "name": "Code (MD → HTML)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e001",
+              "name": "link",
+              "value": "={{ 'https://reinventar.simplesescolhas.com.br/resultado/' + $('Edit Fields').item.json.jornada_id }}",
+              "type": "string"
+            },
+            {
+              "id": "e002",
+              "name": "phone",
+              "value": "={{ $('Merge Dados').item.json.user_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "e003",
+              "name": "first_name",
+              "value": "={{ $('Edit Fields').item.json.first_name }}",
+              "type": "string"
+            },
+            {
+              "id": "e004",
+              "name": "e-mail",
+              "value": "={{ $('Merge Dados').item.json.user_email }}",
+              "type": "string"
+            },
+            {
+              "id": "e005",
+              "name": "report_html",
+              "value": "={{ $json.report_html }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [1440, 0],
+      "id": "r007-monta",
+      "name": "Monta Envio"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SEU_GHL_WEBHOOK_URL",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "first_name",
+              "value": "={{ $json.first_name }}"
+            },
+            {
+              "name": "e-mail",
+              "value": "={{ $json[\"e-mail\"] }}"
+            },
+            {
+              "name": "report",
+              "value": "={{ $json.report_html }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [1680, -200],
+      "id": "r008-email",
+      "name": "Envia E-mail (GHL)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c001",
+              "leftValue": "={{ $json.phone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1680, 200],
+      "id": "r009-if",
+      "name": "If (tem telefone?)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evo.alquimiazen.com.br/message/sendText/copyzen_automacao",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "0E2D29D24200-4888-AFF6-881CF59ABC8D"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ 'Oi ' + $json.first_name + '!\\n\\nSeu Relatório Profundo Reinventar está pronto ✨\\n\\nVeja o seu painel de resultados aqui:\\n\\n' + $json.link + '\\n\\nO relatório completo foi enviado para o seu e-mail 📩' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1920, 200],
+      "id": "r010-zap1",
+      "name": "Enviar WhatsApp"
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2160, 200],
+      "id": "r011-wait",
+      "name": "Aguarda 30s",
+      "webhookId": "00000000-0011-4000-8000-000000000011"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://evo.alquimiazen.com.br/message/sendText/copyzen_automacao",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "0E2D29D24200-4888-AFF6-881CF59ABC8D"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $('Monta Envio').item.json.phone }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ '💡 Cada fase que você viveu é matéria-prima para o próximo capítulo.\\n\\nContinue explorando o que faz sentido para você em:\\n👉 reinventar.simplesescolhas.com.br' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2400, 200],
+      "id": "r012-zap2",
+      "name": "Enviar WhatsApp (follow-up)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Busca Contato (Supabase)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Contato (Supabase)": {
+      "main": [
+        [
+          {
+            "node": "Merge Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Dados": {
+      "main": [
+        [
+          {
+            "node": "Gera Relatório (API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera Relatório (API)": {
+      "main": [
+        [
+          {
+            "node": "Code (MD → HTML)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code (MD → HTML)": {
+      "main": [
+        [
+          {
+            "node": "Monta Envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monta Envio": {
+      "main": [
+        [
+          {
+            "node": "If (tem telefone?)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Envia E-mail (GHL)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If (tem telefone?)": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Aguarda 30s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguarda 30s": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp (follow-up)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia E-mail (GHL)": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e068e85db8e5bfe8b1ca2895c7bc8656ff224db2481bd60a59bdec6e8171342e"
+  },
+  "nodeGroups": [],
+  "tags": [
+    {
+      "name": "reinventar"
+    }
+  ]
+}

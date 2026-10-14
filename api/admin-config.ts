@@ -57,7 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ ok: false, error: 'videoUrls inválido' });
     }
     const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/admin_config`,
+      `${SUPABASE_URL}/rest/v1/admin_config?id=not.is.null`,
       {
         method:  'PATCH',
         headers: srHeaders({ 'Content-Profile': 'reinventar', Prefer: 'return=minimal' }),
