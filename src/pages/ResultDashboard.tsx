@@ -126,6 +126,177 @@ const ROLE_RIASEC: Record<string, RIASECType> = {
   produtor: 'E', terapeuta: 'S', embaixador: 'E', empreendedor: 'E',
 };
 
+// ── Life Paths ─────────────────────────────────────────────────────────────────
+
+interface LifePath {
+  id: string;
+  title: string;
+  desc: string;
+  icon: string;
+  color: string;
+  examples: string[];
+  riasec: RIASECType[];
+  roles: string[];
+  archetypes: string[];
+  causes: string[];
+  skills: string[];
+  connections_who: string[];
+  modes: string[];
+}
+
+const LIFE_PATHS: LifePath[] = [
+  {
+    id: 'mentoria',
+    title: 'Mentoria & Transmissão',
+    desc: 'Compartilhar décadas de experiência para acelerar o crescimento de outros',
+    icon: '🎓',
+    color: '#7c3aed',
+    examples: ['Mentor(a) de jovens', 'Coach de vida', 'Tutor(a) voluntário(a)', 'Palestrante de experiência'],
+    riasec: ['S', 'E'],
+    roles: ['mentor', 'professor', 'coach', 'facilitador', 'palestrante', 'idiomas'],
+    archetypes: ['sabio', 'guardiao'],
+    causes: ['educacao', 'intergeracoes'],
+    skills: ['comunicacao', 'empatia', 'sabedoria', 'lideranca'],
+    connections_who: ['jovens', 'adultos', 'estudantes'],
+    modes: ['individual', 'grupos', 'eventos'],
+  },
+  {
+    id: 'criacao',
+    title: 'Criação & Expressão',
+    desc: 'Produzir obras, conteúdo ou objetos que expressam sua visão de mundo',
+    icon: '🎨',
+    color: '#ec4899',
+    examples: ['Escritor(a)', 'Criador(a) de conteúdo', 'Artesão(ã)', 'Fotógrafo(a)', 'Podcaster'],
+    riasec: ['A', 'I'],
+    roles: ['escritora', 'podcast', 'artesao', 'fotografo', 'narrador', 'curador'],
+    archetypes: ['criador', 'explorador'],
+    causes: ['cultura', 'saude_mental', 'intergeracoes'],
+    skills: ['criatividade', 'comunicacao', 'sabedoria'],
+    connections_who: ['comunidade', 'pares', 'jovens'],
+    modes: ['escrito', 'arte', 'online'],
+  },
+  {
+    id: 'cuidado',
+    title: 'Cuidado & Bem-Estar',
+    desc: 'Acompanhar e cuidar de pessoas com presença e especialidade',
+    icon: '❤️',
+    color: '#f43f5e',
+    examples: ['Acompanhante terapêutico(a)', 'Cuidador(a) de idosos', 'Terapeuta', 'Voluntário(a) em saúde'],
+    riasec: ['S', 'R'],
+    roles: ['cuidador', 'acompanhante', 'terapeuta', 'voluntario'],
+    archetypes: ['guardiao', 'sabio'],
+    causes: ['saude', 'saude_mental', 'cuidado', 'solidao'],
+    skills: ['empatia', 'sabedoria', 'conhecimento'],
+    connections_who: ['idosos', 'cuidadores', 'vulneraveis', 'familia'],
+    modes: ['presencial', 'individual'],
+  },
+  {
+    id: 'consultoria',
+    title: 'Consultoria & Especialização',
+    desc: 'Aplicar conhecimento acumulado como especialista independente',
+    icon: '💼',
+    color: '#f59e0b',
+    examples: ['Consultor(a) independente', 'Mediador(a)', 'Advisor empresarial', 'Especialista de projetos'],
+    riasec: ['E', 'I', 'C'],
+    roles: ['consultor', 'palestrante', 'mediador', 'coach'],
+    archetypes: ['sabio', 'realizador'],
+    causes: ['educacao', 'empreendedorismo'],
+    skills: ['conhecimento', 'lideranca', 'resolucao', 'planejamento'],
+    connections_who: ['profissionais', 'adultos'],
+    modes: ['individual', 'online', 'eventos'],
+  },
+  {
+    id: 'comunidade',
+    title: 'Comunidade & Conexão',
+    desc: 'Conectar pessoas e fortalecer laços comunitários e intergeracionais',
+    icon: '🤝',
+    color: '#0891b2',
+    examples: ['Facilitador(a) de grupos', 'Organizador(a) comunitário(a)', 'Embaixador(a) de causa'],
+    riasec: ['S', 'E'],
+    roles: ['facilitador', 'mediador', 'produtor', 'voluntario', 'embaixador'],
+    archetypes: ['conector', 'guardiao'],
+    causes: ['solidao', 'intergeracoes', 'cultura', 'desigualdade'],
+    skills: ['empatia', 'comunicacao', 'lideranca'],
+    connections_who: ['pares', 'familia', 'comunidade', 'vulneraveis'],
+    modes: ['grupos', 'presencial', 'eventos'],
+  },
+  {
+    id: 'empreendedorismo',
+    title: 'Empreendedorismo Social',
+    desc: 'Criar iniciativas que geram valor concreto para comunidades e causas',
+    icon: '🌱',
+    color: '#16a34a',
+    examples: ['Empreendedor(a) social', 'Produtor(a) de eventos', 'Fundador(a) de iniciativa'],
+    riasec: ['E', 'R'],
+    roles: ['empreendedor', 'produtor', 'guia', 'facilitador', 'embaixador'],
+    archetypes: ['realizador', 'conector'],
+    causes: ['desigualdade', 'solidao', 'empreendedorismo'],
+    skills: ['lideranca', 'planejamento', 'resolucao'],
+    connections_who: ['vulneraveis', 'comunidade', 'adultos'],
+    modes: ['presencial', 'grupos', 'sistema'],
+  },
+  {
+    id: 'legado',
+    title: 'Legado & Memória',
+    desc: 'Preservar história e transmitir sabedoria para as próximas gerações',
+    icon: '📚',
+    color: '#b45309',
+    examples: ['Genealogista', 'Contador(a) de histórias', 'Curador(a) cultural', 'Escritor(a) de memórias'],
+    riasec: ['A', 'S'],
+    roles: ['genealogia', 'narrador', 'escritora', 'curador', 'fotografo'],
+    archetypes: ['guardiao', 'sabio'],
+    causes: ['cultura', 'intergeracoes', 'educacao'],
+    skills: ['comunicacao', 'sabedoria', 'conhecimento', 'criatividade'],
+    connections_who: ['familia', 'jovens', 'comunidade'],
+    modes: ['escrito', 'arte', 'presencial'],
+  },
+  {
+    id: 'natureza',
+    title: 'Natureza & Sustentabilidade',
+    desc: 'Cuidar do meio ambiente e promover formas de vida sustentáveis',
+    icon: '🌿',
+    color: '#65a30d',
+    examples: ['Cultivador(a) de horta comunitária', 'Guia de ecoturismo', 'Educador(a) ambiental'],
+    riasec: ['R', 'I'],
+    roles: ['horta', 'guia', 'voluntario'],
+    archetypes: ['explorador', 'guardiao', 'realizador'],
+    causes: ['meio_ambiente'],
+    skills: ['resolucao', 'planejamento', 'conhecimento'],
+    connections_who: ['comunidade', 'jovens', 'pares'],
+    modes: ['presencial', 'grupos'],
+  },
+  {
+    id: 'presenca',
+    title: 'Presença & Autoconhecimento',
+    desc: 'Aprofundar a jornada interior e facilitar o crescimento de outros',
+    icon: '✨',
+    color: '#a855f7',
+    examples: ['Facilitador(a) de grupos reflexivos', 'Terapeuta holístico(a)', 'Prof. de meditação'],
+    riasec: ['S', 'I'],
+    roles: ['terapeuta', 'facilitador', 'acompanhante', 'coach'],
+    archetypes: ['sabio', 'explorador'],
+    causes: ['saude_mental', 'solidao'],
+    skills: ['empatia', 'sabedoria'],
+    connections_who: ['pares', 'adultos', 'vulneraveis'],
+    modes: ['individual', 'grupos', 'presencial'],
+  },
+  {
+    id: 'lideranca_causa',
+    title: 'Liderança & Causa',
+    desc: 'Defender causas, liderar movimentos ou representar sua comunidade',
+    icon: '✊',
+    color: '#dc2626',
+    examples: ['Líder comunitário(a)', 'Defensor(a) de direitos', 'Conselheiro(a)', 'Palestrante de causa'],
+    riasec: ['E', 'S'],
+    roles: ['palestrante', 'embaixador', 'mediador', 'voluntario'],
+    archetypes: ['realizador', 'conector', 'guardiao'],
+    causes: ['desigualdade', 'saude', 'saude_mental', 'solidao', 'intergeracoes'],
+    skills: ['lideranca', 'comunicacao', 'resolucao'],
+    connections_who: ['vulneraveis', 'comunidade', 'pares'],
+    modes: ['eventos', 'grupos', 'presencial'],
+  },
+];
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface JornadaRow {
@@ -251,6 +422,73 @@ function buildSynthesisSentence(
   const energyText = flowActivities.length > 0 ? `. Atividades como "${flowActivities[0]}" estão no centro do que te energiza` : '';
   const secondaryText = secondary ? ` e inclinação para o perfil ${secondary.full.toLowerCase()}` : '';
   return `Você tem um perfil predominantemente ${primary.full.toLowerCase()}${secondaryText}${causeText}${energyText}${roleText}.`;
+}
+
+interface PathResult {
+  path: LifePath;
+  score: number;
+  signals: string[];
+}
+
+function computePathScores(
+  riasecTop3: RIASECType[],
+  savedRoles: string[],
+  topSkillIds: string[],
+  impactPoints: Record<string, unknown>,
+  archetype5: string,
+  connections: string[],
+  modes: string[],
+): PathResult[] {
+  const posWeights = [15, 7, 3];
+  return LIFE_PATHS.map(path => {
+    let score = 0;
+    const signals: string[] = [];
+
+    // RIASEC (max 25)
+    let riasecScore = 0;
+    path.riasec.forEach(type => {
+      const pos = riasecTop3.indexOf(type);
+      if (pos >= 0) riasecScore += posWeights[pos] ?? 2;
+    });
+    riasecScore = Math.min(riasecScore, 25);
+    score += riasecScore;
+    if (riasecScore >= 10) {
+      const matched = path.riasec.filter(t => riasecTop3.slice(0, 2).includes(t));
+      if (matched.length > 0)
+        signals.push(`Perfil ${matched.map(t => RIASEC[t].full).join(' + ')}`);
+    }
+
+    // Saved roles (max 22)
+    const roleMatches = savedRoles.filter(r => path.roles.includes(r));
+    score += Math.min(roleMatches.length * 5, 22);
+    if (roleMatches.length > 0)
+      signals.push(`${roleMatches.length} papel${roleMatches.length > 1 ? 'éis salvos' : ' salvo'}`);
+
+    // Skills (max 18)
+    const skillMatches = topSkillIds.filter(s => path.skills.includes(s));
+    score += Math.min(skillMatches.length * 4, 18);
+    if (skillMatches.length >= 2)
+      signals.push(`${skillMatches.length} competências em destaque`);
+
+    // Causes (max 15)
+    const causeMatches = path.causes.filter(c => (impactPoints[c] as number ?? 0) > 0);
+    score += Math.min(causeMatches.length * 5, 15);
+    if (causeMatches.length > 0)
+      signals.push(`Causa: ${CAUSE_LABELS[causeMatches[0]] || causeMatches[0]}`);
+
+    // Archetype (max 10)
+    if (archetype5 && path.archetypes.includes(archetype5)) {
+      score += 10;
+      signals.push('Arquétipo alinhado');
+    }
+
+    // Connections + modes (max 10)
+    const connMatches = connections.filter(c => path.connections_who.includes(c)).length;
+    const modeMatches = modes.filter(m => path.modes.includes(m)).length;
+    score += Math.min((connMatches + modeMatches) * 2, 10);
+
+    return { path, score: Math.min(Math.round(score), 100), signals };
+  }).sort((a, b) => b.score - a.score);
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -384,6 +622,11 @@ export default function ResultDashboard() {
     riasecTop3[0] &&
     skillDominant === riasecTop3[0] &&
     roleDominant === riasecTop3[0];
+
+  const archetype5 = phase5?.archetype ?? '';
+  const topPathScores = computePathScores(
+    riasecTop3, savedRoles, topSkillIds, impactPoints, archetype5, connections, modes,
+  );
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-light)]">
@@ -803,6 +1046,71 @@ export default function ResultDashboard() {
                 </div>
               </div>
             )}
+          </section>
+        )}
+
+        {/* ── Caminhos para Explorar ── */}
+        {topPathScores.length > 0 && topPathScores[0].score > 15 && (
+          <section className="mb-16">
+            <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-2 text-center lg:text-left">
+              Caminhos para Explorar
+            </h2>
+            <p className="text-stone-500 mb-8 text-center lg:text-left leading-relaxed">
+              Com base nas suas respostas, estes caminhos têm maior compatibilidade com quem você é e o que te move. São hipóteses, não certezas — explore com curiosidade.
+            </p>
+            <div className="space-y-4">
+              {topPathScores.slice(0, 6).map(({ path, score, signals }, idx) => {
+                const matchColor = score >= 65 ? '#16a34a' : score >= 40 ? '#d97706' : '#6b7280';
+                const matchLabel = score >= 65 ? 'Alta compatibilidade' : score >= 40 ? 'Boa compatibilidade' : 'Compatível';
+                return (
+                  <div key={path.id} className="bg-white border border-stone-200 rounded-xl p-6 hover:border-stone-300 transition-colors">
+                    <div className="flex items-start gap-4">
+                      <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-2xl border-2"
+                        style={{ borderColor: path.color + '50', background: path.color + '18' }}>
+                        {path.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {idx === 0 && (
+                              <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border"
+                                style={{ color: path.color, borderColor: path.color + '60', background: path.color + '12' }}>
+                                maior match
+                              </span>
+                            )}
+                            <h3 className="font-semibold text-stone-900">{path.title}</h3>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="font-mono font-black text-lg" style={{ color: matchColor }}>{score}%</span>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{ color: matchColor, background: matchColor + '18' }}>{matchLabel}</span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden mb-3">
+                          <div className="h-full rounded-full" style={{ width: `${score}%`, background: path.color }} />
+                        </div>
+                        <p className="text-sm text-stone-600 mb-3">{path.desc}</p>
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {path.examples.slice(0, 4).map(ex => (
+                            <span key={ex} className="text-xs px-2 py-0.5 rounded-full bg-stone-50 border border-stone-200 text-stone-500">{ex}</span>
+                          ))}
+                        </div>
+                        {signals.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {signals.map((s, i) => (
+                              <span key={i} className="text-[10px] px-2 py-0.5 rounded-full"
+                                style={{ color: path.color, background: path.color + '12', border: `1px solid ${path.color}30` }}>
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </section>
         )}
 
