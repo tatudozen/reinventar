@@ -80,7 +80,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature:       0.85,
-          maxOutputTokens:   4096,
+          maxOutputTokens:   8192,
           topP:              0.95,
         },
       }),
