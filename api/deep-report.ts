@@ -1,13 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { buildDeepReportPrompt } from './_deep-report-prompt';
+import { buildDeepReportPrompt } from './_deep-report-prompt.js';
 
-const DEEP_REPORT_SECRET = process.env.DEEP_REPORT_SECRET!;
+const DEEP_REPORT_SECRET = (process.env.DEEP_REPORT_SECRET ?? '').trim();
 const SUPABASE_URL       = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const GEMINI_API_KEY     = process.env.GEMINI_API_KEY!;
 
 const GEMINI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Busca dados da jornada via service_role (ignora RLS)
   const supaRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/jornadas?id=eq.${encodeURIComponent(jornada_id)}&select=user_name,phase_data&limit=1`,
+    `${SUPABASE_URL}/rest/v1/jornadas?id=eq.${encodeURIComponent(jornada_id)}&select=user_name,user_email,user_phone,phase_data&limit=1`,
     {
       headers: {
         apikey:           SUPABASE_SERVICE_KEY,
@@ -53,7 +53,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(404).json({ ok: false, error: 'Jornada não encontrada' });
   }
 
-  const { user_name, phase_data } = rows[0] as { user_name?: string; phase_data?: unknown };
+  const { user_name, user_email, user_phone, phase_data } = rows[0] as {
+    user_name?: string;
+    user_email?: string;
+    user_phone?: string;
+    phase_data?: unknown;
+  };
   if (!phase_data) {
     return res.status(422).json({ ok: false, error: 'Sem dados de fase — jornada incompleta' });
   }
@@ -101,5 +106,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(502).json({ ok: false, error: 'Gemini não retornou texto' });
   }
 
-  return res.json({ ok: true, jornada_id, user_name: firstName, report });
+  // Salva o relatório no Supabase e obtém o ID
+  const saveRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/deep_reports`,
+    {
+      method: 'POST',
+      headers: {
+        apikey:            SUPABASE_SERVICE_KEY,
+        Authorization:     `Bearer ${SUPABASE_SERVICE_KEY}`,
+        'Content-Profile': 'reinventar',
+        'Content-Type':    'application/json',
+        Prefer:            'return=representation',
+      },
+      body: JSON.stringify({ jornada_id, report_md: report }),
+    },
+  );
+
+  let report_id = '';
+  if (saveRes.ok) {
+    const saved = await saveRes.json().catch(() => []);
+    report_id = Array.isArray(saved) ? (saved[0]?.id ?? '') : '';
+  }
+
+  const report_url = report_id
+    ? `https://reinventar.simplesescolhas.com.br/relatorio/${report_id}`
+    : `https://reinventar.simplesescolhas.com.br/resultado/${jornada_id}`;
+
+  return res.json({ ok: true, jornada_id, user_name: firstName, user_email: user_email ?? '', user_phone: user_phone ?? '', report, report_id, report_url });
 }

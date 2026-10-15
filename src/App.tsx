@@ -24,6 +24,7 @@ import Mission7 from './pages/Mission7';
 import Mission8 from './pages/Mission8';
 import SaveResult from './pages/SaveResult';
 import ResultDashboard from './pages/ResultDashboard';
+import DeepReport from './pages/DeepReport';
 import AdminSettings from './pages/AdminSettings';
 import SatisfactionSurvey from './pages/SatisfactionSurvey';
 import PrivacyPolicy from './pages/PrivacyPolicy';
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="pesquisa" element={<SatisfactionSurvey />} />
           </Route>
           <Route path="/resultado/:id" element={<ResultDashboard />} />
+          <Route path="/relatorio/:id" element={<DeepReport />} />
           <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
           <Route path="/termos-de-uso" element={<TermsOfUse />} />
         </Routes>

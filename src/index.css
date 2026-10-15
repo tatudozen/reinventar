@@ -214,6 +214,17 @@ div.border-\\[var\\(--color-brand-400\\)\\] {
     scrollbar-width: none;
 }
 
+/* Deep Report prose styles */
+.prose-reinventar h1 { font-family: Georgia, serif; font-size: 1.875rem; line-height: 1.2; color: #1c1a16; margin: 0 0 0.625rem; }
+.prose-reinventar h2 { font-family: Georgia, serif; font-size: 1.375rem; line-height: 1.25; color: #1c1a16; margin: 2rem 0 0.75rem; padding-top: 1.25rem; border-top: 1px solid #ece7df; }
+.prose-reinventar h3 { font-family: Georgia, serif; font-size: 1.125rem; line-height: 1.3; color: #1c1a16; margin: 1.5rem 0 0.5rem; }
+.prose-reinventar p  { margin: 0 0 1rem; color: #2a2620; line-height: 1.75; }
+.prose-reinventar ul, .prose-reinventar ol { margin: 0 0 1rem; padding-left: 1.375rem; color: #2a2620; }
+.prose-reinventar li { margin-bottom: 0.375rem; line-height: 1.7; }
+.prose-reinventar blockquote { margin: 1rem 0; padding: 0.25rem 1rem; border-left: 3px solid #7c3aed; color: #7c756a; font-style: italic; }
+.prose-reinventar hr { border: 0; border-top: 1px solid #ece7df; margin: 1.75rem 0; }
+.prose-reinventar strong { color: #1c1a16; }
+
 /* center white circle fix */
 .absolute.bg-white.text-black.p-4.rounded-full {
     background-color: var(--text-main) !important;
