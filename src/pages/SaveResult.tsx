@@ -95,15 +95,6 @@ export default function SaveResult() {
       console.error('Error saving lead in CRM:', error);
     }
 
-    // Avalia regras de recompensa por indicação (fire-and-forget)
-    if (refId) {
-      fetch('/api/referral-evaluate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ referrer_id: refId, tenant_host: window.location.hostname }),
-      }).catch(err => console.error('Error evaluating referral rules:', err));
-    }
-
     navigate(`/resultado/${id}`);
   };
 
