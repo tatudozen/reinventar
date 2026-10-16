@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Star, Leaf, Mail, Flame, Zap, TrendingUp, Heart, Users, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
+import { Star, Leaf, Mail, Flame, Zap, TrendingUp, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { useApp } from '../store';
 import { supabase } from '../supabase';
 import { ShareQuizLink } from '../components/ShareQuizLink';
@@ -491,6 +491,51 @@ function computePathScores(
   }).sort((a, b) => b.score - a.score);
 }
 
+// ── Reinventar Mandala ─────────────────────────────────────────────────────────
+
+function ReinventarMandala({ hollandCode }: { hollandCode: string }) {
+  return (
+    <div className="bg-white border border-stone-200 rounded-xl p-4 flex flex-col items-center">
+      <div className="text-[10px] font-mono text-[var(--color-brand-500)] tracking-widest uppercase mb-3 text-center">
+        Mandala da Reinvenção
+      </div>
+      <svg viewBox="0 0 260 260" className="w-full max-w-[200px] mx-auto" aria-hidden="true">
+        {/* TL — O que te Energiza */}
+        <circle cx="93" cy="93" r="70" fill="#7c3aed" fillOpacity="0.13" stroke="#7c3aed" strokeOpacity="0.4" strokeWidth="1.5" />
+        {/* TR — O que Você Sabe Fazer */}
+        <circle cx="167" cy="93" r="70" fill="#ea580c" fillOpacity="0.13" stroke="#ea580c" strokeOpacity="0.4" strokeWidth="1.5" />
+        {/* BL — Seu Perfil Natural */}
+        <circle cx="93" cy="167" r="70" fill="#0891b2" fillOpacity="0.13" stroke="#0891b2" strokeOpacity="0.4" strokeWidth="1.5" />
+        {/* BR — O que o Mundo Precisa */}
+        <circle cx="167" cy="167" r="70" fill="#16a34a" fillOpacity="0.13" stroke="#16a34a" strokeOpacity="0.4" strokeWidth="1.5" />
+
+        {/* Corner labels */}
+        <text x="46" y="20" textAnchor="middle" fill="#7c3aed" fontSize="7" fontWeight="600">O que te</text>
+        <text x="46" y="29" textAnchor="middle" fill="#7c3aed" fontSize="7" fontWeight="600">Energiza</text>
+
+        <text x="214" y="20" textAnchor="middle" fill="#ea580c" fontSize="7" fontWeight="600">O que Sabe</text>
+        <text x="214" y="29" textAnchor="middle" fill="#ea580c" fontSize="7" fontWeight="600">Fazer</text>
+
+        <text x="46" y="238" textAnchor="middle" fill="#0891b2" fontSize="7" fontWeight="600">Seu Perfil</text>
+        <text x="46" y="247" textAnchor="middle" fill="#0891b2" fontSize="7" fontWeight="600">Natural</text>
+
+        <text x="214" y="238" textAnchor="middle" fill="#16a34a" fontSize="7" fontWeight="600">O que o Mundo</text>
+        <text x="214" y="247" textAnchor="middle" fill="#16a34a" fontSize="7" fontWeight="600">Precisa</text>
+
+        {/* Center — Holland code */}
+        {hollandCode ? (
+          <>
+            <text x="130" y="124" textAnchor="middle" fill="#78716c" fontSize="7" fontStyle="italic">seu perfil</text>
+            <text x="130" y="142" textAnchor="middle" fill="#1c1917" fontSize="17" fontWeight="900" letterSpacing="3">{hollandCode}</text>
+          </>
+        ) : (
+          <text x="130" y="135" textAnchor="middle" fill="#78716c" fontSize="9" fontStyle="italic">reinvenção</text>
+        )}
+      </svg>
+    </div>
+  );
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function ResultDashboard() {
@@ -731,36 +776,26 @@ export default function ResultDashboard() {
             </div>
           )}
 
-          {/* Carta ao Eu de Amanhã */}
-          {letter && (
-            <div className={`bg-amber-950 border border-amber-800 shadow-lg rounded-xl p-8 relative overflow-hidden ${riasecTop3.length > 0 ? 'w-full lg:w-1/2' : 'w-full'}`}>
-              <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 rounded-l-xl" />
-              <div className="absolute top-5 right-6 text-amber-600 opacity-40">
-                <Mail className="w-9 h-9" />
-              </div>
-              <div className="text-[10px] font-mono text-amber-500 tracking-widest uppercase mb-3 pl-3">Carta ao Eu de Amanhã</div>
-              <h3 className="font-serif text-xl pb-4 mb-5 text-amber-100 border-b border-amber-800 pl-3">Uma mensagem para você mesmo(a)</h3>
-              <div className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-amber-100 pl-3">{letter}</div>
+          {/* Right column: Mandala + Carta */}
+          {(riasecTop3.length > 0 || letter) && (
+            <div className={`w-full flex flex-col gap-6 ${riasecTop3.length > 0 ? 'lg:w-1/2' : ''}`}>
+              {riasecTop3.length > 0 && (
+                <ReinventarMandala hollandCode={hollandCode} />
+              )}
+              {letter && (
+                <div className="bg-amber-950 border border-amber-800 shadow-lg rounded-xl p-8 relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-amber-500 rounded-l-xl" />
+                  <div className="absolute top-5 right-6 text-amber-600 opacity-40">
+                    <Mail className="w-9 h-9" />
+                  </div>
+                  <div className="text-[10px] font-mono text-amber-500 tracking-widest uppercase mb-3 pl-3">Carta ao Eu de Amanhã</div>
+                  <h3 className="font-serif text-xl pb-4 mb-5 text-amber-100 border-b border-amber-800 pl-3">Uma mensagem para você mesmo(a)</h3>
+                  <div className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-amber-100 pl-3">{letter}</div>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* ── Possibilidades que Ressoaram ── */}
-        {savedRoles.length > 0 && (
-          <section className="mb-16">
-            <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-2">Possibilidades que Ressoaram</h2>
-            <p className="text-stone-500 mb-6 leading-relaxed">
-              As formas de atuação que chamaram sua atenção — cada uma é uma pista sobre quem você está se tornando.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {savedRoles.map(roleId => (
-                <span key={roleId} className="px-4 py-2 bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-full text-sm font-medium text-[var(--color-brand-800)]">
-                  {ROLE_LABELS[roleId] || roleId}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* ── As Quatro Dimensões ── */}
         <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-8 text-center lg:text-left">As Quatro Dimensões</h2>
@@ -976,6 +1011,89 @@ export default function ResultDashboard() {
               </div>
             )}
 
+            {/* Possibilidades × Perfil RIASEC */}
+            {savedRoles.length > 0 && (
+              <div className="bg-white border border-stone-200 rounded-xl p-6 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-[var(--color-brand-600)]" />
+                  <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Possibilidades × Perfil</span>
+                </div>
+                <p className="text-sm text-stone-500 mb-5 leading-relaxed">
+                  As possibilidades que chamaram sua atenção, organizadas pelo tipo de personalidade que mais ativam — revelando onde há convergência e onde há espaço para expansão.
+                </p>
+                {(() => {
+                  const byType = {} as Record<RIASECType, string[]>;
+                  for (const roleId of savedRoles) {
+                    const t = ROLE_RIASEC[roleId];
+                    if (t) {
+                      if (!byType[t]) byType[t] = [];
+                      byType[t].push(roleId);
+                    }
+                  }
+                  const presentTypes = (['R', 'I', 'A', 'S', 'E', 'C'] as RIASECType[]).filter(t => byType[t]?.length);
+                  if (presentTypes.length === 0) return null;
+                  const aligned = presentTypes.filter(t => riasecTop3.includes(t));
+                  const expansion = presentTypes.filter(t => !riasecTop3.includes(t));
+                  return (
+                    <div className="space-y-4">
+                      {aligned.length > 0 && (
+                        <div>
+                          <div className="text-[10px] font-mono text-[var(--color-brand-600)] uppercase tracking-wider mb-2">
+                            Alinhadas com seu perfil natural
+                          </div>
+                          <div className="space-y-2">
+                            {aligned.map(t => (
+                              <div key={t} className="rounded-lg p-3 border border-[var(--color-brand-200)]"
+                                style={{ background: RIASEC[t].color + '0d' }}>
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <span className="text-base">{RIASEC[t].icon}</span>
+                                  <span className="text-xs font-bold" style={{ color: RIASEC[t].color }}>{RIASEC[t].full}</span>
+                                  <span className="text-[10px] text-stone-400 ml-1">— {RIASEC[t].desc}</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {byType[t].map(roleId => (
+                                    <span key={roleId} className="text-xs px-2.5 py-1 rounded-full border font-medium"
+                                      style={{ background: RIASEC[t].color + '15', borderColor: RIASEC[t].color + '40', color: RIASEC[t].color }}>
+                                      {ROLE_LABELS[roleId] || roleId}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {expansion.length > 0 && (
+                        <div>
+                          <div className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-2">
+                            Aspirações de expansão
+                          </div>
+                          <div className="space-y-2">
+                            {expansion.map(t => (
+                              <div key={t} className="rounded-lg p-3 border border-stone-200 bg-stone-50">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                  <span className="text-base">{RIASEC[t].icon}</span>
+                                  <span className="text-xs font-bold text-stone-500">{RIASEC[t].full}</span>
+                                  <span className="text-[10px] text-stone-400 italic ml-1">— explorar com curiosidade</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {byType[t].map(roleId => (
+                                    <span key={roleId} className="text-xs px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-500">
+                                      {ROLE_LABELS[roleId] || roleId}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
             {/* Dominant signal */}
             {topSignal && (
               <div className="bg-white border border-stone-200 rounded-xl p-6 mb-4">
@@ -1110,69 +1228,6 @@ export default function ResultDashboard() {
                   </div>
                 );
               })}
-            </div>
-          </section>
-        )}
-
-        {/* ── Suas Conexões ── */}
-        {(connections.length > 0 || modes.length > 0 || intention) && (
-          <section className="mb-16">
-            <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-8 text-center lg:text-left">Suas Conexões</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {connections.length > 0 && (
-                <div className="bg-white border border-stone-200 rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Users className="w-4 h-4 text-[var(--color-brand-600)]" />
-                    <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Com quem</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {connections.map(connId => (
-                      <span key={connId} className="text-xs px-2.5 py-1 bg-[var(--color-brand-50)] text-[var(--color-brand-700)] rounded-full border border-[var(--color-brand-200)]">
-                        {WHO_LABELS[connId] || connId}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {modes.length > 0 && (
-                <div className="bg-white border border-stone-200 rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <TrendingUp className="w-4 h-4 text-[var(--color-brand-600)]" />
-                    <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Como</span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {modes.map(modeId => (
-                      <span key={modeId} className="text-xs px-2.5 py-1 bg-[var(--color-brand-50)] text-[var(--color-brand-700)] rounded-full border border-[var(--color-brand-200)]">
-                        {HOW_LABELS[modeId] || modeId}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              {intention && (
-                <div className="bg-white border border-stone-200 rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Heart className="w-4 h-4 text-[var(--color-brand-600)]" />
-                    <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Intenção</span>
-                  </div>
-                  <p className="text-xs text-stone-600 leading-relaxed line-clamp-6">{intention}</p>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* ── Referências Inspiradoras ── */}
-        {savedFigures.length > 0 && (
-          <section className="mb-16">
-            <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-4 text-center lg:text-left">Referências Inspiradoras</h2>
-            <p className="text-stone-500 mb-6 leading-relaxed">As figuras que ressoaram durante a jornada — pistas sobre seus valores e aspirações.</p>
-            <div className="flex flex-wrap gap-2">
-              {savedFigures.map(figId => (
-                <span key={figId} className="px-3 py-1.5 bg-stone-100 text-stone-700 rounded-full border border-stone-200 text-sm">
-                  {FIGURE_NAMES[figId] || figId}
-                </span>
-              ))}
             </div>
           </section>
         )}
