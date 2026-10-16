@@ -76,6 +76,7 @@ export default function SatisfactionSurvey() {
 
   useEffect(() => {
     supabase
+      .schema('public')
       .from('tenant_configs')
       .select('explore_label, explore_url')
       .eq('host', window.location.hostname)
