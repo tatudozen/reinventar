@@ -1232,21 +1232,36 @@ export default function ResultDashboard() {
           </section>
         )}
 
-        {/* ── Footer ── */}
-        <div className="mt-4 text-center">
-          <p className="text-stone-400 italic mb-6">"O próximo capítulo não começa com uma decisão perfeita — começa com um primeiro passo honesto."</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            {tenantConfig?.explore_url && (
+        {/* ── Próximo Passo ── */}
+        {tenantConfig?.explore_url && (
+          <section className="mb-12">
+            <div className="bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-2xl px-8 py-10 text-center">
+              <div className="w-10 h-10 mx-auto rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-600)] flex items-center justify-center mb-4">
+                <Star className="w-5 h-5" />
+              </div>
+              <h2 className="font-serif text-2xl text-[var(--color-brand-800)] mb-2">
+                Pronto para o próximo passo?
+              </h2>
+              <p className="text-stone-500 max-w-sm mx-auto mb-6 text-sm leading-relaxed">
+                Leve o que você descobriu aqui para uma conversa real — e veja o que pode acontecer a partir daí.
+              </p>
               <a
                 href={/^https?:\/\//.test(tenantConfig.explore_url)
                   ? `${tenantConfig.explore_url}${tenantConfig.explore_url.includes('?') ? '&' : '?'}am_id=${encodeURIComponent(id ?? '')}`
                   : '#'}
                 rel="noreferrer noopener"
-                className="inline-block px-6 py-2.5 bg-[var(--color-brand-600)] text-white hover:bg-[var(--color-brand-700)] rounded-full font-medium transition-colors shadow-sm"
+                className="inline-block px-8 py-3 bg-[var(--color-brand-600)] text-white hover:bg-[var(--color-brand-700)] rounded-full font-semibold transition-colors shadow-sm text-base"
               >
                 {tenantConfig.explore_label}
               </a>
-            )}
+            </div>
+          </section>
+        )}
+
+        {/* ── Footer ── */}
+        <div className="mt-4 text-center">
+          <p className="text-stone-400 italic mb-6">"O próximo capítulo não começa com uma decisão perfeita — começa com um primeiro passo honesto."</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               to={`/comecar/pesquisa${id ? `?id=${id}` : ''}`}
               className="inline-block px-6 py-2.5 border border-[var(--color-brand-300)] text-[var(--color-brand-600)] hover:bg-[var(--color-brand-50)] rounded-full font-medium transition-colors"
