@@ -12,7 +12,7 @@ const INTENTIONS = [
 
 export default function GuideSelection() {
   const navigate = useNavigate();
-  const { setGuide, addXP } = useApp();
+  const { setGuide, addXP, resetJourney } = useApp();
   const [accepted, setAccepted] = useState<number[]>([]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -23,6 +23,7 @@ export default function GuideSelection() {
 
   const handleStart = () => {
     if (accepted.length !== INTENTIONS.length) return;
+    resetJourney();
     addXP(50);
     navigate('/comecar/fase/1');
   };
