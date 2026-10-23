@@ -245,7 +245,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const resetJourney = () => {
     localStorage.removeItem('reinventar_state');
-    setState(initialState);
+    // Preserva adminConfig — não é dado de jornada do usuário
+    setState(prev => ({ ...initialState, adminConfig: prev.adminConfig }));
   };
 
   return (
