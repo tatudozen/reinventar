@@ -24,6 +24,7 @@ export default function GuideSelection() {
   const handleStart = () => {
     if (accepted.length !== INTENTIONS.length) return;
     resetJourney();
+    setGuide('explorador'); // re-aplica após reset (resetJourney zera guide → '')
     addXP(50);
     navigate('/comecar/fase/1');
   };
