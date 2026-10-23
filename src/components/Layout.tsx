@@ -10,11 +10,11 @@ const PHASE_TITLES: Record<string, string> = {
   '/comecar/fase/1': 'Mapa de Energia',
   '/comecar/fase/2': 'Talentos na Mochila',
   '/comecar/fase/3': 'A Grande Causa',
-  '/comecar/fase/4': 'Duelo de Mundos',
-  '/comecar/fase/5': 'Ministério dos Sonhos',
-  '/comecar/fase/6': 'O Arquétipo',
+  '/comecar/fase/4': 'Cenários de Vida',
+  '/comecar/fase/5': 'Sua Iniciativa de Impacto',
+  '/comecar/fase/6': 'Conexões que Importam',
   '/comecar/fase/7': 'O Garimpo',
-  '/comecar/fase/8': 'A Carta para o Futuro',
+  '/comecar/fase/8': 'A Carta para o Eu de Amanhã',
   '/comecar/salvar': 'Salvar Jornada',
 };
 

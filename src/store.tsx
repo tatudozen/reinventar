@@ -81,7 +81,8 @@ export interface AppState {
   };
 
   phase8: {
-    letter: string;                      // carta ao eu de amanhã
+    letter: string;
+    future: Record<string, string>;      // seleções das perguntas de visão
   };
 
   user: {
@@ -112,7 +113,7 @@ const initialState: AppState = {
   phase5: { archetype: '', ministry: '', cargo: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },
   phase7: { fields: {}, savedRoles: [], discardedRoles: [] },
-  phase8: { letter: '' },
+  phase8: { letter: '', future: {} },
 
   user: { name: '', email: '', phone: '' },
   adminConfig: { videoUrls: {} },
