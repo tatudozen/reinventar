@@ -89,9 +89,6 @@ export default function Home() {
               <span>→</span>
             </button>
 
-            <p className="text-xs text-[var(--color-text-muted)] mt-4">
-              Gratuito · Sem cadastro prévio · Leva cerca de 40 minutos
-            </p>
           </motion.div>
         </div>
 
