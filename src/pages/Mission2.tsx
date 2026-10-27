@@ -101,18 +101,6 @@ const COMPETENCIES = [
   },
 ];
 
-const WHO_ASKS = [
-  'Conselho em decisões difíceis de vida',
-  'Apoio emocional em momentos de crise',
-  'Ajuda com planejamento de projetos',
-  'Mentoria ou orientação profissional',
-  'Mediação de conflitos',
-  'Explicações técnicas ou especializadas',
-  'Apresentações ou comunicação pública',
-  'Conexão com outras pessoas da minha rede',
-  'Criação ou desenvolvimento de algo novo',
-  'Organização e gestão de processos',
-];
 
 const HIDDEN_TALENTS = [
   'Apaziguar situações de conflito com naturalidade',
@@ -149,7 +137,6 @@ export default function Mission2() {
   const [hoverScore, setHoverScore] = useState<number | null>(null);
 
   const skillRatings  = state.phase2.skillRatings  ?? {};
-  const whoAsksYou    = state.phase2.whoAsksYou    ?? [];
   const hiddenTalents = state.phase2.hiddenTalents ?? [];
 
   const currentCard     = COMPETENCIES[currentIndex];
@@ -186,13 +173,6 @@ export default function Mission2() {
     }
   };
 
-  const toggleWhoAsks = (item: string) => {
-    const next = whoAsksYou.includes(item)
-      ? whoAsksYou.filter(v => v !== item)
-      : [...whoAsksYou, item];
-    updatePhase('phase2', { whoAsksYou: next });
-  };
-
   const toggleHiddenTalent = (talent: string) => {
     const next = hiddenTalents.includes(talent)
       ? hiddenTalents.filter(t => t !== talent)
@@ -201,9 +181,8 @@ export default function Mission2() {
   };
 
   const handleNextStep = () => {
-    if (step === 0 && isComplete)              setStep(1);
-    else if (step === 1 && whoAsksYou.length >= 1)    setStep(2);
-    else if (step === 2 && hiddenTalents.length >= 1) {
+    if (step === 0 && isComplete) setStep(1);
+    else if (step === 1 && hiddenTalents.length >= 1) {
       addXP(100);
       completePhase(2);
       navigate('/comecar/fase/3');
@@ -324,51 +303,9 @@ export default function Mission2() {
             </motion.div>
           )}
 
-          {/* ── STEP 1: Quem te procura? ── */}
+          {/* ── STEP 1: Talentos Invisíveis ── */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="mb-6">
-                <h3 className="font-bold text-xl text-[var(--text-main)] mb-1">Para o que as pessoas te procuram?</h3>
-                <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-2">
-                  Pense nas situações em que alguém bate na sua porta — real ou virtual. O que elas costumam pedir?
-                </p>
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                  ● Selecione pelo menos 1
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-3 mb-auto">
-                {WHO_ASKS.map(item => {
-                  const selected = whoAsksYou.includes(item);
-                  return (
-                    <button key={item} onClick={() => toggleWhoAsks(item)}
-                      className="px-4 py-2.5 rounded-full border transition-all font-medium text-sm"
-                      style={{
-                        borderColor:     selected ? 'rgba(0,242,255,0.6)' : 'var(--alpha-border)',
-                        backgroundColor: selected ? 'rgba(0,242,255,0.12)' : 'var(--alpha-bg)',
-                        color:           selected ? 'var(--neon-cyan)' : 'var(--alpha-text)',
-                        transform:       selected ? 'scale(1.04)' : 'scale(1)',
-                      }}>
-                      {item}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="mt-10 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
-                <span className="text-sm opacity-60 font-mono">{whoAsksYou.length} escolhas</span>
-                <button onClick={handleNextStep} disabled={whoAsksYou.length < 1}
-                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    whoAsksYou.length >= 1
-                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                  Próxima Etapa
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP 2: Talentos Invisíveis ── */}
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
               <div className="mb-6">
                 <h3 className="font-bold text-xl text-[var(--text-main)] mb-1">Talentos que você não reconhece como talentos</h3>
                 <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-2">
@@ -397,7 +334,7 @@ export default function Mission2() {
                 })}
               </div>
               <div className="mt-10 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
-                <span className="text-sm opacity-60 font-mono">{hiddenTalents.length} talentos</span>
+                <button onClick={() => setStep(0)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
                 <button onClick={handleNextStep} disabled={hiddenTalents.length < 1}
                   className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
                     hiddenTalents.length >= 1

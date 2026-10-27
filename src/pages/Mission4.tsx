@@ -174,10 +174,8 @@ export default function Mission4() {
 
   const [step, setStep] = useState(() => {
     const duelsOk  = DUELS.every(d => sceneDuels[d.id]);
-    const envsOk   = environments.length >= 2;
-    const forcedOk = Object.keys(forcedChoices).length === FORCED_CHOICES.length;
-    if (duelsOk && envsOk && forcedOk) return 3;
-    if (duelsOk && envsOk) return 2;
+    const step1Ok  = environments.length >= 2 && Object.keys(forcedChoices).length === FORCED_CHOICES.length;
+    if (duelsOk && step1Ok) return 2;
     if (duelsOk) return 1;
     return 0;
   });
@@ -223,11 +221,10 @@ export default function Mission4() {
   };
 
   const handleNextStep = () => {
-    if (step === 1 && environments.length >= 2) setStep(2);
-    else if (step === 2 && isForcedComplete) {
+    if (step === 1 && environments.length >= 2 && isForcedComplete) {
       addXP(100);
       completePhase(4);
-      setStep(3);
+      setStep(2);
     }
   };
 
@@ -371,104 +368,71 @@ export default function Mission4() {
             </motion.div>
           )}
 
-          {/* ── STEP 1: Ambientes ── */}
+          {/* ── STEP 1: Ambientes + Escolhas forçadas ── */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
 
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-8 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
-                  <Building className="w-6 h-6" />
+              {/* Ambientes */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Building className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-base text-[var(--text-main)]">Onde você prefere atuar?</h3>
+                  <span className="ml-auto text-xs font-mono text-[var(--color-text-muted)]">{environments.length} / 2+</span>
                 </div>
-                <div>
-                  <h3 className="font-bold text-[18px] mb-1">Afinidade por Ambiente</h3>
-                  <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
-                    O contexto onde você atua importa tanto quanto o que você faz. Escolha os ambientes onde se sentiria bem todos os dias.
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Selecione pelo menos 2 ambientes
-                  </span>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {ENVIRONMENTS.map(env => {
+                    const isSelected = environments.includes(env);
+                    return (
+                      <button key={env} onClick={() => toggleEnvironment(env)}
+                        className={cn('p-3 rounded-xl border text-center transition-all font-medium text-xs',
+                          isSelected
+                            ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] scale-[1.02]'
+                            : 'bg-[var(--glass)] border-[var(--color-brand-100)] text-[var(--text-main)] hover:border-[var(--color-brand-300)]')}>
+                        {env}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-4 grid-cols-2 gap-3 mb-auto">
-                {ENVIRONMENTS.map(env => {
-                  const isSelected = environments.includes(env);
-                  return (
-                    <button key={env} onClick={() => toggleEnvironment(env)}
-                      className={cn('p-4 rounded-xl border text-center transition-all font-medium text-sm',
-                        isSelected
-                          ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] scale-[1.02]'
-                          : 'bg-[var(--glass)] border-[var(--color-brand-100)] text-[var(--text-main)] hover:border-[var(--color-brand-300)]')}>
-                      {env}
-                    </button>
-                  );
-                })}
+              {/* Escolhas forçadas */}
+              <div className="mb-auto">
+                <div className="flex items-center gap-2 mb-3">
+                  <GitMerge className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-base text-[var(--text-main)]">Escolha forçada</h3>
+                  <span className="ml-auto text-xs font-mono text-[var(--color-text-muted)]">{Object.keys(forcedChoices).length} / {FORCED_CHOICES.length}</span>
+                </div>
+                <div className="space-y-3">
+                  {FORCED_CHOICES.map(choice => {
+                    const selected = forcedChoices[choice.id];
+                    return (
+                      <div key={choice.id} className="grid grid-cols-2 gap-2">
+                        {[choice.optionA, choice.optionB].map(opt => (
+                          <button key={opt.id} onClick={() => handleForcedSelect(choice.id, opt.id)}
+                            className={cn('p-4 rounded-xl border text-left transition-all h-full',
+                              selected === opt.id
+                                ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] scale-[1.02]'
+                                : 'bg-[var(--glass)] border-[var(--color-brand-100)] hover:border-[var(--color-brand-400)] text-[var(--text-main)]')}>
+                            <h4 className="font-bold text-sm mb-1">{opt.text}</h4>
+                            <p className={cn('text-xs leading-relaxed', selected === opt.id ? 'text-[rgba(0,0,0,0.7)]' : 'text-[var(--color-text-muted)]')}>
+                              {opt.desc}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="mt-8 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
-                <div className="flex flex-col gap-1">
-                  <button onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}
-                    className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] text-left">
-                    ← Refazer duelos
-                  </button>
-                  <span className="text-sm opacity-60 font-mono">{environments.length} ambientes escolhidos</span>
-                </div>
-                <button onClick={handleNextStep} disabled={environments.length < 2}
-                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    environments.length >= 2
-                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                  Próxima Etapa
+              <div className="mt-6 flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
+                <button onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}
+                  className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)]">
+                  ← Refazer duelos
                 </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP 2: Escolhas forçadas ── */}
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-8 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
-                  <GitMerge className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[18px] mb-1">Escolha Forçada</h3>
-                  <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
-                    Não existe caminho perfeito — só o que combina mais com quem você é. Com qual lado você se identifica mais?
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Escolha 1 opção em cada dilema
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-5 mb-auto">
-                {FORCED_CHOICES.map(choice => {
-                  const selected = forcedChoices[choice.id];
-                  return (
-                    <div key={choice.id} className="grid grid-cols-2 gap-3">
-                      {[choice.optionA, choice.optionB].map(opt => (
-                        <button key={opt.id} onClick={() => handleForcedSelect(choice.id, opt.id)}
-                          className={cn('p-5 rounded-xl border text-left transition-all h-full',
-                            selected === opt.id
-                              ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] scale-[1.02]'
-                              : 'bg-[var(--glass)] border-[var(--color-brand-100)] hover:border-[var(--color-brand-400)] text-[var(--text-main)]')}>
-                          <h4 className="font-bold text-base mb-1.5">{opt.text}</h4>
-                          <p className={cn('text-xs leading-relaxed', selected === opt.id ? 'text-[rgba(0,0,0,0.7)]' : 'text-[var(--color-text-muted)]')}>
-                            {opt.desc}
-                          </p>
-                        </button>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-8 flex justify-end pt-6 border-t border-[var(--color-brand-100)]">
-                <button onClick={handleNextStep} disabled={!isForcedComplete}
+                <button onClick={handleNextStep} disabled={environments.length < 2 || !isForcedComplete}
                   className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    isForcedComplete
+                    environments.length >= 2 && isForcedComplete
                       ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
                       : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
                   Ver meu perfil →
@@ -477,8 +441,8 @@ export default function Mission4() {
             </motion.div>
           )}
 
-          {/* ── STEP 3: Resultado RIASEC ── */}
-          {step === 3 && (
+          {/* ── STEP 2: Resultado RIASEC ── */}
+          {step === 2 && (
             <motion.div key="step3" initial={{ opacity: 0, scale: 0.92 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-8">
 
               <div className="w-20 h-20 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-6 shadow-[var(--btn-shadow)]">

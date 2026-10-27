@@ -67,7 +67,7 @@ const CARGOS = [
   { id: 'secretario_social',    name: 'Secretário(a) de Bem-Estar',  profile: 'Cuida das pessoas e do impacto humano das ações.' },
 ];
 
-type Step = 'ministry' | 'cargo' | 'team' | 'done';
+type Step = 'setup' | 'team' | 'done';
 
 export default function Mission5() {
   const navigate = useNavigate();
@@ -83,8 +83,7 @@ export default function Mission5() {
     return Math.min(answered, FIGURES.length - 1);
   });
   const [step, setStep] = useState<Step>(() => {
-    if (!ministry) return 'ministry';
-    if (!cargo) return 'cargo';
+    if (!ministry || !cargo) return 'setup';
     if (savedFigures.length + discardedFigs.length < FIGURES.length) return 'team';
     return 'done';
   });
@@ -125,101 +124,70 @@ export default function Mission5() {
       <div className="flex flex-col min-h-[70vh]">
         <AnimatePresence mode="wait">
 
-          {/* ── Passo 1: Área de atuação ── */}
-          {step === 'ministry' && (
-            <motion.div key="ministry" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-8 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
-                  <Landmark className="w-6 h-6" />
+          {/* ── Passo 1: Área + Papel ── */}
+          {step === 'setup' && (
+            <motion.div key="setup" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
+
+              {/* Área de atuação */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Landmark className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-base text-[var(--text-main)]">Em qual área você atuaria?</h3>
                 </div>
-                <div>
-                  <h3 className="font-bold text-[18px] mb-1">Sua iniciativa de impacto</h3>
-                  <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
-                    Se você tivesse recursos, tempo e liberdade para criar uma <strong className="text-[var(--color-brand-500)]">iniciativa de alto impacto</strong>, em qual área atuaria?
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Selecione 1 área
-                  </span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {MINISTRIES.map(m => {
+                    const active = ministry === m.id;
+                    return (
+                      <button key={m.id} onClick={() => updatePhase('phase5', { ministry: m.id })}
+                        className={`relative rounded-xl border p-3 text-center transition-all ${
+                          active
+                            ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
+                            : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]'
+                        }`}>
+                        {active && <Check className="w-3 h-3 text-[var(--color-brand-500)] absolute top-1.5 right-1.5" />}
+                        <div className="text-2xl mb-1">{m.emoji}</div>
+                        <div className="text-xs font-semibold text-[var(--text-main)] leading-tight">{m.name}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
-                {MINISTRIES.map(m => {
-                  const active = ministry === m.id;
-                  return (
-                    <button key={m.id} onClick={() => updatePhase('phase5', { ministry: m.id })}
-                      className={`relative rounded-xl border p-4 text-center transition-all ${
-                        active
-                          ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
-                          : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]'
-                      }`}>
-                      {active && <Check className="w-4 h-4 text-[var(--color-brand-500)] absolute top-2 right-2" />}
-                      <div className="text-3xl mb-2">{m.emoji}</div>
-                      <div className="text-sm font-semibold text-[var(--text-main)] leading-tight">{m.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-auto flex justify-end pt-4 border-t border-[var(--color-brand-100)]">
-                <button onClick={() => setStep('cargo')} disabled={!ministry}
-                  className="px-8 py-3 bg-[var(--color-brand-600)] text-white rounded-xl font-medium hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                  Continuar →
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Passo 2: Como você prefere atuar ── */}
-          {step === 'cargo' && (
-            <motion.div key="cargo" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-8 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
-                  <Briefcase className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-[18px] mb-1">
-                    Como você prefere atuar {ministryInfo ? `em ${ministryInfo.name}` : 'nessa área'}
+              {/* Papel / Cargo */}
+              <div className="mb-auto">
+                <div className="flex items-center gap-2 mb-3">
+                  <Briefcase className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-base text-[var(--text-main)]">
+                    Como você prefere atuar{ministryInfo ? ` em ${ministryInfo.name}` : ''}?
                   </h3>
-                  <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
-                    Toda iniciativa precisa de perfis diferentes. Qual papel combina mais com você?
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Selecione 1 papel
-                  </span>
+                </div>
+                <div className="space-y-2">
+                  {CARGOS.map(c => {
+                    const active = cargo === c.id;
+                    return (
+                      <button key={c.id} onClick={() => updatePhase('phase5', { cargo: c.id })}
+                        className={`w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all ${
+                          active
+                            ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
+                            : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]'
+                        }`}>
+                        <div className={`w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center ${active ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)]' : 'border-[var(--color-brand-300)]'}`}>
+                          {active && <Check className="w-2.5 h-2.5 text-[var(--bg-dark)]" />}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--text-main)]">{c.name}</div>
+                          <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">{c.profile}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="space-y-2.5 mb-8">
-                {CARGOS.map(c => {
-                  const active = cargo === c.id;
-                  return (
-                    <button key={c.id} onClick={() => updatePhase('phase5', { cargo: c.id })}
-                      className={`w-full text-left rounded-xl border p-4 flex items-start gap-3 transition-all ${
-                        active
-                          ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
-                          : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]'
-                      }`}>
-                      <div className={`w-5 h-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center ${active ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)]' : 'border-[var(--color-brand-300)]'}`}>
-                        {active && <Check className="w-3 h-3 text-[var(--bg-dark)]" />}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-[var(--text-main)]">{c.name}</div>
-                        <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">{c.profile}</div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="mt-auto flex justify-between pt-4 border-t border-[var(--color-brand-100)]">
-                <button onClick={() => setStep('ministry')}
-                  className="px-6 py-3 border border-[var(--color-brand-200)] text-[var(--color-text-muted)] rounded-xl font-medium hover:bg-[var(--glass)] inline-flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" /> Voltar
-                </button>
-                <button onClick={() => setStep('team')} disabled={!cargo}
-                  className="px-8 py-3 bg-[var(--color-brand-600)] text-white rounded-xl font-medium hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed">
-                  Montar a equipe →
+              <div className="mt-6 flex justify-end pt-4 border-t border-[var(--color-brand-100)]">
+                <button onClick={() => setStep('team')} disabled={!ministry || !cargo}
+                  className="px-8 py-3 bg-[var(--color-brand-600)] text-white rounded-xl font-medium hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  Quem te inspira →
                 </button>
               </div>
             </motion.div>
