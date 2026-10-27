@@ -6,38 +6,31 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MissionWrapper } from '../components/MissionWrapper';
 
 const FIGURES = [
-  // Reinvenção depois dos 50
   { id: 'mandela',      name: 'Nelson Mandela',       area: 'Liderança',       desc: 'Saiu da prisão aos 71 e se tornou presidente. Símbolo de perdão, resiliência e reconciliação.' },
   { id: 'frankl',       name: 'Viktor Frankl',        area: 'Psicologia',      desc: 'Sobrevivente do Holocausto que criou a logoterapia. Ensinou que o sentido da vida pode ser encontrado mesmo no sofrimento.' },
-  // Arte e expressão
+  { id: 'gandhi',       name: 'Mahatma Gandhi',       area: 'Paz',             desc: 'Liderou uma nação inteira pela força do exemplo e da não-violência. Mostrou que a mudança começa por dentro.' },
+  { id: 'curie',        name: 'Marie Curie',          area: 'Ciência',         desc: 'Primeira mulher a ganhar um Nobel — e ganhou dois. Paixão e persistência que superam qualquer barreira.' },
   { id: 'kahlo',        name: 'Frida Kahlo',          area: 'Arte',            desc: 'Transformou dor em arte e arte em identidade. Ícone de autenticidade e resiliência.' },
-  // Brasil — sabedoria e legado
   { id: 'niemeyer',     name: 'Oscar Niemeyer',       area: 'Brasil',          desc: 'Projetou Brasília aos 52 e seguiu criando até os 104 anos. A longevidade como obra de arte.' },
   { id: 'freire',       name: 'Paulo Freire',         area: 'Brasil',          desc: 'Criou uma pedagogia que devolveu dignidade a milhões. Educação como ato de amor.' },
   { id: 'evaristo',     name: 'Conceição Evaristo',   area: 'Brasil',          desc: 'Publicou seu primeiro livro aos 44. Hoje é um dos maiores nomes da literatura brasileira.' },
-  // Impacto social
+  { id: 'pele',         name: 'Pelé',                 area: 'Esportes',        desc: 'O Rei do Futebol deixou os campos mas nunca parou de inspirar. Um legado que vai muito além do esporte.' },
+  { id: 'senna',        name: 'Ayrton Senna',         area: 'Automobilismo',   desc: 'Mais do que velocidade, Senna era propósito. Corria pelo Brasil e pela busca do impossível.' },
   { id: 'teresa',       name: 'Madre Teresa',         area: 'Compaixão',       desc: 'Dedicou décadas ao serviço dos mais pobres. Ganhou o Nobel da Paz aos 69 anos.' },
   { id: 'wangari',      name: 'Wangari Maathai',      area: 'Meio Ambiente',   desc: 'Plantou 47 milhões de árvores na África e ganhou o Nobel da Paz. Uma vida é suficiente para mudar o mundo.' },
 ];
 
 const AREA_COLORS: Record<string, string> = {
-  'Reinvenção':       '#00f2ff',
-  'Arte':             '#f472b6',
-  'Arte & Ciência':   '#a78bfa',
-  'Empreendedorismo': '#fb923c',
   'Liderança':        '#4ade80',
   'Psicologia':       '#c084fc',
-  'Filosofia':        '#c084fc',
   'Paz':              '#4ade80',
   'Ciência':          '#60a5fa',
-  'Natureza':         '#34d399',
-  'Literatura':       '#f472b6',
+  'Arte':             '#f472b6',
   'Brasil':           '#34d399',
+  'Esportes':         '#f59e0b',
+  'Automobilismo':    '#f59e0b',
   'Compaixão':        '#f97316',
   'Meio Ambiente':    '#22c55e',
-  'Educação':         '#4ade80',
-  'Gestão':           '#fb923c',
-  'Estratégia':       '#fb923c',
 };
 
 const MINISTRIES = [
