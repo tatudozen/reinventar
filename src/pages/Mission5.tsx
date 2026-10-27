@@ -7,37 +7,22 @@ import { MissionWrapper } from '../components/MissionWrapper';
 
 const FIGURES = [
   // Reinvenção depois dos 50
-  { id: 'sanders',    name: 'Colonel Sanders',     area: 'Reinvenção',      desc: 'Fundou o KFC aos 65 anos, após décadas de fracassos. Transformou receita de frango em império global.' },
-  { id: 'child',      name: 'Julia Child',          area: 'Reinvenção',      desc: 'Publicou seu primeiro livro de culinária aos 50. Tornou-se símbolo da culinária americana.' },
-  { id: 'moses',      name: 'Vovó Moses',           area: 'Arte',            desc: 'Começou a pintar aos 78 anos. Suas obras chegaram a museus do mundo todo.' },
-  { id: 'kroc',       name: 'Ray Kroc',             area: 'Empreendedorismo', desc: 'Conheceu o McDonald\'s aos 52 e transformou em uma das maiores franquias do mundo.' },
+  { id: 'sanders',      name: 'Colonel Sanders',     area: 'Reinvenção',      desc: 'Fundou o KFC aos 65 anos, após décadas de fracassos. Transformou receita de frango em legado global.' },
+  { id: 'child',        name: 'Julia Child',          area: 'Reinvenção',      desc: 'Publicou seu primeiro livro de culinária aos 50. Tornou-se símbolo de que nunca é tarde para começar.' },
+  { id: 'moses',        name: 'Vovó Moses',           area: 'Arte',            desc: 'Começou a pintar aos 78 anos. Suas obras chegaram a museus do mundo todo.' },
   // Sabedoria e legado
-  { id: 'mandela',    name: 'Nelson Mandela',       area: 'Liderança',       desc: 'Saiu da prisão aos 71 e se tornou presidente. Símbolo de perdão, resiliência e reconciliação.' },
-  { id: 'frankl',     name: 'Viktor Frankl',        area: 'Psicologia',      desc: 'Sobrevivente do Holocausto que criou a logoterapia. Ensinou que o sentido da vida pode ser encontrado mesmo no sofrimento.' },
-  { id: 'marco',      name: 'Marco Aurélio',        area: 'Filosofia',       desc: 'Imperador e filósofo estoico. Suas "Meditações" continuam guiando vidas milênios depois.' },
-  { id: 'gandhi',     name: 'Mahatma Gandhi',       area: 'Paz',             desc: 'Liderou a independência da Índia pela resistência não-violenta. A força vem de dentro.' },
-  // Ciência com propósito
-  { id: 'curie',      name: 'Marie Curie',          area: 'Ciência',         desc: 'Única pessoa a ganhar Nobel em duas áreas diferentes. Perseverança contra todas as barreiras.' },
-  { id: 'sagan',      name: 'Carl Sagan',           area: 'Ciência',         desc: 'Tornou a astronomia acessível ao mundo. Ensinou que a curiosidade é o maior ato humano.' },
-  { id: 'attenborough', name: 'David Attenborough', area: 'Natureza',        desc: 'Narrador da vida na Terra por décadas. Com mais de 90 anos, segue sendo voz da preservação.' },
+  { id: 'mandela',      name: 'Nelson Mandela',       area: 'Liderança',       desc: 'Saiu da prisão aos 71 e se tornou presidente. Símbolo de perdão, resiliência e reconciliação.' },
+  { id: 'frankl',       name: 'Viktor Frankl',        area: 'Psicologia',      desc: 'Sobrevivente do Holocausto que criou a logoterapia. Ensinou que o sentido da vida pode ser encontrado mesmo no sofrimento.' },
+  { id: 'attenborough', name: 'David Attenborough',   area: 'Natureza',        desc: 'Narrador da vida na Terra por décadas. Com mais de 90 anos, segue sendo voz da preservação.' },
   // Arte e expressão
-  { id: 'davinci',    name: 'Leonardo da Vinci',    area: 'Arte & Ciência',  desc: 'Pintou a Mona Lisa depois dos 50. Nunca parou de estudar, inventar e criar.' },
-  { id: 'kahlo',      name: 'Frida Kahlo',          area: 'Arte',            desc: 'Transformou dor em arte e arte em identidade. Ícone de autenticidade e resiliência.' },
-  { id: 'tolkien',    name: 'J.R.R. Tolkien',       area: 'Literatura',      desc: 'Publicou O Senhor dos Anéis aos 62. Criou um mundo inteiro a partir de suas próprias mitologias.' },
+  { id: 'kahlo',        name: 'Frida Kahlo',          area: 'Arte',            desc: 'Transformou dor em arte e arte em identidade. Ícone de autenticidade e resiliência.' },
   // Brasil — sabedoria e legado
-  { id: 'niemeyer',   name: 'Oscar Niemeyer',       area: 'Brasil',          desc: 'Projetou Brasília aos 52 e seguiu criando até os 104 anos. A longevidade como obra de arte.' },
-  { id: 'drummond',   name: 'Carlos Drummond',      area: 'Brasil',          desc: 'Um dos maiores poetas brasileiros. Transformou a vida cotidiana em literatura universal.' },
-  { id: 'freire',     name: 'Paulo Freire',         area: 'Brasil',          desc: 'Criou uma pedagogia que devolveu dignidade a milhões. Educação como ato de amor.' },
-  { id: 'evaristo',   name: 'Conceição Evaristo',   area: 'Brasil',          desc: 'Publicou seu primeiro livro aos 44. Hoje é um dos maiores nomes da literatura brasileira.' },
-  { id: 'clarice',    name: 'Clarice Lispector',    area: 'Brasil',          desc: 'Uma das maiores escritoras do mundo. Explorou o interior humano como ninguém.' },
+  { id: 'niemeyer',     name: 'Oscar Niemeyer',       area: 'Brasil',          desc: 'Projetou Brasília aos 52 e seguiu criando até os 104 anos. A longevidade como obra de arte.' },
+  { id: 'freire',       name: 'Paulo Freire',         area: 'Brasil',          desc: 'Criou uma pedagogia que devolveu dignidade a milhões. Educação como ato de amor.' },
+  { id: 'evaristo',     name: 'Conceição Evaristo',   area: 'Brasil',          desc: 'Publicou seu primeiro livro aos 44. Hoje é um dos maiores nomes da literatura brasileira.' },
   // Impacto social
-  { id: 'teresa',     name: 'Madre Teresa',         area: 'Compaixão',       desc: 'Dedicou décadas ao serviço dos mais pobres. Ganhou o Nobel da Paz aos 69 anos.' },
-  { id: 'wangari',    name: 'Wangari Maathai',      area: 'Meio Ambiente',   desc: 'Plantou 47 milhões de árvores na África e ganhou o Nobel da Paz. Uma vida é suficiente para mudar o mundo.' },
-  { id: 'malala',     name: 'Malala Yousafzai',     area: 'Educação',        desc: 'Luta pelo direito à educação desde criança. Prova que uma voz corajosa pode mudar o mundo.' },
-  // Pensamento e estratégia
-  { id: 'drucker',    name: 'Peter Drucker',        area: 'Gestão',          desc: 'Pai da administração moderna. Ensinou que a melhor liderança começa pelo autoconhecimento.' },
-  { id: 'buffett',    name: 'Warren Buffett',       area: 'Estratégia',      desc: 'Bilionário que ainda vive com simplicidade. Prova que paciência e princípios superam qualquer tática.' },
-  { id: 'aristoteles', name: 'Aristóteles',         area: 'Filosofia',       desc: 'Fundou a lógica, a ética e a política. Perguntou: o que é uma vida boa? — e passou a vida respondendo.' },
+  { id: 'teresa',       name: 'Madre Teresa',         area: 'Compaixão',       desc: 'Dedicou décadas ao serviço dos mais pobres. Ganhou o Nobel da Paz aos 69 anos.' },
+  { id: 'wangari',      name: 'Wangari Maathai',      area: 'Meio Ambiente',   desc: 'Plantou 47 milhões de árvores na África e ganhou o Nobel da Paz. Uma vida é suficiente para mudar o mundo.' },
 ];
 
 const AREA_COLORS: Record<string, string> = {

@@ -146,29 +146,21 @@ export default function Mission2() {
   const [step, setStep]             = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection]   = useState(1);
-  const [subMode, setSubMode]       = useState<'general' | 'detail'>('general');
   const [hoverScore, setHoverScore] = useState<number | null>(null);
-  const [detailAnswers, setDetailAnswers] = useState<Record<number, number>>({});
-  const [hoverDetail, setHoverDetail]     = useState<{ q: number; s: number } | null>(null);
 
   const skillRatings  = state.phase2.skillRatings  ?? {};
-  const detailRatings = state.phase2.detailRatings ?? {};
   const whoAsksYou    = state.phase2.whoAsksYou    ?? [];
   const hiddenTalents = state.phase2.hiddenTalents ?? [];
 
-  const currentCard      = COMPETENCIES[currentIndex];
-  const currentScore     = skillRatings[currentCard.id];
-  const classifiedCount  = Object.keys(detailRatings).length;
-  const isComplete       = classifiedCount === COMPETENCIES.length;
-  const isDetailComplete = Object.keys(detailAnswers).length === 4;
+  const currentCard     = COMPETENCIES[currentIndex];
+  const currentScore    = skillRatings[currentCard.id];
+  const classifiedCount = Object.keys(skillRatings).length;
+  const isComplete      = classifiedCount === COMPETENCIES.length;
 
   const goToCard = (idx: number) => {
     setDirection(idx > currentIndex ? 1 : -1);
     setCurrentIndex(idx);
-    setSubMode('general');
-    setDetailAnswers({});
     setHoverScore(null);
-    setHoverDetail(null);
   };
 
   const navigateCard = (dir: number) => {
@@ -177,30 +169,16 @@ export default function Mission2() {
   };
 
   const handleScore = (value: number) => {
-    updatePhase('phase2', { skillRatings: { ...skillRatings, [currentCard.id]: value } });
-    const saved = detailRatings[currentCard.id];
-    setDetailAnswers(saved ? { 0: saved[0], 1: saved[1], 2: saved[2], 3: saved[3] } : {});
+    const newRatings = { ...skillRatings, [currentCard.id]: value };
+    updatePhase('phase2', { skillRatings: newRatings });
     setHoverScore(null);
-    setSubMode('detail');
-  };
 
-  const handleDetailNext = () => {
-    const ratings: number[] = [
-      detailAnswers[0] ?? 0, detailAnswers[1] ?? 0,
-      detailAnswers[2] ?? 0, detailAnswers[3] ?? 0,
-    ];
-    const newDetailRatings = { ...detailRatings, [currentCard.id]: ratings };
-    updatePhase('phase2', { detailRatings: newDetailRatings });
-    setSubMode('general');
-    setDetailAnswers({});
-    setHoverDetail(null);
-
-    const nextIdx = COMPETENCIES.findIndex((c, i) => i > currentIndex && !newDetailRatings[c.id]);
+    const nextIdx = COMPETENCIES.findIndex((c, i) => i > currentIndex && !newRatings[c.id]);
     if (nextIdx !== -1) {
       setDirection(1);
       setCurrentIndex(nextIdx);
     } else {
-      const first = COMPETENCIES.findIndex(c => !newDetailRatings[c.id]);
+      const first = COMPETENCIES.findIndex(c => !newRatings[c.id]);
       if (first !== -1) {
         setDirection(first > currentIndex ? 1 : -1);
         setCurrentIndex(first);
@@ -249,12 +227,10 @@ export default function Mission2() {
                 <div>
                   <h3 className="font-bold text-lg text-[var(--text-main)]">Competências de Vida</h3>
                   <p className="text-xs text-[var(--color-text-muted)] mt-0.5 mb-1.5">
-                    {subMode === 'general'
-                      ? 'Avalie sua afinidade com cada competência acumulada ao longo da vida.'
-                      : 'Detalhe sua afinidade respondendo às 4 afirmações.'}
+                    Avalie sua afinidade com cada competência acumulada ao longo da vida.
                   </p>
                   <span className="inline-flex text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    {subMode === 'general' ? '● Avalie de 1 a 5 estrelas' : '● Responda as 4 afirmações'}
+                    ● Avalie de 1 a 5 estrelas
                   </span>
                 </div>
                 <span className="text-xs font-mono text-[var(--color-text-muted)] tabular-nums">
@@ -265,9 +241,8 @@ export default function Mission2() {
               {/* Progress dots */}
               <div className="flex gap-1.5 mb-5">
                 {COMPETENCIES.map((c, i) => {
-                  const hasDetail  = detailRatings[c.id] !== undefined;
-                  const hasGeneral = skillRatings[c.id] !== undefined;
-                  const dotColor   = hasDetail ? getStarColor(skillRatings[c.id] ?? 3) : hasGeneral ? '#f59e0b' : undefined;
+                  const rated    = skillRatings[c.id] !== undefined;
+                  const dotColor = rated ? getStarColor(skillRatings[c.id] ?? 3) : undefined;
                   return (
                     <button key={c.id} onClick={() => goToCard(i)}
                       className="h-2 rounded-full transition-all"
@@ -284,137 +259,68 @@ export default function Mission2() {
               <div className="relative overflow-hidden mb-6 flex-grow">
                 <AnimatePresence mode="wait">
 
-                  {subMode === 'general' && (
-                    <motion.div
-                      key={`g-${currentCard.id}`}
-                      custom={direction}
-                      variants={cardVariants}
-                      initial="enter" animate="center" exit="exit"
-                      transition={{ duration: 0.22, ease: 'easeInOut' }}
-                      drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.15}
-                      onDragEnd={(_, info) => {
-                        if (info.offset.x > 70) navigateCard(-1);
-                        else if (info.offset.x < -70) navigateCard(1);
-                      }}
-                      className="cursor-grab active:cursor-grabbing max-w-sm mx-auto select-none"
-                    >
-                      <div className="rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-                        <div className="h-44 flex flex-col items-center justify-center relative gap-3"
-                          style={{ background: `linear-gradient(135deg, ${currentCard.g0}, ${currentCard.g1})` }}>
-                          <currentCard.Icon className="w-16 h-16 text-white/25" strokeWidth={1} />
-                          <button onClick={(e) => { e.stopPropagation(); navigateCard(-1); }} disabled={currentIndex === 0}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white/60 hover:text-white/90 disabled:opacity-20 text-lg">‹</button>
-                          <button onClick={(e) => { e.stopPropagation(); navigateCard(1); }} disabled={currentIndex === COMPETENCIES.length - 1}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white/60 hover:text-white/90 disabled:opacity-20 text-lg">›</button>
-                          {currentScore !== undefined && (() => {
-                            const color = getStarColor(currentScore);
-                            return (
-                              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono flex items-center gap-0.5"
-                                style={{ backgroundColor: `${color}33`, color, border: `1px solid ${color}55` }}>
-                                {currentScore}<Star className="w-3 h-3 fill-current" />
-                              </div>
-                            );
-                          })()}
-                        </div>
-                        <div className="p-5 bg-[var(--glass)] backdrop-blur">
-                          <h3 className="font-bold text-[var(--text-main)] text-base mb-1">{currentCard.label}</h3>
-                          <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">{currentCard.desc}</p>
-                          <p className="text-xs text-[var(--color-text-muted)] text-center mb-3 font-mono uppercase tracking-wider opacity-60">Avaliação geral</p>
-                          <div className="flex justify-center gap-3 pt-1" onMouseLeave={() => setHoverScore(null)}>
-                            {[1, 2, 3, 4, 5].map(star => {
-                              const active = (hoverScore ?? currentScore ?? 0) >= star;
-                              const color  = getStarColor(hoverScore ?? currentScore ?? star);
-                              return (
-                                <button key={star} onClick={() => handleScore(star)} onMouseEnter={() => setHoverScore(star)}
-                                  className="transition-transform hover:scale-125 active:scale-110" style={{ color: active ? color : 'var(--alpha-border-coin)' }}>
-                                  <Star className="w-8 h-8 transition-colors" fill={active ? color : 'transparent'} strokeWidth={1.5} />
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
+                  <motion.div
+                    key={`g-${currentCard.id}`}
+                    custom={direction}
+                    variants={cardVariants}
+                    initial="enter" animate="center" exit="exit"
+                    transition={{ duration: 0.22, ease: 'easeInOut' }}
+                    drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.15}
+                    onDragEnd={(_, info) => {
+                      if (info.offset.x > 70) navigateCard(-1);
+                      else if (info.offset.x < -70) navigateCard(1);
+                    }}
+                    className="cursor-grab active:cursor-grabbing max-w-sm mx-auto select-none"
+                  >
+                    <div className="rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+                      <div className="h-44 flex flex-col items-center justify-center relative gap-3"
+                        style={{ background: `linear-gradient(135deg, ${currentCard.g0}, ${currentCard.g1})` }}>
+                        <currentCard.Icon className="w-16 h-16 text-white/25" strokeWidth={1} />
+                        <button onClick={(e) => { e.stopPropagation(); navigateCard(-1); }} disabled={currentIndex === 0}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white/60 hover:text-white/90 disabled:opacity-20 text-lg">‹</button>
+                        <button onClick={(e) => { e.stopPropagation(); navigateCard(1); }} disabled={currentIndex === COMPETENCIES.length - 1}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/30 flex items-center justify-center text-white/60 hover:text-white/90 disabled:opacity-20 text-lg">›</button>
+                        {currentScore !== undefined && (() => {
+                          const color = getStarColor(currentScore);
+                          return (
+                            <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold font-mono flex items-center gap-0.5"
+                              style={{ backgroundColor: `${color}33`, color, border: `1px solid ${color}55` }}>
+                              {currentScore}<Star className="w-3 h-3 fill-current" />
+                            </div>
+                          );
+                        })()}
                       </div>
-                    </motion.div>
-                  )}
-
-                  {subMode === 'detail' && (
-                    <motion.div key={`d-${currentCard.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.25 }} className="max-w-sm mx-auto">
-                      <div className="rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-                        <div className="px-5 py-4 flex items-center gap-3"
-                          style={{ background: `linear-gradient(135deg, ${currentCard.g0}, ${currentCard.g1})` }}>
-                          <currentCard.Icon className="w-7 h-7 text-white/60 shrink-0" strokeWidth={1} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[10px] text-white/50 font-mono uppercase tracking-widest">Detalhando</p>
-                            <h3 className="font-bold text-white text-sm truncate">{currentCard.label}</h3>
-                          </div>
-                          {currentScore !== undefined && (() => {
-                            const color = getStarColor(currentScore);
+                      <div className="p-5 bg-[var(--glass)] backdrop-blur">
+                        <h3 className="font-bold text-[var(--text-main)] text-base mb-1">{currentCard.label}</h3>
+                        <p className="text-sm text-[var(--color-text-muted)] leading-relaxed mb-4">{currentCard.desc}</p>
+                        <div className="flex justify-center gap-3 pt-1" onMouseLeave={() => setHoverScore(null)}>
+                          {[1, 2, 3, 4, 5].map(star => {
+                            const active = (hoverScore ?? currentScore ?? 0) >= star;
+                            const color  = getStarColor(hoverScore ?? currentScore ?? star);
                             return (
-                              <div className="px-2 py-0.5 rounded-full text-[11px] font-bold font-mono flex items-center gap-0.5 shrink-0"
-                                style={{ backgroundColor: `${color}33`, color, border: `1px solid ${color}55` }}>
-                                {currentScore}<Star className="w-3 h-3 fill-current" />
-                              </div>
-                            );
-                          })()}
-                        </div>
-                        <div className="p-4 bg-[var(--glass)] space-y-4">
-                          {currentCard.questions.map((q, qIdx) => {
-                            const savedVal = detailAnswers[qIdx] ?? 0;
-                            return (
-                              <div key={qIdx} className={cn('pb-4 last:pb-0', qIdx < 3 && 'border-b border-white/5')}>
-                                <p className="text-sm text-[var(--text-main)] mb-2 leading-snug">{q}</p>
-                                <div className="flex gap-2" onMouseLeave={() => setHoverDetail(null)}>
-                                  {[1, 2, 3, 4, 5].map(star => {
-                                    const isHovering = hoverDetail?.q === qIdx;
-                                    const activeVal  = isHovering ? (hoverDetail?.s ?? 0) : savedVal;
-                                    const active     = activeVal >= star;
-                                    const color      = getStarColor(isHovering ? (hoverDetail?.s ?? star) : (savedVal || star));
-                                    return (
-                                      <button key={star}
-                                        onClick={() => setDetailAnswers(prev => ({ ...prev, [qIdx]: star }))}
-                                        onMouseEnter={() => setHoverDetail({ q: qIdx, s: star })}
-                                        className="transition-transform hover:scale-125 active:scale-110"
-                                        style={{ color: active ? color : 'var(--alpha-border-coin)' }}>
-                                        <Star className="w-6 h-6 transition-colors" fill={active ? color : 'transparent'} strokeWidth={1.5} />
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
+                              <button key={star} onClick={() => handleScore(star)} onMouseEnter={() => setHoverScore(star)}
+                                className="transition-transform hover:scale-125 active:scale-110" style={{ color: active ? color : 'var(--alpha-border-coin)' }}>
+                                <Star className="w-8 h-8 transition-colors" fill={active ? color : 'transparent'} strokeWidth={1.5} />
+                              </button>
                             );
                           })}
                         </div>
                       </div>
-                      <div className="flex justify-between items-center mt-4">
-                        <button onClick={() => { setSubMode('general'); setDetailAnswers({}); setHoverDetail(null); }}
-                          className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] px-3 py-1.5 rounded-lg hover:bg-white/5">
-                          ← Re-avaliar
-                        </button>
-                        <button onClick={handleDetailNext} disabled={!isDetailComplete}
-                          className={cn('px-6 py-2 rounded-xl font-bold uppercase tracking-wider text-sm transition-all',
-                            isDetailComplete
-                              ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                              : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                          {currentIndex === COMPETENCIES.length - 1 ? 'Concluir' : 'Próxima'} →
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
+                    </div>
+                  </motion.div>
 
                 </AnimatePresence>
               </div>
 
-              {subMode === 'general' && (
-                <div className="mt-auto flex justify-end">
-                  <button onClick={handleNextStep} disabled={!isComplete}
-                    className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                      isComplete
-                        ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                        : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                    Próxima Etapa
-                  </button>
-                </div>
-              )}
+              <div className="mt-auto flex justify-end">
+                <button onClick={handleNextStep} disabled={!isComplete}
+                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
+                    isComplete
+                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
+                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
+                  Próxima Etapa
+                </button>
+              </div>
             </motion.div>
           )}
 
