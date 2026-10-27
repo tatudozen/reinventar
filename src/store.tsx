@@ -52,6 +52,8 @@ export interface AppState {
   phase3: {
     impactPoints: Record<string, number>; // coin allocation entre causas
     uniqueProblem: string;                // problema único selecionado
+    ministry: string;                     // área de atuação escolhida
+    cargo: string;                        // papel preferido
   };
 
   phase4: {
@@ -62,8 +64,6 @@ export interface AppState {
 
   phase5: {
     archetype: Archetype | '';
-    ministry: string;
-    cargo: string;
     savedFigures: string[];
     discardedFigures: string[];
   };
@@ -108,9 +108,9 @@ const initialState: AppState = {
 
   phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [] },
   phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [] },
-  phase3: { impactPoints: {}, uniqueProblem: '' },
+  phase3: { impactPoints: {}, uniqueProblem: '', ministry: '', cargo: '' },
   phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
-  phase5: { archetype: '', ministry: '', cargo: '', savedFigures: [], discardedFigures: [] },
+  phase5: { archetype: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },
   phase7: { fields: {}, savedRoles: [], discardedRoles: [] },
   phase8: { letter: '', future: {} },

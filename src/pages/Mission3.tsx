@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Target, Flame, Users, BookOpen, Heart,
   Briefcase, Handshake, ShieldCheck, CheckCircle2,
+  Landmark, Check,
 } from 'lucide-react';
 import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
@@ -61,6 +62,42 @@ const PROBLEMS = [
   },
 ];
 
+const MINISTRIES = [
+  { id: 'economia',               name: 'Economia',               emoji: '💰' },
+  { id: 'saude',                  name: 'Saúde',                  emoji: '🏥' },
+  { id: 'ciencia_tecnologia',     name: 'Ciência e Tecnologia',   emoji: '🔬' },
+  { id: 'educacao',               name: 'Educação',               emoji: '📚' },
+  { id: 'justica',                name: 'Justiça',                emoji: '⚖️' },
+  { id: 'cultura',                name: 'Cultura',                emoji: '🎭' },
+  { id: 'meio_ambiente',          name: 'Meio Ambiente',          emoji: '🌱' },
+  { id: 'infraestrutura',         name: 'Infraestrutura',         emoji: '🏗️' },
+  { id: 'desenvolvimento_social', name: 'Desenvolvimento Social', emoji: '🤝' },
+  { id: 'comunicacoes',           name: 'Comunicações',           emoji: '📡' },
+];
+
+const CARGOS = [
+  { id: 'ministro',             name: 'Ministro(a)',                 profile: 'Lidera, define a visão e toma as grandes decisões.' },
+  { id: 'consultor_tecnico',    name: 'Consultor(a) Técnico(a)',     profile: 'Resolve problemas complexos com pesquisa, análise e dados.' },
+  { id: 'assessor_comunicacao', name: 'Assessor(a) de Comunicação',  profile: 'Traduz e comunica as ideias para o mundo.' },
+  { id: 'diretor_operacoes',    name: 'Diretor(a) de Operações',     profile: 'Organiza processos e garante que tudo funcione.' },
+  { id: 'coordenador_campo',    name: 'Coordenador(a) de Campo',     profile: 'Coloca a mão na massa e executa na prática.' },
+  { id: 'secretario_social',    name: 'Secretário(a) de Bem-Estar',  profile: 'Cuida das pessoas e do impacto humano das ações.' },
+];
+
+// Problemas relevantes por área de ministério
+const MINISTRY_PROBLEMS: Record<string, string[]> = {
+  educacao:             ['conhecimento_perdido', 'jovens_sem_mentores', 'experiencia_desvalorizada'],
+  saude:                ['solidao_idosos', 'cuidadores', 'saude_acesso'],
+  desenvolvimento_social: ['solidao_idosos', 'cuidadores', 'jovens_sem_mentores'],
+  cultura:              ['conhecimento_perdido', 'experiencia_desvalorizada', 'solidao_idosos'],
+  economia:             ['experiencia_desvalorizada', 'jovens_sem_mentores', 'saude_acesso'],
+  ciencia_tecnologia:   ['saude_acesso', 'conhecimento_perdido', 'experiencia_desvalorizada'],
+  justica:              ['experiencia_desvalorizada', 'solidao_idosos', 'jovens_sem_mentores'],
+  meio_ambiente:        ['solidao_idosos', 'saude_acesso', 'conhecimento_perdido'],
+  infraestrutura:       ['saude_acesso', 'cuidadores', 'experiencia_desvalorizada'],
+  comunicacoes:         ['conhecimento_perdido', 'jovens_sem_mentores', 'experiencia_desvalorizada'],
+};
+
 const TOTAL_COINS = 10;
 
 const getCoinColor = (allocated: number) => {
@@ -74,7 +111,16 @@ export default function Mission3() {
   const navigate = useNavigate();
   const { state, updatePhase, completePhase, addXP } = useApp();
 
-  const [step, setStep] = useState(0);
+  const ministry = state.phase3.ministry || '';
+  const cargo    = state.phase3.cargo    || '';
+
+  const [step, setStep] = useState(() => {
+    if (state.phase3.uniqueProblem) return 3;
+    if (ministry && cargo) return 2;
+    const pts = state.phase3.impactPoints ?? {};
+    if (Object.values(pts).reduce((a: number, b: number) => a + b, 0) === TOTAL_COINS) return 1;
+    return 0;
+  });
   const [hoverId, setHoverId]       = useState<string | null>(null);
   const [hoverScore, setHoverScore] = useState<number | null>(null);
   const [selectedProblem, setSelectedProblem] = useState<string | null>(
@@ -84,6 +130,11 @@ export default function Mission3() {
   const impactPoints: Record<string, number> = state.phase3.impactPoints ?? {};
   const coinsUsed    = Object.values(impactPoints).reduce((a, b) => a + b, 0);
   const coinsLeft    = TOTAL_COINS - coinsUsed;
+
+  const ministryInfo   = MINISTRIES.find(m => m.id === ministry);
+  const filteredProblems = ministry && MINISTRY_PROBLEMS[ministry]
+    ? PROBLEMS.filter(p => MINISTRY_PROBLEMS[ministry].includes(p.id))
+    : PROBLEMS;
 
   const handleCoinScore = (causeId: string, value: number) => {
     const current = impactPoints[causeId] || 0;
@@ -97,11 +148,12 @@ export default function Mission3() {
 
   const handleNextStep = () => {
     if (step === 0 && coinsLeft === 0) setStep(1);
-    else if (step === 1 && selectedProblem) {
+    else if (step === 1 && ministry && cargo) setStep(2);
+    else if (step === 2 && selectedProblem) {
       updatePhase('phase3', { uniqueProblem: selectedProblem });
       addXP(100);
       completePhase(3);
-      setStep(2);
+      setStep(3);
     }
   };
 
@@ -207,19 +259,89 @@ export default function Mission3() {
             </motion.div>
           )}
 
-          {/* ── STEP 1: O Problema Único ── */}
+          {/* ── STEP 1: Área + Cargo ── */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
+
+              {/* Área de atuação */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <Landmark className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-base text-[var(--text-main)]">Em qual área você atuaria?</h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {MINISTRIES.map(m => {
+                    const active = ministry === m.id;
+                    return (
+                      <button key={m.id} onClick={() => updatePhase('phase3', { ministry: m.id })}
+                        className={`relative rounded-xl border p-3 text-center transition-all ${
+                          active
+                            ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
+                            : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]'
+                        }`}>
+                        {active && <Check className="w-3 h-3 text-[var(--color-brand-500)] absolute top-1.5 right-1.5" />}
+                        <div className="text-2xl mb-1">{m.emoji}</div>
+                        <div className="text-xs font-semibold text-[var(--text-main)] leading-tight">{m.name}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Papel / Cargo */}
+              <div className="mb-auto">
+                <div className="flex items-center gap-2 mb-3">
+                  <Briefcase className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-base text-[var(--text-main)]">
+                    Como você prefere atuar{ministryInfo ? ` em ${ministryInfo.name}` : ''}?
+                  </h3>
+                </div>
+                <div className="space-y-2">
+                  {CARGOS.map(c => {
+                    const active = cargo === c.id;
+                    return (
+                      <button key={c.id} onClick={() => updatePhase('phase3', { cargo: c.id })}
+                        className={`w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all ${
+                          active
+                            ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
+                            : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]'
+                        }`}>
+                        <div className={`w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center ${active ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)]' : 'border-[var(--color-brand-300)]'}`}>
+                          {active && <Check className="w-2.5 h-2.5 text-[var(--bg-dark)]" />}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-[var(--text-main)]">{c.name}</div>
+                          <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">{c.profile}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-between pt-4 border-t border-[var(--color-brand-100)]">
+                <button onClick={() => setStep(0)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
+                <button onClick={handleNextStep} disabled={!ministry || !cargo}
+                  className="px-8 py-3 bg-[var(--color-brand-600)] text-white rounded-xl font-medium hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                  Escolher minha causa →
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── STEP 2: O Problema Único ── */}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
 
               <div className="text-center mb-6">
                 <h3 className="font-serif text-2xl text-[var(--text-main)] mb-2">O Problema Único</h3>
                 <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
-                  Se você pudesse dedicar sua energia a resolver apenas <strong>um</strong> problema real, qual seria?
+                  Se você pudesse dedicar sua energia a resolver apenas <strong>um</strong> problema real{ministryInfo ? ` em ${ministryInfo.name}` : ''}, qual seria?
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 flex-grow">
-                {PROBLEMS.map(p => {
+                {filteredProblems.map(p => {
                   const isSelected = selectedProblem === p.text;
                   return (
                     <button key={p.id} onClick={() => setSelectedProblem(p.text)}
@@ -248,7 +370,7 @@ export default function Mission3() {
               </div>
 
               <div className="flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
-                <button onClick={() => setStep(0)}
+                <button onClick={() => setStep(1)}
                   className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">
                   ← Voltar
                 </button>
@@ -263,8 +385,8 @@ export default function Mission3() {
             </motion.div>
           )}
 
-          {/* ── STEP 2: Conclusão ── */}
-          {step === 2 && (
+          {/* ── STEP 3: Conclusão ── */}
+          {step === 3 && (
             <motion.div key="step2" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-10">
               <div className="w-24 h-24 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-8 shadow-[var(--btn-shadow)]">
                 <Flame className="w-12 h-12 text-[var(--neon-magenta)]" />

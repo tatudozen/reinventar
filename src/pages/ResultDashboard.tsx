@@ -587,8 +587,8 @@ export default function ResultDashboard() {
 
   // ── Phase 5 ─────────────────────────────────────────────────────────────────
   const savedFigures = phase5?.savedFigures ?? [];
-  const ministry     = phase5?.ministry ?? '';
-  const cargo        = phase5?.cargo ?? '';
+  const ministry     = phase3?.ministry ?? '';
+  const cargo        = phase3?.cargo    ?? '';
 
   // ── Phase 6 ─────────────────────────────────────────────────────────────────
   const connections = phase6?.connections ?? [];

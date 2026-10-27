@@ -1,225 +1,191 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Wifi, Sparkles } from 'lucide-react';
+import { Compass, X, Heart, Sparkles } from 'lucide-react';
 import { useApp } from '../store';
-import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { MissionWrapper } from '../components/MissionWrapper';
 
-const WHO_OPTIONS = [
-  { id: 'jovens',        label: 'Crianças e jovens',               emoji: '🧒' },
-  { id: 'adultos',       label: 'Adultos em transição',            emoji: '🔄' },
-  { id: 'pares',         label: 'Pessoas da minha geração (55+)',  emoji: '🤝' },
-  { id: 'idosos',        label: 'Idosos (75+)',                    emoji: '👴' },
-  { id: 'familia',       label: 'Minha família',                   emoji: '🏠' },
-  { id: 'comunidade',    label: 'Minha comunidade local',          emoji: '🏘️' },
-  { id: 'vulneraveis',   label: 'Grupos vulneráveis',              emoji: '🫂' },
-  { id: 'profissionais', label: 'Profissionais da minha área',     emoji: '💼' },
-  { id: 'estudantes',    label: 'Estudantes e aprendizes',         emoji: '📖' },
-  { id: 'cuidadores',    label: 'Cuidadores e famílias',           emoji: '❤️‍🩹' },
-];
-
-const HOW_OPTIONS = [
-  { id: 'presencial',    label: 'Presencialmente',                 emoji: '🤲' },
-  { id: 'online',        label: 'Online / Digital',                emoji: '💻' },
-  { id: 'grupos',        label: 'Em grupos e encontros',           emoji: '👥' },
-  { id: 'individual',    label: 'Um a um (1:1)',                   emoji: '🫀' },
-  { id: 'escrito',       label: 'Por escrito (blog, livro, cartas)', emoji: '✍️' },
-  { id: 'arte',          label: 'Através da arte / expressão',     emoji: '🎨' },
-  { id: 'sistema',       label: 'Indiretamente (impacto em sistemas)', emoji: '⚙️' },
-  { id: 'eventos',       label: 'Em eventos e palestras',          emoji: '🎤' },
+// 24 possibilidades concretas de atuação para quem reinventa a vida depois dos 55
+const ALL_ROLES = [
+  { id: 'mentor',         text: 'Mentor(a) de jovens empreendedores',          emoji: '🌱' },
+  { id: 'escritora',      text: 'Escritora(a) de memórias e histórias de vida', emoji: '📖' },
+  { id: 'consultor',      text: 'Consultor(a) independente na minha área',      emoji: '💡' },
+  { id: 'professor',      text: 'Professor(a) particular ou de oficinas',       emoji: '✏️' },
+  { id: 'voluntario',     text: 'Voluntário(a) em causa que acredito',          emoji: '🫂' },
+  { id: 'podcast',        text: 'Criador(a) de podcast ou canal de conteúdo',   emoji: '🎙️' },
+  { id: 'artesao',        text: 'Artesão(ã) e criador(a) de produtos próprios', emoji: '🧵' },
+  { id: 'coach',          text: 'Coach de transição de carreira ou vida',        emoji: '🧭' },
+  { id: 'cuidador',       text: 'Cuidador(a) especializado(a) de idosos',       emoji: '🌸' },
+  { id: 'guia',           text: 'Guia de turismo cultural ou de natureza',      emoji: '🗺️' },
+  { id: 'horta',          text: 'Criador(a) de horta comunitária ou terapêutica', emoji: '🌿' },
+  { id: 'genealogia',     text: 'Pesquisador(a) de genealogia e história familiar', emoji: '🔍' },
+  { id: 'facilitador',    text: 'Facilitador(a) de grupos e círculos de conversa', emoji: '🔵' },
+  { id: 'fotografo',      text: 'Fotógrafo(a) de família e momentos de vida',   emoji: '📷' },
+  { id: 'mediador',       text: 'Mediador(a) de conflitos familiares ou comunitários', emoji: '⚖️' },
+  { id: 'narrador',       text: 'Narrador(a) de audiolivros e histórias orais', emoji: '🎧' },
+  { id: 'idiomas',        text: 'Professor(a) de idiomas para adultos',         emoji: '🌍' },
+  { id: 'palestrante',    text: 'Palestrante sobre experiência de vida',        emoji: '🎤' },
+  { id: 'acompanhante',   text: 'Acompanhante terapêutico(a) de idosos',        emoji: '🤲' },
+  { id: 'curador',        text: 'Curador(a) de espaço cultural ou biblioteca comunitária', emoji: '🏛️' },
+  { id: 'produtor',       text: 'Produtor(a) de eventos comunitários',          emoji: '🎪' },
+  { id: 'terapeuta',      text: 'Terapeuta ou facilitador(a) de bem-estar',     emoji: '🧘' },
+  { id: 'embaixador',     text: 'Embaixador(a) de marca ou causa que acredito', emoji: '🌟' },
+  { id: 'empreendedor',   text: 'Empreendedor(a) social de pequena escala',     emoji: '🚀' },
 ];
 
 export default function Mission6() {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { state, updatePhase, completePhase, addXP } = useApp();
 
-  const connections: string[] = state.phase6.connections ?? [];
-  const modes: string[]       = state.phase6.modes       ?? [];
+  const savedRoles:    string[] = state.phase7.savedRoles    ?? [];
+  const discardedRoles: string[] = state.phase7.discardedRoles ?? [];
 
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const answered = savedRoles.length + discardedRoles.length;
+    return Math.min(answered, ALL_ROLES.length - 1);
+  });
   const [step, setStep] = useState(() => {
-    if (connections.length > 0 && modes.length > 0) return 2;
-    if (connections.length > 0) return 1;
+    if (savedRoles.length + discardedRoles.length >= ALL_ROLES.length) return 1;
     return 0;
   });
+  const [exitDir, setExitDir] = useState(0);
 
-  const toggleConnection = (id: string) => {
-    const next = connections.includes(id)
-      ? connections.filter(c => c !== id)
-      : [...connections, id];
-    updatePhase('phase6', { connections: next });
-  };
+  const currentRole = ALL_ROLES[currentIndex];
+  const remaining   = ALL_ROLES.length - currentIndex;
 
-  const toggleMode = (id: string) => {
-    const next = modes.includes(id)
-      ? modes.filter(m => m !== id)
-      : [...modes, id];
-    updatePhase('phase6', { modes: next });
+  const handleAction = (action: 'save' | 'discard') => {
+    setExitDir(action === 'save' ? 1 : -1);
+    if (action === 'save') {
+      updatePhase('phase7', { savedRoles: [...savedRoles, currentRole.id] });
+    } else {
+      updatePhase('phase7', { discardedRoles: [...discardedRoles, currentRole.id] });
+    }
+    if (currentIndex < ALL_ROLES.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
+      setStep(1);
+    }
   };
 
   const handleFinish = () => {
     addXP(100);
     completePhase(6);
-    setStep(2);
+    navigate('/comecar/fase/7');
   };
 
   return (
     <MissionWrapper
-      videoTitle="Conexões que Importam"
-      videoDescription="Com quem você quer estar e como quer se conectar na próxima fase da sua vida?"
-      videoId="fase6"
+      videoTitle="O Garimpo"
+      videoDescription="Cada possibilidade que ressoa é uma pista sobre quem você está se tornando."
+      videoId="fase7"
     >
       <div className="flex flex-col min-h-[70vh]">
         <AnimatePresence mode="wait">
 
-          {/* ── Step 0: Quem você quer impactar ── */}
+          {/* ── Step 0: Cartas ── */}
           {step === 0 && (
             <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-5 mb-6 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0">
-                  <Users className="w-6 h-6" />
+              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-6 mb-6 flex items-start gap-4">
+                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0 mt-0.5">
+                  <Compass className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">Quem você quer impactar?</h3>
-                  <p className="text-[var(--color-text-muted)] text-sm leading-relaxed mb-2">
-                    As conexões que cultivamos moldam quem nos tornamos. Quais grupos de pessoas você quer ter na sua vida e no seu trabalho nesta próxima fase?
+                  <h3 className="font-bold text-[18px] mb-1">Possibilidades do Próximo Capítulo</h3>
+                  <p className="text-[var(--color-text-muted)] leading-relaxed mb-2">
+                    Cada carta é uma forma real de atuação para quem reinventa a vida. Decida rápido — confie no primeiro impulso. Não precisa fazer sentido agora.
                   </p>
                   <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Selecione 2 ou mais
+                    ● ♥ ressoa ou ✕ não ressoa — {ALL_ROLES.length} possibilidades
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6 flex-grow">
-                {WHO_OPTIONS.map(opt => {
-                  const active = connections.includes(opt.id);
-                  return (
-                    <button key={opt.id} onClick={() => toggleConnection(opt.id)}
-                      className={cn('p-4 rounded-xl border text-left transition-all flex items-center gap-3',
-                        active
-                          ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)] scale-[1.02]'
-                          : 'border-white/10 bg-[var(--glass)] hover:border-white/25')}>
-                      <span className="text-2xl shrink-0">{opt.emoji}</span>
-                      <span className={cn('text-sm font-medium leading-tight', active ? 'text-[var(--text-main)]' : 'text-[var(--color-text-muted)]')}>
-                        {opt.label}
-                      </span>
-                    </button>
-                  );
-                })}
+              <div className="text-center text-sm text-[var(--color-text-muted)] mb-4 font-mono uppercase tracking-widest flex items-center justify-center gap-4">
+                <span>{remaining} restantes</span>
+                <span>·</span>
+                <span className="text-[var(--color-brand-500)]">{savedRoles.length} ressoam</span>
               </div>
 
-              <div className="flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
-                <span className="text-sm font-mono opacity-60">{connections.length} selecionados</span>
-                <button onClick={() => setStep(1)} disabled={connections.length < 2}
-                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    connections.length >= 2
-                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                  Próxima Etapa
+              <div className="flex-grow flex flex-col items-center justify-center">
+                <AnimatePresence mode="popLayout" custom={exitDir}>
+                  <motion.div
+                    key={currentRole.id}
+                    custom={exitDir}
+                    initial={{ scale: 0.9, opacity: 0, y: 40 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={(dir: number) => ({ x: dir > 0 ? 300 : -300, opacity: 0, rotate: dir > 0 ? 8 : -8, scale: 0.9 })}
+                    transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+                    className="w-full max-w-sm mb-12"
+                  >
+                    <div className="bg-[var(--glass)] border border-[var(--color-brand-300)] rounded-3xl aspect-square flex flex-col items-center justify-center shadow-[var(--btn-shadow)] relative overflow-hidden p-8">
+                      <div className="absolute inset-0 opacity-5" style={{ background: 'radial-gradient(circle at 70% 30%, var(--neon-cyan), transparent 60%)' }} />
+                      <span className="text-6xl mb-6 z-10">{currentRole.emoji}</span>
+                      <h2 className="font-serif text-2xl font-bold text-[var(--text-main)] text-center leading-tight z-10">
+                        {currentRole.text}
+                      </h2>
+                      <div className="absolute bottom-8 w-24 h-0.5 bg-gradient-to-r from-transparent via-[var(--color-brand-400)] to-transparent opacity-50" />
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+
+                <div className="flex items-center gap-10">
+                  <div className="flex flex-col items-center gap-2">
+                    <button onClick={() => handleAction('discard')}
+                      className="w-16 h-16 rounded-full bg-[var(--bg-dark)] border border-red-500/50 flex items-center justify-center text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-all shadow-lg hover:scale-110">
+                      <X className="w-8 h-8" />
+                    </button>
+                    <span className="text-xs text-[var(--color-text-muted)] font-mono uppercase tracking-wider opacity-50">Não ressoa</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <button onClick={() => handleAction('save')}
+                      className="w-16 h-16 rounded-full bg-[var(--bg-dark)] border border-[var(--color-brand-500)] flex items-center justify-center text-[var(--color-brand-500)] hover:bg-[var(--color-brand-500)] hover:text-[var(--bg-dark)] transition-all shadow-[var(--btn-shadow)] hover:scale-110">
+                      <Heart className="w-8 h-8" />
+                    </button>
+                    <span className="text-xs text-[var(--color-text-muted)] font-mono uppercase tracking-wider opacity-50">Ressoa!</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center justify-center pt-6 border-t border-[var(--color-brand-100)]">
+                <button onClick={() => setStep(1)}
+                  className="px-6 py-2 rounded-xl text-sm font-mono text-[var(--color-text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass)] transition-all">
+                  Pular cartas restantes
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* ── Step 1: Como prefere se conectar ── */}
+          {/* ── Step 1: Conclusão ── */}
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-5 mb-6 flex items-start gap-4">
-                <div className="bg-[var(--bg-dark)] p-3 rounded-full text-[var(--color-brand-600)] shrink-0">
-                  <Wifi className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-1">Como prefere se conectar?</h3>
-                  <p className="text-[var(--color-text-muted)] text-sm leading-relaxed mb-2">
-                    O formato das conexões importa tanto quanto as pessoas. Como você se sente mais vivo ao interagir?
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Selecione 1 ou mais formatos
-                  </span>
-                </div>
+            <motion.div key="step1" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-10">
+              <div className="w-24 h-24 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-8 shadow-[var(--btn-shadow)] text-[var(--neon-magenta)]">
+                <Sparkles className="w-12 h-12" />
               </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-6 flex-grow">
-                {HOW_OPTIONS.map(opt => {
-                  const active = modes.includes(opt.id);
-                  return (
-                    <button key={opt.id} onClick={() => toggleMode(opt.id)}
-                      className={cn('p-4 rounded-xl border text-left transition-all flex items-center gap-3',
-                        active
-                          ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)] scale-[1.02]'
-                          : 'border-white/10 bg-[var(--glass)] hover:border-white/25')}>
-                      <span className="text-2xl shrink-0">{opt.emoji}</span>
-                      <span className={cn('text-sm font-medium leading-tight', active ? 'text-[var(--text-main)]' : 'text-[var(--color-text-muted)]')}>
-                        {opt.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
-                <button onClick={() => setStep(0)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">
-                  ← Voltar
-                </button>
-                <button onClick={handleFinish} disabled={modes.length === 0}
-                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    modes.length > 0
-                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
-                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
-                  Concluir Fase →
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Step 2: Conclusão ── */}
-          {step === 2 && (
-            <motion.div key="step3" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-10">
-              <div className="w-24 h-24 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-8 shadow-[var(--btn-shadow)]">
-                <Sparkles className="w-12 h-12 text-[var(--neon-cyan)]" />
-              </div>
-              <h2 className="text-3xl font-serif text-[var(--text-main)] mb-4 text-center">Conexões Mapeadas</h2>
-              <p className="text-[var(--color-text-muted)] max-w-lg text-center mb-10 leading-relaxed">
-                Saber com quem e como você quer se conectar é o primeiro passo para construir relações verdadeiras. O próximo capítulo já começa a tomar forma.
+              <h2 className="text-3xl font-serif text-[var(--text-main)] mb-4 text-center">Garimpo Concluído</h2>
+              <p className="text-[var(--color-text-muted)] max-w-lg text-center mb-6 leading-relaxed">
+                Você guardou <strong className="text-[var(--color-brand-500)]">{savedRoles.length} possibilidades</strong> que ressoaram.
+                O que atrai e o que repele são igualmente reveladores.
               </p>
 
-              {/* Resumo */}
-              <div className="w-full max-w-md space-y-4 mb-10">
-                {connections.length > 0 && (
-                  <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-4">
-                    <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Quem você quer impactar</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {connections.map(id => {
-                        const opt = WHO_OPTIONS.find(o => o.id === id);
-                        return opt ? (
-                          <span key={id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)] font-medium">
-                            {opt.emoji} {opt.label}
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
+              {savedRoles.length > 0 && (
+                <div className="w-full max-w-md bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-5 mb-10">
+                  <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Possibilidades que ressoaram</p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedRoles.map(id => {
+                      const role = ALL_ROLES.find(r => r.id === id);
+                      return role ? (
+                        <span key={id} className="text-xs px-3 py-1.5 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)] font-medium flex items-center gap-1">
+                          <span>{role.emoji}</span> {role.text}
+                        </span>
+                      ) : null;
+                    })}
                   </div>
-                )}
-                {modes.length > 0 && (
-                  <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-4">
-                    <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Como prefere se conectar</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {modes.map(id => {
-                        const opt = HOW_OPTIONS.find(o => o.id === id);
-                        return opt ? (
-                          <span key={id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)] font-medium">
-                            {opt.emoji} {opt.label}
-                          </span>
-                        ) : null;
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <button onClick={() => navigate('/comecar/fase/7')}
-                className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform">
-                Avançar para Fase 7 →
+              <button onClick={handleFinish}
+                className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform flex items-center gap-2">
+                Avançar para Fase 7 <Sparkles className="w-5 h-5" />
               </button>
             </motion.div>
           )}

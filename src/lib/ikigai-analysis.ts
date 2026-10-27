@@ -168,7 +168,7 @@ export interface CareerSuggestion {
 
 export type Pillar = 'love' | 'good' | 'world' | 'paid';
 
-type ScoringMissions = Pick<AppState, 'mission1' | 'mission2' | 'mission3' | 'mission4' | 'mission5' | 'mission6'>;
+type ScoringMissions = Pick<AppState, 'mission1' | 'mission2' | 'mission3' | 'mission4' | 'mission5' | 'mission6' | 'phase3'>;
 
 // ── Pesos calibráveis (ajuste aqui para rebalancear todo o ranking) ──────────
 
@@ -209,7 +209,7 @@ export function computeBlendedRIASEC(
     const t = ARCH_RIASEC[a];
     if (t) scores[t] += w.archetype;
   });
-  const cargoType = md.mission5?.cargo ? CARGO_RIASEC[md.mission5.cargo] : undefined;
+  const cargoType = md.phase3?.cargo ? CARGO_RIASEC[md.phase3.cargo] : undefined;
   if (cargoType) scores[cargoType] += w.cargo;
   Object.entries(md.mission1?.energyCards || {}).forEach(([act, q]) => {
     if (q === 'flow' || q === 'boost') {
@@ -273,7 +273,7 @@ export interface UserProfile {
 export function computeUserProfile(md: ScoringMissions): UserProfile {
   const blended = computeBlendedRIASEC(md);
   const riasecTop3 = sortedTypes(blended).filter(t => blended[t] > 0).slice(0, 3);
-  const ministryArea = md.mission5?.ministry ? (MINISTRY_AREA[md.mission5.ministry] ?? '') : '';
+  const ministryArea = md.phase3?.ministry ? (MINISTRY_AREA[md.phase3.ministry] ?? '') : '';
 
   return {
     riasecTop3,
@@ -379,7 +379,7 @@ function lensCtx(md: ScoringMissions): LensCtx {
   return {
     topIntIds: topIntelligences(md),
     pillarWeights: computePillarWeights(md),
-    ministryArea: md.mission5?.ministry ? (MINISTRY_AREA[md.mission5.ministry] ?? '') : '',
+    ministryArea: md.phase3?.ministry ? (MINISTRY_AREA[md.phase3.ministry] ?? '') : '',
     techArea: md.mission6?.futureVision?.q2 ? (TECH_AREA[md.mission6.futureVision.q2] ?? '') : '',
   };
 }
@@ -553,11 +553,11 @@ export function formatMissionDataText(state: AppState): string {
     .map(v => FORCED_CHOICE_LABELS[v] ?? v);
   lines.push(`Escolhas difíceis: ${choices.length ? choices.join('; ') : '—'}`);
 
-  const m5 = state.mission5;
+  const m3extra = state.phase3;
   lines.push('');
-  lines.push('=== MISSÃO 5 — MINISTÉRIO DOS SONHOS ===');
-  lines.push(`Ministério: ${m5?.ministry ? (MINISTRY_NAMES[m5.ministry] ?? m5.ministry) : '—'}`);
-  lines.push(`Cargo: ${m5?.cargo ? (CARGO_NAMES[m5.cargo] ?? m5.cargo) : '—'}`);
+  lines.push('=== FASE 3 — ÁREA E PAPEL ===');
+  lines.push(`Área de atuação: ${m3extra?.ministry ? (MINISTRY_NAMES[m3extra.ministry] ?? m3extra.ministry) : '—'}`);
+  lines.push(`Papel preferido: ${m3extra?.cargo ? (CARGO_NAMES[m3extra.cargo] ?? m3extra.cargo) : '—'}`);
   lines.push(`Equipe (inspirações): ${list(m5?.saved?.map(id => MENTOR_NAMES[id] ?? id))}`);
   lines.push(`Descartadas: ${list(m5?.discarded?.map(id => MENTOR_NAMES[id] ?? id))}`);
 
@@ -1266,6 +1266,10 @@ export function generateReinventarRelatorioHtml(
     ${causeBarsHtml}
     ${uniqueProblem ? sublabel('Problema que mais te mobiliza', '#16a34a') +
       `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;margin:4px 0">${dict(REINVENTAR_PROBLEMS, uniqueProblem)}</p>` : ''}
+    ${phase3?.ministry ? sublabel('Área de atuação', '#16a34a') +
+      `<p style="font-size:14px;color:#374151;margin:4px 0">${dict(REINVENTAR_MINISTRIES, phase3.ministry)}</p>` : ''}
+    ${phase3?.cargo ? sublabel('Papel preferido', '#16a34a') +
+      `<p style="font-size:13px;color:#166534;margin:4px 0">${dict(REINVENTAR_CARGOS, phase3.cargo)}</p>` : ''}
   `);
 
   // ── Phase 4 — Duelo de Mundos ─────────────────────────────────────────────
@@ -1303,10 +1307,12 @@ export function generateReinventarRelatorioHtml(
     ${Object.keys(forcedChoices).length > 0 ? sublabel('Escolhas de estilo de vida', '#d97706') + forcedChoicesHtml : ''}
   `);
 
-  // ── Phase 5 — Ministério dos Sonhos ──────────────────────────────────────
+  // ── Phase 3 extra — Área e Papel (movidos da F5) ─────────────────────────
+  const ministry      = phase3?.ministry ?? '';
+  const cargo         = phase3?.cargo ?? '';
+
+  // ── Phase 5 — Conexões / Figuras ─────────────────────────────────────────
   const archetype     = phase5?.archetype ?? '';
-  const ministry      = phase5?.ministry ?? '';
-  const cargo         = phase5?.cargo ?? '';
   const savedFigures  = phase5?.savedFigures ?? [];
 
   const figuresHtml = savedFigures.length > 0
@@ -1316,13 +1322,9 @@ export function generateReinventarRelatorioHtml(
         ).join('')
       }</div>` : '';
 
-  const phase5Html = section('Fase 5', '#7e22ce', 'Ministério dos Sonhos — sua missão maior', `
+  const phase5Html = section('Fase 5', '#0891b2', 'Conexões que Importam', `
     ${archetype ? sublabel('Arquétipo', '#7e22ce') +
       `<span style="display:inline-block;font-size:15px;font-weight:700;color:#7e22ce;padding:6px 14px;background:#fdf4ff;border-radius:8px;border:1px solid #e9d5ff">${dict(REINVENTAR_ARCHETYPES, archetype)}</span>` : ''}
-    ${ministry ? sublabel('Área de impacto', '#7e22ce') +
-      `<p style="font-size:14px;color:#374151;margin:4px 0">${dict(REINVENTAR_MINISTRIES, ministry)}</p>` : ''}
-    ${cargo ? sublabel('Papel preferido', '#7e22ce') +
-      `<p style="font-size:13px;color:#6b21a8;margin:4px 0">${dict(REINVENTAR_CARGOS, cargo)}</p>` : ''}
     ${savedFigures.length > 0 ? sublabel(`Figuras inspiradoras (${savedFigures.length})`, '#4b5563') + figuresHtml : ''}
   `);
 

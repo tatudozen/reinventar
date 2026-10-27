@@ -21,7 +21,6 @@ import Mission4 from './pages/Mission4';
 import Mission5 from './pages/Mission5';
 import Mission6 from './pages/Mission6';
 import Mission7 from './pages/Mission7';
-import Mission8 from './pages/Mission8';
 import SaveResult from './pages/SaveResult';
 import ResultDashboard from './pages/ResultDashboard';
 import DeepReport from './pages/DeepReport';
@@ -46,7 +45,6 @@ export default function App() {
             <Route path="fase/5" element={<Mission5 />} />
             <Route path="fase/6" element={<Mission6 />} />
             <Route path="fase/7" element={<Mission7 />} />
-            <Route path="fase/8" element={<Mission8 />} />
             <Route path="salvar" element={<SaveResult />} />
             <Route path="pesquisa" element={<SatisfactionSurvey />} />
           </Route>
