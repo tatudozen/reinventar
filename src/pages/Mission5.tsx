@@ -7,13 +7,8 @@ import { MissionWrapper } from '../components/MissionWrapper';
 
 const FIGURES = [
   // Reinvenção depois dos 50
-  { id: 'sanders',      name: 'Colonel Sanders',     area: 'Reinvenção',      desc: 'Fundou o KFC aos 65 anos, após décadas de fracassos. Transformou receita de frango em legado global.' },
-  { id: 'child',        name: 'Julia Child',          area: 'Reinvenção',      desc: 'Publicou seu primeiro livro de culinária aos 50. Tornou-se símbolo de que nunca é tarde para começar.' },
-  { id: 'moses',        name: 'Vovó Moses',           area: 'Arte',            desc: 'Começou a pintar aos 78 anos. Suas obras chegaram a museus do mundo todo.' },
-  // Sabedoria e legado
   { id: 'mandela',      name: 'Nelson Mandela',       area: 'Liderança',       desc: 'Saiu da prisão aos 71 e se tornou presidente. Símbolo de perdão, resiliência e reconciliação.' },
   { id: 'frankl',       name: 'Viktor Frankl',        area: 'Psicologia',      desc: 'Sobrevivente do Holocausto que criou a logoterapia. Ensinou que o sentido da vida pode ser encontrado mesmo no sofrimento.' },
-  { id: 'attenborough', name: 'David Attenborough',   area: 'Natureza',        desc: 'Narrador da vida na Terra por décadas. Com mais de 90 anos, segue sendo voz da preservação.' },
   // Arte e expressão
   { id: 'kahlo',        name: 'Frida Kahlo',          area: 'Arte',            desc: 'Transformou dor em arte e arte em identidade. Ícone de autenticidade e resiliência.' },
   // Brasil — sabedoria e legado
