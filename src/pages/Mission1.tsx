@@ -33,12 +33,6 @@ const ENERGY_LEVELS: { id: EnergyLevel; label: string; sublabel: string; Icon: R
   { id: 'flow',    label: 'Flow',    sublabel: 'Não vejo o tempo',   Icon: Flame,      color: '#00f2ff' },
 ];
 
-const MATURITY_VERBS = [
-  'ensinar', 'cuidar', 'liderar', 'criar', 'construir',
-  'resolver', 'conectar', 'inspirar', 'organizar', 'descobrir',
-  'proteger', 'transformar',
-];
-
 const CURIOSITY_THEMES = [
   'Saúde e longevidade', 'Arte e expressão', 'Espiritualidade e sentido',
   'Negócios e empreendedorismo', 'Educação e pedagogia', 'Natureza e meio ambiente',
@@ -60,8 +54,7 @@ export default function Mission1() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  const energyCards   = state.phase1.energyCards   ?? {};
-  const maturityVerbs = state.phase1.maturityVerbs  ?? [];
+  const energyCards     = state.phase1.energyCards     ?? {};
   const curiosityThemes = state.phase1.curiosityThemes ?? [];
 
   const classified      = Object.keys(energyCards).length;
@@ -95,13 +88,6 @@ export default function Mission1() {
     }
   };
 
-  const toggleVerb = (verb: string) => {
-    const next = maturityVerbs.includes(verb)
-      ? maturityVerbs.filter(v => v !== verb)
-      : [...maturityVerbs, verb];
-    updatePhase('phase1', { maturityVerbs: next });
-  };
-
   const toggleTheme = (theme: string) => {
     const next = curiosityThemes.includes(theme)
       ? curiosityThemes.filter(t => t !== theme)
@@ -111,8 +97,7 @@ export default function Mission1() {
 
   const handleNextStep = () => {
     if (step === 0 && isCardsComplete) setStep(1);
-    else if (step === 1 && maturityVerbs.length >= 2) setStep(2);
-    else if (step === 2 && curiosityThemes.length >= 2) {
+    else if (step === 1 && curiosityThemes.length >= 2) {
       addXP(100);
       completePhase(1);
       navigate('/comecar/fase/2');
@@ -236,50 +221,9 @@ export default function Mission1() {
             </motion.div>
           )}
 
-          {/* ── STEP 1: Verbos de Maturidade ── */}
+          {/* ── STEP 1: Temas de Curiosidade ── */}
           {step === 1 && (
             <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-              <div className="text-center mb-6">
-                <h3 className="font-bold text-xl text-[var(--text-main)] mb-2">O que você sempre fez naturalmente?</h3>
-                <p className="text-sm text-[var(--color-text-muted)] max-w-sm mx-auto leading-relaxed">
-                  Ao longo da vida, certas ações sempre surgiram sem esforço. Quais verbos descrevem o que você faz sem precisar pensar?
-                </p>
-                <span className="inline-flex mt-3 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                  Escolha ao menos 2
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-3 justify-center mb-8 max-w-md mx-auto">
-                {MATURITY_VERBS.map(verb => {
-                  const selected = maturityVerbs.includes(verb);
-                  return (
-                    <button key={verb} onClick={() => toggleVerb(verb)}
-                      className={cn('px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all border-2',
-                        selected ? 'bg-[var(--color-brand-600)] border-[var(--color-brand-600)] text-[var(--bg-dark)]'
-                                 : 'border-[var(--color-brand-200)] text-[var(--color-text-muted)] hover:border-[var(--color-brand-400)] bg-[var(--glass)]')}>
-                      {verb}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="text-center">
-                <motion.button
-                  animate={{ opacity: maturityVerbs.length >= 2 ? 1 : 0.3 }}
-                  disabled={maturityVerbs.length < 2}
-                  onClick={handleNextStep}
-                  className="px-8 py-3 rounded-xl bg-[var(--color-brand-600)] font-bold uppercase tracking-wider text-[var(--bg-dark)] disabled:pointer-events-none"
-                >
-                  Próximo →
-                </motion.button>
-                <button onClick={() => setStep(0)} className="block mx-auto mt-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── STEP 2: Temas de Curiosidade ── */}
-          {step === 2 && (
-            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
               <div className="text-center mb-6">
                 <h3 className="font-bold text-xl text-[var(--text-main)] mb-2">O que ainda te desperta curiosidade?</h3>
                 <p className="text-sm text-[var(--color-text-muted)] max-w-sm mx-auto leading-relaxed">
@@ -313,7 +257,7 @@ export default function Mission1() {
                 >
                   Concluir Fase 1 →
                 </motion.button>
-                <button onClick={() => setStep(1)} className="block mx-auto mt-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
+                <button onClick={() => setStep(0)} className="block mx-auto mt-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
               </div>
             </motion.div>
           )}
