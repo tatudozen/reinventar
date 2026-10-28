@@ -83,16 +83,9 @@ const MINISTRY_LABELS: Record<string, string> = {
 };
 
 const CARGO_LABELS: Record<string, string> = {
-  ministro: 'ministro(a)', consultor_tecnico: 'consultor(a) técnico(a)',
-  assessor_comunicacao: 'assessor(a) de comunicação', diretor_operacoes: 'diretor(a) de operações',
-  coordenador_campo: 'coordenador(a) de campo', secretario_social: 'secretário(a) de bem-estar',
-};
-
-const FIGURE_LABELS: Record<string, string> = {
-  mandela: 'Nelson Mandela', frankl: 'Viktor Frankl', gandhi: 'Mahatma Gandhi',
-  curie: 'Marie Curie', kahlo: 'Frida Kahlo', niemeyer: 'Oscar Niemeyer',
-  freire: 'Paulo Freire', evaristo: 'Conceição Evaristo', pele: 'Pelé',
-  senna: 'Ayrton Senna', teresa: 'Madre Teresa', wangari: 'Wangari Maathai',
+  especialista: 'especialista', criador: 'criador(a)',
+  vendedor: 'conector(a)', organizador: 'organizador(a)',
+  mao_na_massa: 'mão na massa', cuidador: 'cuidador(a)',
 };
 
 const WHO_LABELS: Record<string, string> = {
@@ -119,7 +112,6 @@ export default function Mission7() {
     const cause        = state.phase3?.uniqueProblem ?? '';
     const ministry     = state.phase3?.ministry ? MINISTRY_LABELS[state.phase3.ministry] : '';
     const cargo        = state.phase3?.cargo    ? CARGO_LABELS[state.phase3.cargo]       : '';
-    const figures      = (state.phase5?.savedFigures ?? []).slice(0, 3).map(id => FIGURE_LABELS[id]).filter(Boolean);
     const connections  = (state.phase6?.connections ?? []).slice(0, 3).map(id => WHO_LABELS[id]).filter(Boolean);
     const talents      = (state.phase2?.hiddenTalents ?? []).slice(0, 2);
     const curiosities  = (state.phase1?.curiosityThemes ?? []).slice(0, 2);
@@ -177,12 +169,6 @@ export default function Mission7() {
     // ── Quem quero impactar ──────────────────────────────────────────────────
     if (connections.length > 0) {
       lines.push(`Quero estar perto de ${connections.join(', ')} — são as pessoas com quem minha energia faz mais sentido.`);
-      lines.push('');
-    }
-
-    // ── Figuras inspiradoras ─────────────────────────────────────────────────
-    if (figures.length > 0) {
-      lines.push(`Me identifico com ${figures.join(', ')} — não por ser igual a elas, mas porque mostram que é possível viver com propósito e deixar uma marca real.`);
       lines.push('');
     }
 

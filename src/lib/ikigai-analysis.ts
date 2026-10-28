@@ -130,14 +130,14 @@ export const MINISTRIES: { id: string; name: string; emoji: string; area: string
   { id: 'comunicacoes',           name: 'Comunicações',           emoji: '📡', area: 'Comunicação e Mídias' },
 ];
 
-// Cada cargo revela um perfil profissional → um tipo RIASEC.
+// Chapéu que o(a) dono(a) do negócio mais veste (CEO do negócio de 1 pessoa) → tipo RIASEC.
 export const CARGOS: { id: string; name: string; profile: string; riasec: RIASECType }[] = [
-  { id: 'ministro',             name: 'Ministro(a)',                profile: 'Lidera o ministério, define a visão e toma as grandes decisões.', riasec: 'E' },
-  { id: 'consultor_tecnico',    name: 'Consultor(a) Técnico(a)',    profile: 'Resolve problemas complexos com pesquisa, análise e dados.',      riasec: 'I' },
-  { id: 'assessor_comunicacao', name: 'Assessor(a) de Comunicação', profile: 'Traduz e comunica as ideias do ministério para o mundo.',         riasec: 'A' },
-  { id: 'diretor_operacoes',    name: 'Diretor(a) de Operações',    profile: 'Organiza processos e garante que tudo funcione com eficiência.',  riasec: 'C' },
-  { id: 'coordenador_campo',    name: 'Coordenador(a) de Campo',    profile: 'Põe a mão na massa e executa os projetos na prática.',            riasec: 'R' },
-  { id: 'secretario_social',    name: 'Secretário(a) de Bem-Estar', profile: 'Cuida das pessoas e do impacto social das políticas.',            riasec: 'S' },
+  { id: 'vendedor',     name: 'O(A) Conector(a)',    profile: 'Vende, fecha parcerias e conecta pessoas.',               riasec: 'E' },
+  { id: 'especialista', name: 'O(A) Especialista',   profile: 'Entrega conhecimento direto: consultoria, mentoria.',     riasec: 'I' },
+  { id: 'criador',      name: 'O(A) Criador(a)',     profile: 'Cria produtos, conteúdo e soluções com a própria marca.', riasec: 'A' },
+  { id: 'organizador',  name: 'O(A) Organizador(a)', profile: 'Estrutura, planeja e faz a operação rodar com ordem.',    riasec: 'C' },
+  { id: 'mao_na_massa', name: 'Mão na Massa',        profile: 'Produz e executa com as próprias mãos, no detalhe.',      riasec: 'R' },
+  { id: 'cuidador',     name: 'O(A) Cuidador(a)',    profile: 'Atende e cuida das pessoas de perto, com presença.',      riasec: 'S' },
 ];
 
 export const MINISTRY_AREA: Record<string, string> = Object.fromEntries(MINISTRIES.map(m => [m.id, m.area]));

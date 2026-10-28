@@ -26,6 +26,8 @@ interface Phase2 {
 interface Phase3 {
   impactPoints?:  Record<string, number>;
   uniqueProblem?: string;
+  ministry?:      string;
+  cargo?:         string;
 }
 
 interface Phase4 {
@@ -35,10 +37,7 @@ interface Phase4 {
 }
 
 interface Phase5 {
-  ministry?:         string;
-  cargo?:            string;
-  savedFigures?:     string[];
-  discardedFigures?: string[];
+  archetype?: string;
 }
 
 interface Phase6 {
@@ -124,41 +123,14 @@ const MINISTRY_LABELS: Record<string, string> = {
   comunicacoes:          'Comunicações',
 };
 
+// Chapéu que o(a) dono(a) do negócio mais veste (é o CEO do negócio de 1 pessoa)
 const CARGO_LABELS: Record<string, string> = {
-  ministro:              'Ministro(a) — lidera e define a visão',
-  consultor_tecnico:     'Consultor(a) Técnico(a) — resolve com análise e dados',
-  assessor_comunicacao:  'Assessor(a) de Comunicação — traduz e comunica ideias',
-  diretor_operacoes:     'Diretor(a) de Operações — organiza e garante execução',
-  coordenador_campo:     'Coordenador(a) de Campo — coloca a mão na massa',
-  secretario_social:     'Secretário(a) de Bem-Estar — cuida das pessoas',
-};
-
-const FIGURE_LABELS: Record<string, string> = {
-  sanders:      'Colonel Sanders (reinventou aos 65)',
-  child:        'Julia Child (primeiro livro aos 50)',
-  moses:        'Vovó Moses (começou a pintar aos 78)',
-  kroc:         'Ray Kroc (McDonald\'s aos 52)',
-  mandela:      'Nelson Mandela (presidente aos 71)',
-  frankl:       'Viktor Frankl (logoterapia e sentido)',
-  marco:        'Marco Aurélio (filosofia estoica)',
-  gandhi:       'Mahatma Gandhi (resistência não-violenta)',
-  curie:        'Marie Curie (Nobel em duas áreas)',
-  sagan:        'Carl Sagan (curiosidade como missão)',
-  attenborough: 'David Attenborough (voz da natureza)',
-  davinci:      'Leonardo da Vinci (arte e ciência)',
-  kahlo:        'Frida Kahlo (autenticidade e resiliência)',
-  tolkien:      'J.R.R. Tolkien (Senhor dos Anéis aos 62)',
-  niemeyer:     'Oscar Niemeyer (criou até os 104)',
-  drummond:     'Carlos Drummond de Andrade (poesia)',
-  freire:       'Paulo Freire (educação como amor)',
-  evaristo:     'Conceição Evaristo (primeiro livro aos 44)',
-  clarice:      'Clarice Lispector (interior humano)',
-  teresa:       'Madre Teresa (Nobel da Paz aos 69)',
-  wangari:      'Wangari Maathai (47 mi de árvores)',
-  malala:       'Malala Yousafzai (educação como direito)',
-  drucker:      'Peter Drucker (liderança pelo autoconhecimento)',
-  buffett:      'Warren Buffett (paciência e princípios)',
-  aristoteles:  'Aristóteles (o que é uma vida boa?)',
+  especialista: 'O(A) Especialista — entrega conhecimento direto (consultoria, mentoria)',
+  criador:      'O(A) Criador(a) — cria produtos, conteúdo e soluções com a própria marca',
+  vendedor:     'O(A) Conector(a) — vende, fecha parcerias e conecta pessoas',
+  organizador:  'O(A) Organizador(a) — estrutura, planeja e faz a operação rodar',
+  mao_na_massa: 'Mão na Massa — produz e executa com as próprias mãos',
+  cuidador:     'O(A) Cuidador(a) — atende e cuida das pessoas de perto',
 };
 
 const CONNECTION_LABELS: Record<string, string> = {
@@ -354,21 +326,27 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     lines.push('');
   }
 
-  // FASE 3
+  // FASE 3 — A dor que resolve + mercado + chapéu de dono(a)
   const p3 = d.phase3 ?? {};
-  if (nonEmptyObj(p3.impactPoints) || p3.uniqueProblem) {
-    lines.push('── FASE 3: CAUSA DA REINVENÇÃO ──');
+  if (nonEmptyObj(p3.impactPoints) || p3.uniqueProblem || p3.ministry || p3.cargo) {
+    lines.push('── FASE 3: A DOR QUE RESOLVE (mercado e papel) ──');
     if (nonEmptyObj(p3.impactPoints)) {
       const sorted = Object.entries(p3.impactPoints!)
         .filter(([, v]) => v > 0)
         .sort(([, a], [, b]) => b - a);
-      lines.push('Distribuição de moedas por causa (10 no total):');
+      lines.push('Distribuição de moedas por tema (10 no total):');
       for (const [id, pts] of sorted) {
         lines.push(`  • ${CAUSE_LABELS[id] ?? id}: ${pts} moeda(s)`);
       }
     }
+    if (p3.ministry) {
+      lines.push(`Mercado / área do negócio: ${MINISTRY_LABELS[p3.ministry] ?? p3.ministry}`);
+    }
+    if (p3.cargo) {
+      lines.push(`Chapéu de dono(a) que mais veste: ${CARGO_LABELS[p3.cargo] ?? p3.cargo}`);
+    }
     if (p3.uniqueProblem) {
-      lines.push(`Problema mais urgente escolhido: ${PROBLEM_LABELS[p3.uniqueProblem] ?? p3.uniqueProblem}`);
+      lines.push(`Dor única que o negócio vai resolver: ${PROBLEM_LABELS[p3.uniqueProblem] ?? p3.uniqueProblem}`);
     }
     lines.push('');
   }
@@ -395,47 +373,28 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     lines.push('');
   }
 
-  // FASE 5
-  const p5 = d.phase5 ?? {};
-  if (p5.ministry || p5.cargo || nonEmpty(p5.savedFigures).length || nonEmpty(p5.discardedFigures).length) {
-    lines.push('── FASE 5: PÚBLICO E INSPIRAÇÕES ──');
-    if (p5.ministry) {
-      lines.push(`Área dos sonhos: ${MINISTRY_LABELS[p5.ministry] ?? p5.ministry}`);
-    }
-    if (p5.cargo) {
-      lines.push(`Papel preferido: ${CARGO_LABELS[p5.cargo] ?? p5.cargo}`);
-    }
-    if (nonEmpty(p5.savedFigures).length) {
-      lines.push(`Figuras que ressoam (time dos sonhos): ${translateList(p5.savedFigures!, FIGURE_LABELS)}`);
-    }
-    if (nonEmpty(p5.discardedFigures).length) {
-      lines.push(`Figuras descartadas (o que NÃO quer ser): ${translateList(p5.discardedFigures!, FIGURE_LABELS)}`);
-    }
-    lines.push('');
-  }
-
-  // FASE 6
+  // FASE 5 — Público e Cliente
   const p6 = d.phase6 ?? {};
   if (nonEmpty(p6.connections).length || nonEmpty(p6.modes).length) {
-    lines.push('── FASE 6: COM QUEM E COMO ──');
+    lines.push('── FASE 5: PÚBLICO E CLIENTE ──');
     if (nonEmpty(p6.connections).length) {
-      lines.push(`Públicos com quem quer atuar: ${translateList(p6.connections!, CONNECTION_LABELS)}`);
+      lines.push(`Público que quer servir: ${translateList(p6.connections!, CONNECTION_LABELS)}`);
     }
     if (nonEmpty(p6.modes).length) {
-      lines.push(`Como quer atuar: ${translateList(p6.modes!, MODE_LABELS)}`);
+      lines.push(`Como quer entregar valor: ${translateList(p6.modes!, MODE_LABELS)}`);
     }
     lines.push('');
   }
 
-  // FASE 7
+  // FASE 6 — Garimpo (formatos de oferta em potencial)
   const p7 = d.phase7 ?? {};
   if (nonEmpty(p7.savedRoles).length || nonEmpty(p7.discardedRoles).length) {
-    lines.push('── FASE 7: POSSIBILIDADES EXPLORADAS ──');
+    lines.push('── FASE 6: FORMATOS DE OFERTA EXPLORADOS (GARIMPO) ──');
     if (nonEmpty(p7.savedRoles).length) {
-      lines.push(`Papéis que ressoaram: ${translateList(p7.savedRoles!, ROLE_LABELS)}`);
+      lines.push(`Formatos que ressoaram: ${translateList(p7.savedRoles!, ROLE_LABELS)}`);
     }
     if (nonEmpty(p7.discardedRoles).length) {
-      lines.push(`Papéis descartados: ${translateList(p7.discardedRoles!, ROLE_LABELS)}`);
+      lines.push(`Formatos descartados: ${translateList(p7.discardedRoles!, ROLE_LABELS)}`);
     }
     lines.push('');
   }

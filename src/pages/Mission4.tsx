@@ -251,7 +251,7 @@ export default function Mission4() {
   return (
     <MissionWrapper
       videoTitle="Cenários de Vida"
-      videoDescription="Escolha instintivamente — seus padrões de preferência revelam como você quer viver e contribuir."
+      videoDescription="Escolha instintivamente — seus padrões revelam como você quer trabalhar no dia a dia do seu negócio: o ritmo, o ambiente e o tipo de rotina que combina com você."
       videoId="fase4"
     >
       <div className="flex flex-col min-h-[70vh]">

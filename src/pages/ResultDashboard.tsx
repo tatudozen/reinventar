@@ -85,17 +85,6 @@ const HOW_LABELS: Record<string, string> = {
   sistema: '⚙️ Indiretamente', eventos: '🎤 Em eventos',
 };
 
-const FIGURE_NAMES: Record<string, string> = {
-  sanders: 'Colonel Sanders', child: 'Julia Child', moses: 'Vovó Moses', kroc: 'Ray Kroc',
-  mandela: 'Nelson Mandela', frankl: 'Viktor Frankl', marco: 'Marco Aurélio', gandhi: 'Mahatma Gandhi',
-  curie: 'Marie Curie', sagan: 'Carl Sagan', attenborough: 'David Attenborough',
-  davinci: 'Leonardo da Vinci', kahlo: 'Frida Kahlo', tolkien: 'J.R.R. Tolkien',
-  niemeyer: 'Oscar Niemeyer', drummond: 'Carlos Drummond', freire: 'Paulo Freire',
-  evaristo: 'Conceição Evaristo', clarice: 'Clarice Lispector', teresa: 'Madre Teresa',
-  wangari: 'Wangari Maathai', malala: 'Malala Yousafzai', drucker: 'Peter Drucker',
-  buffett: 'Warren Buffett', aristoteles: 'Aristóteles',
-};
-
 const MINISTRY_LABELS: Record<string, string> = {
   economia: 'Economia', saude: 'Saúde', ciencia_tecnologia: 'Ciência e Tecnologia',
   educacao: 'Educação', justica: 'Justiça', cultura: 'Cultura',
@@ -104,9 +93,9 @@ const MINISTRY_LABELS: Record<string, string> = {
 };
 
 const CARGO_LABELS: Record<string, string> = {
-  ministro: 'Ministro(a)', consultor_tecnico: 'Consultor(a) Técnico(a)',
-  assessor_comunicacao: 'Assessor(a) de Comunicação', diretor_operacoes: 'Diretor(a) de Operações',
-  coordenador_campo: 'Coordenador(a) de Campo', secretario_social: 'Secretário(a) de Bem-Estar',
+  especialista: 'O(A) Especialista', criador: 'O(A) Criador(a)',
+  vendedor: 'O(A) Conector(a)', organizador: 'O(A) Organizador(a)',
+  mao_na_massa: 'Mão na Massa', cuidador: 'O(A) Cuidador(a)',
 };
 
 // ── Cross-signal maps ──────────────────────────────────────────────────────────
@@ -585,8 +574,7 @@ export default function ResultDashboard() {
     .map(([t]) => t);
   const hollandCode = riasecTop3.join('');
 
-  // ── Phase 5 ─────────────────────────────────────────────────────────────────
-  const savedFigures = phase5?.savedFigures ?? [];
+  // ── Fase 3 (área + chapéu de dono) ───────────────────────────────────────────
   const ministry     = phase3?.ministry ?? '';
   const cargo        = phase3?.cargo    ?? '';
 

@@ -192,7 +192,7 @@ export default function Mission2() {
   return (
     <MissionWrapper
       videoTitle="Talentos na Mochila"
-      videoDescription="Vamos mapear as competências que você acumulou ao longo da vida."
+      videoDescription="Suas competências de décadas são o produto que o seu negócio vende. Vamos mapear a expertise que te dá autoridade — e que as pessoas pagam para acessar."
       videoId="fase2"
     >
       <div className="flex flex-col min-h-[70vh]">

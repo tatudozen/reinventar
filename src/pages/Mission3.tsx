@@ -121,13 +121,16 @@ const MINISTRIES = [
   { id: 'comunicacoes',           name: 'Comunicações',           emoji: '📡' },
 ];
 
+// No seu negócio de uma pessoa só, você é o(a) dono(a) / CEO. O "chapéu" é a
+// função que você mais gosta de vestir no dia a dia — o que entrega melhor
+// pessoalmente (o resto você pode delegar ou terceirizar com o tempo).
 const CARGOS = [
-  { id: 'ministro',             name: 'Ministro(a)',                 profile: 'Lidera, define a visão e toma as grandes decisões.' },
-  { id: 'consultor_tecnico',    name: 'Consultor(a) Técnico(a)',     profile: 'Resolve problemas complexos com pesquisa, análise e dados.' },
-  { id: 'assessor_comunicacao', name: 'Assessor(a) de Comunicação',  profile: 'Traduz e comunica as ideias para o mundo.' },
-  { id: 'diretor_operacoes',    name: 'Diretor(a) de Operações',     profile: 'Organiza processos e garante que tudo funcione.' },
-  { id: 'coordenador_campo',    name: 'Coordenador(a) de Campo',     profile: 'Coloca a mão na massa e executa na prática.' },
-  { id: 'secretario_social',    name: 'Secretário(a) de Bem-Estar',  profile: 'Cuida das pessoas e do impacto humano das ações.' },
+  { id: 'especialista', name: 'O(A) Especialista', profile: 'Entrego meu conhecimento direto: consultoria, mentoria, diagnóstico.' },
+  { id: 'criador',      name: 'O(A) Criador(a)',   profile: 'Crio produtos, conteúdo e soluções com a minha marca.' },
+  { id: 'vendedor',     name: 'O(A) Conector(a)',  profile: 'Faço acontecer: vendo, fecho parcerias e conecto pessoas.' },
+  { id: 'organizador',  name: 'O(A) Organizador(a)', profile: 'Estruturo, planejo e faço a operação rodar com ordem.' },
+  { id: 'mao_na_massa', name: 'Mão na Massa',      profile: 'Produzo e executo com as próprias mãos, no detalhe.' },
+  { id: 'cuidador',     name: 'O(A) Cuidador(a)',  profile: 'Atendo e cuido das pessoas de perto, com presença.' },
 ];
 
 
@@ -192,8 +195,8 @@ export default function Mission3() {
 
   return (
     <MissionWrapper
-      videoTitle="A Grande Causa"
-      videoDescription="Para qual problema do mundo você quer direcionar sua energia?"
+      videoTitle="A Dor que Você Resolve"
+      videoDescription="Todo negócio nasce de um problema real. Qual dor você quer resolver — e por qual as pessoas pagariam?"
       videoId="fase3"
     >
       <div className="flex flex-col min-h-[70vh]">
@@ -300,7 +303,7 @@ export default function Mission3() {
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Landmark className="w-4 h-4 text-[var(--color-brand-500)]" />
-                  <h3 className="font-bold text-base text-[var(--text-main)]">Em qual área você atuaria?</h3>
+                  <h3 className="font-bold text-base text-[var(--text-main)]">Em qual mercado o seu negócio vai atuar?</h3>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {MINISTRIES.map(m => {
@@ -321,14 +324,17 @@ export default function Mission3() {
                 </div>
               </div>
 
-              {/* Papel / Cargo */}
+              {/* Papel / Chapéu de dono(a) */}
               <div className="mb-auto">
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-1">
                   <Briefcase className="w-4 h-4 text-[var(--color-brand-500)]" />
                   <h3 className="font-bold text-base text-[var(--text-main)]">
-                    Como você prefere atuar{ministryInfo ? ` em ${ministryInfo.name}` : ''}?
+                    No seu negócio, você é o(a) dono(a). Qual chapéu veste melhor?
                   </h3>
                 </div>
+                <p className="text-xs text-[var(--color-text-muted)] mb-3 leading-relaxed">
+                  Você será o CEO do seu negócio de uma pessoa só. Escolha a função que mais combina com você — o resto dá para delegar com o tempo.
+                </p>
                 <div className="space-y-2">
                   {CARGOS.map(c => {
                     const active = cargo === c.id;
@@ -367,9 +373,9 @@ export default function Mission3() {
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
 
               <div className="text-center mb-6">
-                <h3 className="font-serif text-2xl text-[var(--text-main)] mb-2">O Problema Único</h3>
+                <h3 className="font-serif text-2xl text-[var(--text-main)] mb-2">A Dor que Você Resolve</h3>
                 <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
-                  Se você pudesse dedicar sua energia a resolver apenas <strong>um</strong> problema real{ministryInfo ? ` em ${ministryInfo.name}` : ''}, qual seria?
+                  Escolha <strong>uma</strong> dor real{ministryInfo ? ` em ${ministryInfo.name}` : ''} que o seu negócio vai resolver — a que mais te move e que outras pessoas pagariam para ver resolvida.
                 </p>
               </div>
 
@@ -424,13 +430,13 @@ export default function Mission3() {
               <div className="w-24 h-24 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-8 shadow-[var(--btn-shadow)]">
                 <Flame className="w-12 h-12 text-[var(--neon-magenta)]" />
               </div>
-              <h2 className="text-3xl font-serif text-[var(--text-main)] mb-4 text-center">Causa Encontrada</h2>
+              <h2 className="text-3xl font-serif text-[var(--text-main)] mb-4 text-center">Dor Encontrada</h2>
               <p className="text-[var(--color-text-muted)] max-w-lg text-center mb-4 leading-relaxed">
-                Você identificou o que move você. Sua experiência não existe à toa — ela é a ferramenta certa para o problema certo.
+                Todo negócio começa resolvendo uma dor real. Sua experiência não existe à toa — ela é a ferramenta certa para o problema certo.
               </p>
               {state.phase3.uniqueProblem && (
                 <div className="mb-8 px-6 py-3 rounded-xl bg-[var(--glass)] border border-[var(--color-brand-300)] text-center">
-                  <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Seu problema único</p>
+                  <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-1">A dor que você resolve</p>
                   <p className="font-bold text-[var(--text-main)]">{state.phase3.uniqueProblem}</p>
                 </div>
               )}

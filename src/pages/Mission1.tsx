@@ -107,7 +107,7 @@ export default function Mission1() {
   return (
     <MissionWrapper
       videoTitle="Mapa de Energia"
-      videoDescription="Vamos identificar quais atividades ainda te dão vida — e quais drenam sua energia."
+      videoDescription="Todo negócio de uma pessoa só roda com a energia do dono. Vamos descobrir o que te dá vida — e o que drena — para construir sobre o que te sustenta."
       videoId="fase1"
     >
       <div className="flex flex-col min-h-[70vh]">
@@ -227,7 +227,7 @@ export default function Mission1() {
               <div className="text-center mb-6">
                 <h3 className="font-bold text-xl text-[var(--text-main)] mb-2">O que ainda te desperta curiosidade?</h3>
                 <p className="text-sm text-[var(--color-text-muted)] max-w-sm mx-auto leading-relaxed">
-                  Quais temas você leria sobre às 23h sem sentir sono? Escolha ao menos dois.
+                  Quais temas você leria sobre às 23h sem sentir sono? O que te instiga costuma apontar para onde há gente disposta a aprender — e a pagar por isso. Escolha ao menos dois.
                 </p>
                 <span className="inline-flex mt-3 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
                   Escolha ao menos 2
