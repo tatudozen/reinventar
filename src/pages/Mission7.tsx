@@ -42,7 +42,7 @@ const QUESTIONS = [
     id: 'trabalho',
     title: 'Onde e como você exerce sua contribuição?',
     options: [
-      { text: 'Em um espaço próprio, com estrutura',         image: '/questions/fase8-trabalho-escritorio.png' },
+      { text: 'Em um escritório moderno ou laboratório',      image: '/questions/fase8-trabalho-escritorio.png' },
       { text: 'De forma remota, de qualquer lugar',          image: '/questions/fase8-trabalho-remoto.png' },
       { text: 'No campo, ao ar livre, perto das pessoas',    image: '/questions/fase8-trabalho-campo.png' },
       { text: 'No meu estúdio ou ateliê criativo',           image: '/questions/fase8-trabalho-estudio.png' },
