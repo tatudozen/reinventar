@@ -5,21 +5,21 @@ import { useApp } from '../store';
 import { getEmbedUrl, isSafeEmbedUrl } from '../components/MentorVideo';
 
 const PHASES = [
-  { n: '01', title: 'Mapa de Energia',        desc: 'Descubra quais atividades ainda te fazem brilhar — e o que drena sua vitalidade sem você perceber.' },
-  { n: '02', title: 'Talentos na Mochila',    desc: 'Reconheça as competências acumuladas em décadas de vida que você ainda não chamou de talento.' },
-  { n: '03', title: 'A Grande Causa',         desc: 'Identifique o problema do mundo que te move — aquele que você não consegue ignorar.' },
-  { n: '04', title: 'Cenários de Vida',       desc: 'Explore contextos e ambientes onde você se sente mais vivo e produtivo.' },
-  { n: '05', title: 'O Arquétipo',            desc: 'Descubra qual força interior guia suas escolhas — e como ela pode orientar seus próximos passos.' },
-  { n: '06', title: 'Conexões que Importam', desc: 'Mapeie as relações e comunidades que podem sustentar sua reinvenção.' },
-  { n: '07', title: 'O Próximo Capítulo',     desc: 'Esboce com clareza o que você quer construir — e o que está pronto para deixar para trás.' },
-  { n: '08', title: 'Carta ao Eu de Amanhã', desc: 'Escreva uma carta de você para você — do presente que já sabe para o futuro que está nascendo.' },
+  { n: '01', title: 'Mapa de Energia',         desc: 'Descubra quais atividades ainda te fazem brilhar — a energia que vai sustentar o que você construir.' },
+  { n: '02', title: 'Talentos na Mochila',     desc: 'Reconheça as competências de décadas de vida — sua autoridade e vantagem real nesta nova fase.' },
+  { n: '03', title: 'A Dor que Você Resolve',  desc: 'Identifique o problema do mundo que te move — e que outras pessoas pagariam para resolver.' },
+  { n: '04', title: 'Cenários de Vida',        desc: 'Explore os contextos e ambientes onde você trabalha e se sente mais vivo.' },
+  { n: '05', title: 'Público e Inspirações',   desc: 'Mapeie quem você quer servir e as figuras que inspiram o seu jeito de atuar.' },
+  { n: '06', title: 'O Garimpo',               desc: 'Garimpe formatos concretos de atuação — as sementes da sua futura oferta.' },
+  { n: '07', title: 'O Modelo da Reinvenção',  desc: 'Desenhe sua oferta, quem paga e sua meta — a engrenagem que transforma experiência em renda.' },
+  { n: '08', title: 'Carta ao Eu de Amanhã',   desc: 'Feche com a visão do seu próximo capítulo — e do negócio que nasce dele.' },
 ];
 
 const PILLARS = [
-  { icon: <BookOpen className="w-5 h-5" />, title: 'Experiência',  desc: 'Décadas de vida são material bruto, não peso a carregar.' },
-  { icon: <Compass className="w-5 h-5" />,  title: 'Curiosidade',  desc: 'Quem ainda se pergunta não parou de crescer.' },
-  { icon: <Palette className="w-5 h-5" />,  title: 'Expressão',    desc: 'O que você sempre quis criar ainda está esperando.' },
-  { icon: <Target className="w-5 h-5" />,   title: 'Propósito',    desc: 'A clareza que a vida ensina com o tempo.' },
+  { icon: <BookOpen className="w-5 h-5" />, title: 'Experiência',  desc: 'Décadas de vida são capital de trabalho, não peso a carregar.' },
+  { icon: <Compass className="w-5 h-5" />,  title: 'Curiosidade',  desc: 'O que ainda te instiga aponta para onde há mercado.' },
+  { icon: <Palette className="w-5 h-5" />,  title: 'Oferta',       desc: 'O que você sabe fazer vira algo que alguém recebe — e paga.' },
+  { icon: <Target className="w-5 h-5" />,   title: 'Renda',        desc: 'Uma nova fonte de receita, extra ou principal, no seu ritmo.' },
 ];
 
 export default function Home() {
@@ -71,14 +71,14 @@ export default function Home() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div className="text-xs font-mono text-[var(--color-text-muted)] tracking-widest uppercase mb-4">
-              Jornada de Autoconhecimento · 55+
+              Plano de Reinvenção · 55+
             </div>
             <h1 className="font-serif text-5xl md:text-6xl text-[var(--color-brand-800)] mb-6 leading-tight">
-              Descubra quem você<br/>
-              <span className="italic text-[var(--color-brand-500)]">está se tornando</span>
+              Transforme sua experiência<br/>
+              <span className="italic text-[var(--color-brand-500)]">em uma nova renda</span>
             </h1>
             <p className="text-[var(--color-text-muted)] max-w-xl mx-auto mb-10 text-lg leading-relaxed">
-              Uma jornada de 8 encontros para quem tem 55+ e quer escrever o próximo capítulo da vida com clareza, propósito e sem pressa.
+              Uma jornada de 8 encontros para quem tem 55+ e quer transformar décadas de vida, talento e curiosidade em uma fonte de renda — extra ou principal — com clareza e sem pressa.
             </p>
 
             <button
@@ -133,10 +133,10 @@ export default function Home() {
             </h2>
             <div className="text-stone-600 space-y-4 leading-relaxed max-w-md text-base">
               <p>
-                Você chegou até aqui com décadas de experiência, relações construídas e aprendizados que nenhum curso ensina. Mas talvez esteja se perguntando: <strong>e agora, o que eu faço com tudo isso?</strong>
+                Você chegou até aqui com décadas de experiência, uma rede de relações e aprendizados que nenhum curso ensina. Mas talvez esteja se perguntando: <strong>e agora, como transformo tudo isso em renda?</strong>
               </p>
               <p>
-                O Reinventar é uma jornada guiada de autoconhecimento criada especificamente para este momento — sem pressa, sem julgamento, e com toda a seriedade que sua história merece.
+                O Reinventar conduz você, passo a passo, até um <strong>Plano de Reinvenção</strong>: um esboço concreto de como sua experiência pode virar uma nova fonte de receita — sem pressa, sem julgamento, e com toda a seriedade que sua história merece.
               </p>
             </div>
           </motion.div>
@@ -170,7 +170,7 @@ export default function Home() {
                 A Jornada
               </div>
               <h2 className="font-serif text-4xl text-[var(--color-brand-800)]">
-                8 fases, 8 descobertas
+                8 fases até o seu Plano de Reinvenção
               </h2>
             </div>
 
@@ -209,7 +209,7 @@ export default function Home() {
             <div className="font-serif text-[var(--color-brand-600)] text-sm flex items-center gap-1.5">
               <Leaf className="w-4 h-4" /> Reinventar
             </div>
-            <div>© 2026 — Uma jornada de autoconhecimento para quem tem 55+</div>
+            <div>© 2026 — Transforme sua experiência em renda · 55+</div>
             <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
               <Link to="/politica-de-privacidade" className="hover:text-stone-800 transition-colors">Política de Privacidade</Link>
               <Link to="/termos-de-uso" className="hover:text-stone-800 transition-colors">Termos de Uso</Link>

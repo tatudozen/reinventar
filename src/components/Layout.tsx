@@ -13,7 +13,8 @@ const PHASE_TITLES: Record<string, string> = {
   '/comecar/fase/4': 'Cenários de Vida',
   '/comecar/fase/5': 'Conexões que Importam',
   '/comecar/fase/6': 'O Garimpo',
-  '/comecar/fase/7': 'A Carta para o Eu de Amanhã',
+  '/comecar/fase/7': 'O Modelo da Reinvenção',
+  '/comecar/fase/8': 'A Carta para o Eu de Amanhã',
   '/comecar/salvar': 'Salvar Jornada',
 };
 
@@ -46,7 +47,7 @@ export default function Layout() {
           </div>
 
           <div className="flex gap-2">
-            {[1, 2, 3, 4, 5, 6, 7].map(step => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(step => (
               <div 
                 key={step} 
                 className={cn(

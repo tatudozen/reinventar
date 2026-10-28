@@ -209,7 +209,7 @@ export default function Mission7() {
     if (finalLetter.length >= 20) {
       updatePhase('phase8', { letter: finalLetter });
       addXP(200);
-      completePhase(7);
+      completePhase(8);
       setStep(7);
     }
   };
@@ -220,7 +220,7 @@ export default function Mission7() {
       <MissionWrapper
         videoTitle="A Carta para o Eu de Amanhã"
         videoDescription="Respire fundo. Vamos visualizar onde você quer estar nos próximos anos."
-        videoId="fase7"
+        videoId="fase8"
       >
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
           <p className="text-[var(--color-text-muted)] max-w-sm mb-10 leading-relaxed">

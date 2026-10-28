@@ -79,7 +79,7 @@ export default function DeepReport() {
     (async () => {
       const { data, error: err } = await supabase.rpc('get_deep_report', { p_id: id });
       if (err || !data || data.length === 0) {
-        setError('Relatório não encontrado.');
+        setError('Plano não encontrado.');
       } else {
         setHtml(renderMarkdown(data[0].report_md));
       }
@@ -91,7 +91,7 @@ export default function DeepReport() {
     <div className="min-h-screen flex items-center justify-center bg-[#faf8f5]">
       <div className="text-center space-y-4">
         <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mx-auto" />
-        <p className="text-[#7c756a]">Carregando seu relatório…</p>
+        <p className="text-[#7c756a]">Carregando seu plano…</p>
       </div>
     </div>
   );
@@ -109,7 +109,7 @@ export default function DeepReport() {
     <div className="min-h-screen bg-[#faf8f5] py-12 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-xs tracking-widest uppercase text-purple-600 font-semibold mb-6">
-          Relatório Profundo · Jornada Reinventar
+          Plano de Reinvenção · Jornada Reinventar
         </div>
         <div
           className="prose-reinventar bg-white rounded-2xl shadow-sm p-8 md:p-12"

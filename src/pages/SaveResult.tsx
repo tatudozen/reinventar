@@ -36,6 +36,7 @@ export default function SaveResult() {
       phase6: state.phase6,
       phase7: state.phase7,
       phase8: state.phase8,
+      businessModel: state.businessModel,
     };
 
     // Webhook fire-and-forget — não bloqueia a navegação se falhar

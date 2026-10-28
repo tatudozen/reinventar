@@ -83,6 +83,16 @@ export interface AppState {
   phase8: {
     letter: string;
     future: Record<string, string>;      // seleções das perguntas de visão
+    businessVision: string;              // visão do negócio em 1 ano (texto)
+  };
+
+  // Fase "O Modelo da Reinvenção" — camada econômica do Plano de Reinvenção
+  businessModel: {
+    offerFormats: string[];   // formatos de oferta (serviço, oficina, produto…)
+    payer: string[];          // quem paga (cliente ≠ quem se quer impactar)
+    ambition: string;         // nível de ambição/tempo (renda extra → fonte principal)
+    financialGoal: string;    // meta financeira aproximada (faixa)
+    assets: string[];         // ativos que já possui (rede, reputação, capital…)
   };
 
   user: {
@@ -113,7 +123,8 @@ const initialState: AppState = {
   phase5: { archetype: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },
   phase7: { fields: {}, savedRoles: [], discardedRoles: [] },
-  phase8: { letter: '', future: {} },
+  phase8: { letter: '', future: {}, businessVision: '' },
+  businessModel: { offerFormats: [], payer: [], ambition: '', financialGoal: '', assets: [] },
 
   user: { name: '', email: '', phone: '' },
   adminConfig: { videoUrls: {} },

@@ -1,11 +1,11 @@
 // =============================================================================
-// Prompt-spec — Gerador do Relatório Profundo Reinventar
+// Prompt-spec — Gerador do Plano de Reinvenção Reinventar
 //
 // Recebe os dados brutos de phase_data (Supabase) e o primeiro nome do
 // participante, e devolve o prompt completo pronto para enviar ao Gemini.
 //
-// Para editar o estilo, tom ou estrutura do relatório, altere a função
-// SYSTEM_PROMPT ou DATA_SECTION abaixo.
+// Para editar o estilo, tom ou estrutura do plano, altere a função
+// systemPrompt ou buildDataSection abaixo.
 // =============================================================================
 
 // ─── Tipos ──────────────────────────────────────────────────────────────────
@@ -53,6 +53,15 @@ interface Phase7 {
 
 interface Phase8 {
   letter?: string;
+  businessVision?: string;
+}
+
+interface BusinessModel {
+  offerFormats?:  string[];
+  payer?:         string[];
+  ambition?:      string;
+  financialGoal?: string;
+  assets?:        string[];
 }
 
 interface PhaseData {
@@ -64,6 +73,7 @@ interface PhaseData {
   phase6?: Phase6;
   phase7?: Phase7;
   phase8?: Phase8;
+  businessModel?: BusinessModel;
 }
 
 // ─── Dicionários de tradução de slugs ────────────────────────────────────────
@@ -200,6 +210,53 @@ const ROLE_LABELS: Record<string, string> = {
   terapeuta:    'Terapeuta ou facilitador(a) de bem-estar',
   embaixador:   'Embaixador(a) de marca ou causa que acredito',
   empreendedor: 'Empreendedor(a) social de pequena escala',
+};
+
+const OFFER_FORMAT_LABELS: Record<string, string> = {
+  servico_1a1:   'Serviço ou atendimento 1:1 (consultoria, mentoria, cuidado)',
+  oficina:       'Oficinas, cursos ou aulas',
+  produto:       'Produto físico ou artesanal',
+  conteudo:      'Conteúdo ou assinatura (podcast, canal, newsletter)',
+  consultoria:   'Projetos / consultoria para empresas',
+  experiencia:   'Experiências e eventos (passeios, encontros, retiros)',
+  intermediacao: 'Conectar pessoas e negócios (intermediação, comissão)',
+  digital:       'Produto digital (e-book, curso gravado, template)',
+};
+
+const PAYER_LABELS: Record<string, string> = {
+  pessoas:       'Pessoas físicas / consumidores finais',
+  familias:      'Famílias',
+  empresas:      'Empresas e negócios',
+  escolas_ongs:  'Escolas, ONGs e instituições',
+  poder_publico: 'Poder público / prefeituras',
+  turistas:      'Turistas e visitantes',
+  profissionais: 'Outros profissionais da área',
+  plataformas:   'Marcas e plataformas (patrocínio, parceria)',
+};
+
+const AMBITION_LABELS: Record<string, string> = {
+  extra_leve:   'Renda extra leve (poucas horas por semana)',
+  meio_periodo: 'Atividade significativa de meio período',
+  principal:    'Nova fonte principal de renda (dedicação alta)',
+};
+
+const GOAL_LABELS: Record<string, string> = {
+  ate_1k:   'Até R$ 1.000/mês',
+  '1k_3k':  'R$ 1.000 a 3.000/mês',
+  '3k_6k':  'R$ 3.000 a 6.000/mês',
+  acima_6k: 'Acima de R$ 6.000/mês',
+  nao_sei:  'Ainda não tem meta definida — quer descobrir',
+};
+
+const ASSET_LABELS: Record<string, string> = {
+  rede:              'Rede de contatos e indicações',
+  reputacao:         'Reputação / autoridade na área',
+  audiencia:         'Audiência (redes sociais, lista)',
+  capital:           'Capital para investir no começo',
+  espaco:            'Espaço físico (sala, ateliê, imóvel)',
+  equipamento:       'Equipamentos / ferramentas',
+  tempo:             'Tempo livre disponível',
+  experiencia_setor: 'Experiência profunda no setor',
 };
 
 const FORCED_LABELS: Record<string, Record<string, string>> = {
@@ -341,7 +398,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 5
   const p5 = d.phase5 ?? {};
   if (p5.ministry || p5.cargo || nonEmpty(p5.savedFigures).length || nonEmpty(p5.discardedFigures).length) {
-    lines.push('── FASE 5: MINISTÉRIO DOS SONHOS ──');
+    lines.push('── FASE 5: PÚBLICO E INSPIRAÇÕES ──');
     if (p5.ministry) {
       lines.push(`Área dos sonhos: ${MINISTRY_LABELS[p5.ministry] ?? p5.ministry}`);
     }
@@ -383,8 +440,35 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     lines.push('');
   }
 
+  // MODELO DA REINVENÇÃO (camada econômica)
+  const bm = d.businessModel ?? {};
+  if (nonEmpty(bm.offerFormats).length || nonEmpty(bm.payer).length || bm.ambition || bm.financialGoal || nonEmpty(bm.assets).length) {
+    lines.push('── MODELO DA REINVENÇÃO (dados de negócio) ──');
+    if (nonEmpty(bm.offerFormats).length) {
+      lines.push(`Formato(s) de oferta: ${translateList(bm.offerFormats!, OFFER_FORMAT_LABELS)}`);
+    }
+    if (nonEmpty(bm.payer).length) {
+      lines.push(`Quem paga (cliente): ${translateList(bm.payer!, PAYER_LABELS)}`);
+    }
+    if (bm.ambition) {
+      lines.push(`Ambição / dedicação: ${AMBITION_LABELS[bm.ambition] ?? bm.ambition}`);
+    }
+    if (bm.financialGoal) {
+      lines.push(`Meta de renda: ${GOAL_LABELS[bm.financialGoal] ?? bm.financialGoal}`);
+    }
+    if (nonEmpty(bm.assets).length) {
+      lines.push(`Ativos que já possui: ${translateList(bm.assets!, ASSET_LABELS)}`);
+    }
+    lines.push('');
+  }
+
   // FASE 8
   const p8 = d.phase8 ?? {};
+  if (p8.businessVision?.trim()) {
+    lines.push('── FASE 8: VISÃO DO NEGÓCIO EM 1 ANO ──');
+    lines.push(p8.businessVision.trim());
+    lines.push('');
+  }
   if (p8.letter?.trim()) {
     lines.push('── FASE 8: CARTA AO EU DE AMANHÃ ──');
     lines.push(p8.letter.trim());
@@ -397,11 +481,11 @@ function buildDataSection(firstName: string, d: PhaseData): string {
 // ─── Prompt de sistema (instruções estáticas) ────────────────────────────────
 
 function systemPrompt(firstName: string): string {
-  return `Você é a voz do Relatório Profundo Reinventar (AlquimiaZen).
+  return `Você é a voz do Plano de Reinvenção Reinventar (AlquimiaZen).
 
-Não é um analista. Não é um coach. É uma testemunha — alguém que leu com atenção tudo que ${firstName} escolheu revelar e devolve isso como espelho, com cuidado e sem pressa.
+Você é duas coisas ao mesmo tempo: uma testemunha que leu com atenção tudo que ${firstName} revelou, e um(a) sócio(a) de negócio experiente, que sabe transformar experiência de vida em uma fonte de renda real. Caloroso como quem entende a pessoa; concreto como quem já ajudou muita gente a começar.
 
-${firstName} tem 55 anos ou mais e está diante da pergunta mais honesta da vida adulta: *"O que faço com tudo que vivi até aqui?"* Seu relatório não responde essa pergunta. Ele ajuda ${firstName} a vê-la com mais clareza.
+${firstName} tem 55 anos ou mais e está diante de uma pergunta prática e honesta: *"Como transformo tudo que vivi até aqui em uma nova fonte de renda — extra ou principal?"* Este Plano não entrega um sonho genérico. Entrega um esboço de negócio sob medida, baseado no que ${firstName} escolheu ao longo da jornada.
 
 ---
 
@@ -433,54 +517,54 @@ ${firstName} tem 55 anos ou mais e está diante da pergunta mais honesta da vida
 - Nunca: "você deveria", "é recomendado" — convite sempre, ordem nunca
 
 **Abertura e fechamento:**
-- Abre com **"Para ${firstName}, que chegou até aqui."**
+- Abre com **"Plano de Reinvenção de ${firstName}"** e uma frase curta de boas-vindas.
 - Fecha com **"Com admiração pela sua caminhada, AlquimiaZen"**
 - Segue um **P.S.** — o pensamento que ficou depois de tudo. Uma pergunta genuína, específica às respostas de ${firstName}, que o leitor carrega por dias. Não retórica. Sem resposta embutida.
 
 ---
 
-### ESTRUTURA OBRIGATÓRIA (7 SEÇÕES)
+### ESTRUTURA OBRIGATÓRIA (8 SEÇÕES — este é um PLANO, não um relatório)
 
-**1. Motor de Energia**
-Compare atividades flow/boost (energizam) vs. drain (esvaziam). Cruze com os verbos de identidade e as escolhas de valor (forcedChoices). Encontre o padrão do que alimenta este capítulo de vida. Cada seção começa com uma observação concreta das respostas, espelha o padrão que ela revela, e termina com uma hipótese leve ou pergunta — nunca com uma conclusão definitiva.
+**1. Sua Essência Empreendedora**
+Síntese curta (2 parágrafos) de quem ${firstName} é como base do negócio: a energia que sustenta (flow/boost), os talentos maduros e a causa que move. Nomeie a *vantagem injusta* dos 55+: experiência, rede e autoridade que ninguém começando do zero tem.
 
-**2. Talentos Maduros**
-Perfil de competências a partir das autoavaliações. Valide com "quem pede ajuda" — o que os outros já reconhecem há décadas. Nomeie o perfil a partir dos talentos subestimados, se existirem. Inclua UM alerta honesto sobre o talento menos desenvolvido — como oportunidade de parceria, nunca como fraqueza.
+**2. A Oferta**
+O coração do plano. A partir dos formatos de oferta escolhidos (Modelo da Reinvenção) + papéis que ressoaram (Fase 7) + talentos, proponha de 1 a 3 ofertas CONCRETAS. Cada uma com: um nome simples, uma frase que o próprio cliente entenderia ("Eu ajudo ___ a ___"), e o que a pessoa recebe na prática. Nada genérico — ofertas que dá para começar a vender.
 
-**3. A Causa da Reinvenção**
-Leia a distribuição de moedas + problema escolhido. Mostre a convergência com outras fases: causa + energia + público escolhido + papéis salvos. A causa não é abstrata — é onde décadas de vida encontram o mundo que precisa de alguém como ${firstName}. Mostre isso de forma concreta, não genérica.
+**3. Para Quem & a Dor que Resolve**
+Diferencie com clareza *quem paga* (o cliente, dos dados de negócio) de *quem ${firstName} quer impactar* (Fase 6) — às vezes são pessoas diferentes, e isso muda o plano. Conecte com a dor/problema escolhido na Fase 3. Explique, concretamente, por que esse cliente pagaria por isso.
 
-**4. A Contradição mais Reveladora**
-Encontre UMA tensão real entre fases (ex.: perfil RIASEC vs. papéis salvos; escolha mentor_vs_executor vs. cargo; ambientes vs. modos; figuras descartadas vs. causa). Apresente como PERGUNTA aberta — a contradição não é um erro, é onde a vida ainda está se descobrindo.
+**4. Como Gera Receita**
+O modelo de dinheiro. Coerente com os formatos de oferta: como se cobra (por sessão, por projeto, mensalidade, por produto, ingresso…). Sugira uma FAIXA DE PREÇO inicial realista e conservadora, ancorada na meta de renda e no nível de ambição. Aponte os canais (presencial/online, dos modos da Fase 6 e ambientes da Fase 4) e de onde podem vir os 3 primeiros clientes — usando os ativos que ${firstName} já tem (rede, reputação, audiência).
 
-**5. Figuras Inspiradoras & o Espelho do Time**
-As figuras que ressoam são espelhos de valores. As descartadas dizem tanto quanto as escolhidas — o que ${firstName} claramente NÃO quer ser é tão revelador quanto o que quer. Conecte com a área e o papel do Ministério dos Sonhos. Escreva isso como uma observação, não como uma lista.
+**5. Sua Vantagem aos 55+**
+Os ativos declarados (rede, reputação, audiência, capital, espaço, tempo, experiência de setor) + "quem já pede ajuda a ${firstName}" (Fase 2). O que reduz o risco do começo. Se faltar um ativo importante, trate como oportunidade de parceria — nunca como fraqueza.
 
-**6. 3 Hipóteses de Segundo Ato**
-Sintetize TUDO pelas 3 lentes do Reinventar:
-- ESSÊNCIA (quem você naturalmente é): energia, verbos, talentos, RIASEC, figuras.
-- IMPACTO (o que você quer construir): causa, problema, conexões, modos, forcedChoices.profundo_vs_amplo.
-- TERRITÓRIO (a arena que você escolheu): área do ministério, cargo, ambientes, papéis salvos.
+**6. Plano dos Primeiros 90 Dias**
+3 movimentos concretos e gentis, calibrados pelo nível de ambição:
+- **Validar** (semanas 1-3): conversar com 5 possíveis clientes para confirmar a dor e o preço.
+- **Estruturar** (semanas 4-8): montar a versão mínima da oferta (uma página simples, um roteiro, um portfólio pequeno).
+- **Primeira venda** (semanas 9-12): conseguir o primeiro cliente pago ou um piloto, mesmo que pequeno.
 
-Cada hipótese tem: um nome para o segundo ato (evocativo, não genérico), aderência (alta/média), evidências das respostas reais de ${firstName}, e — se houver carta — como ela ressoa ou tensiona com a hipótese.
+**7. Metas & Horizonte**
+Traduza a meta de renda em marcos realistas de 3, 6 e 12 meses, coerentes com a ambição escolhida (renda extra leve ≠ fonte principal). Números modestos e conservadores. Se não houver meta definida, proponha uma meta inicial de *descoberta* (ex.: "o objetivo dos primeiros 90 dias é a primeira venda, não o faturamento").
 
-**7. Primeiros Passos Concretos**
-3 ações de 2 a 4 semanas — realistas e gentis para 55+. Não é uma lista de tarefas: é um convite.
-- Uma conversa: entrevistar alguém que já vive um dos papéis salvos.
-- Um experimento: testar na prática (voluntariado, projeto piloto, oficina).
-- Uma reflexão: ler, assistir ou acompanhar algo ligado à causa principal.
+**8. Riscos Honestos & O Primeiro Passo desta Semana**
+1 ou 2 riscos reais, ditos sem drama e já com uma forma de reduzir cada um. Termine com UM passo concreto para os próximos 7 dias — pequeno, possível de fazer ainda esta semana.
 
 ---
 
-### REGRAS DE ANÁLISE
-- Cite as respostas REAIS de ${firstName} como evidência em cada seção — o leitor precisa se reconhecer em cada parágrafo.
-- Cruze no mínimo 3 fases por conclusão. Nunca conclua a partir de uma resposta isolada.
-- Campos ausentes: simplesmente não mencione — sem "não foi possível analisar X".
-- Se a carta (fase 8) existir, ela tem peso especial — é a voz não filtrada de ${firstName}. Use com cuidado e respeito.
+### REGRAS DO PLANO
+- Cite as respostas REAIS de ${firstName} como base de cada recomendação — o plano precisa ser claramente DELE(A), não um template.
+- Cruze múltiplas fases ao propor a oferta e o cliente. Nunca conclua a partir de uma resposta isolada.
+- Seja concreto e acionável: nomes de oferta, faixas de preço, canais, números. Um plano que não dá para executar não serve.
+- Campos ausentes: contorne com elegância, propondo o passo que preencheria a lacuna — sem "não foi possível analisar X".
+- Se houver carta ou visão de negócio (Fase 8), ela tem peso especial: é a voz não filtrada de ${firstName}. Ancore o plano nela.
 
-### SEGURANÇA PSICOLÓGICA (não negociável)
+### RESPONSABILIDADE (não negociável)
+- Preços, metas e projeções são SUGESTÕES realistas e conservadoras — nunca promessas de ganho. Deixe isso claro quando citar números.
+- Nunca recomende investir dinheiro que ${firstName} não pode perder, nem dívidas para começar.
 - Sem diagnóstico de personalidade ou de saúde mental.
-- Contradições viram perguntas, nunca julgamentos.
 - Se as respostas sugerirem isolamento ou sofrimento, inclua com delicadeza o incentivo a buscar apoio de pessoas próximas.
 - Linguagem de urgência negativa é proibida. A reinvenção é um ato de abundância, não de compensação pelo tempo passado.`;
 }
@@ -495,5 +579,5 @@ export function buildDeepReportPrompt(firstName: string, phaseData: unknown): st
 
 ${buildDataSection(name, d)}
 
-Gere agora o Relatório Profundo completo para ${name}, seguindo as 7 seções obrigatórias.`;
+Gere agora o Plano de Reinvenção completo para ${name}, seguindo as 8 seções obrigatórias.`;
 }
