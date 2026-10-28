@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Target, Flame, Users, BookOpen, Heart,
   Briefcase, Handshake, ShieldCheck, CheckCircle2,
-  Landmark, Check,
+  Landmark, Check, Leaf, Brain, Globe, Home, Wifi, TreePine,
 } from 'lucide-react';
 import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
@@ -23,44 +23,90 @@ const CAUSES = [
   { id: 'intergeracoes',  label: 'Conexão entre Gerações',       g0: '#0f2952', g1: '#1e3a8a' },
 ];
 
-const PROBLEMS = [
-  {
-    id: 'solidao_idosos',
-    text: 'Idosos sozinhos sem apoio ou companhia',
-    desc: 'Milhões de pessoas chegam à velhice sem redes de suporte ou convivência significativa.',
-    icon: Users, color: '#33ccff',
-  },
-  {
-    id: 'conhecimento_perdido',
-    text: 'Conhecimento que se perde sem ser transmitido',
-    desc: 'Décadas de experiência e sabedoria desaparecem porque não encontramos formas de transmiti-las.',
-    icon: BookOpen, color: '#d4af37',
-  },
-  {
-    id: 'cuidadores',
-    text: 'Cuidadores sobrecarregados e sem suporte',
-    desc: 'Quem cuida de pais, cônjuges ou parentes adoecidos raramente recebe cuidado de volta.',
-    icon: Heart, color: '#f97316',
-  },
-  {
-    id: 'jovens_sem_mentores',
-    text: 'Jovens sem mentores ou referências',
-    desc: 'Uma geração inteira cresce sem acesso a quem já viveu e pode orientar com sabedoria.',
-    icon: Handshake, color: '#34d399',
-  },
-  {
-    id: 'saude_acesso',
-    text: 'Comunidades sem acesso à saúde de qualidade',
-    desc: 'Prevenção e cuidado chegam tarde — ou não chegam — para quem mais precisa.',
-    icon: ShieldCheck, color: '#c084fc',
-  },
-  {
-    id: 'experiencia_desvalorizada',
-    text: 'Desvalorização de quem tem mais experiência',
-    desc: 'O mercado e a sociedade rejeitam o que a experiência tem de mais valioso: perspectiva e maturidade.',
-    icon: Briefcase, color: '#fb923c',
-  },
-];
+type Problem = { id: string; text: string; desc: string; icon: React.ElementType; color: string };
+
+const PROBLEMS_BY_MINISTRY: Record<string, Problem[]> = {
+  saude: [
+    { id: 's1', text: 'Saúde mental na terceira idade',               desc: 'Depressão e ansiedade crescem com o envelhecimento, mas seguem invisíveis e sem tratamento.',                  icon: Brain,      color: '#c084fc' },
+    { id: 's2', text: 'Cuidadores sem apoio ou reconhecimento',       desc: 'Quem cuida de idosos ou doentes raramente recebe suporte emocional, financeiro ou descanso.',              icon: Heart,      color: '#f97316' },
+    { id: 's3', text: 'Acesso desigual à saúde preventiva',           desc: 'Prevenção e diagnóstico precoce não chegam a quem mais precisa — periferias e regiões remotas.',           icon: ShieldCheck, color: '#34d399' },
+    { id: 's4', text: 'Solidão como epidemia silenciosa',             desc: 'Isolamento social encurta a vida mais do que o tabagismo — e não aparece nos boletins de saúde.',          icon: Users,      color: '#33ccff' },
+    { id: 's5', text: 'Saúde ocupacional ignorada no trabalho',       desc: 'Doenças causadas pelo trabalho afetam milhões mas são sistematicamente invisibilizadas.',                   icon: Briefcase,  color: '#fb923c' },
+    { id: 's6', text: 'Desnutrição em populações vulneráveis',        desc: 'Comunidades inteiras sem acesso regular a alimentação nutritiva, especialmente crianças e idosos.',         icon: Home,       color: '#f59e0b' },
+  ],
+  educacao: [
+    { id: 'e1', text: 'Jovens sem mentores nem referências adultas',  desc: 'Uma geração cresce sem acesso a quem já viveu e pode orientar com sabedoria e experiência.',              icon: Handshake,  color: '#34d399' },
+    { id: 'e2', text: 'Sabedoria que se perde sem ser transmitida',   desc: 'Décadas de experiência desaparecem porque não encontramos formas de registrá-las e passá-las adiante.',   icon: BookOpen,   color: '#d4af37' },
+    { id: 'e3', text: 'Analfabetismo funcional em adultos',           desc: 'Milhões de brasileiros leem palavras mas não compreendem textos — um obstáculo silencioso à dignidade.',   icon: Target,     color: '#60a5fa' },
+    { id: 'e4', text: 'Professores esgotados e sem suporte',          desc: 'Educadores dedicados abandonam a profissão por falta de condições, salário e valorização.',                icon: Heart,      color: '#f97316' },
+    { id: 'e5', text: 'Exclusão digital de idosos e comunidades rurais', desc: 'Quem não domina a tecnologia fica fora do mercado, dos serviços e das oportunidades do século XXI.',  icon: Wifi,       color: '#a78bfa' },
+    { id: 'e6', text: 'Jovens talentosos sem acesso à universidade',  desc: 'O potencial de uma geração desperdiçado por falta de apoio financeiro e orientação adequada.',            icon: Users,      color: '#33ccff' },
+  ],
+  ciencia_tecnologia: [
+    { id: 'ct1', text: 'Desinformação em saúde causando mortes',      desc: 'Fake news sobre vacinas, remédios e tratamentos matam — e se espalham mais rápido que a ciência.',        icon: ShieldCheck, color: '#f87171' },
+    { id: 'ct2', text: 'Exclusão digital de idosos e periferias',     desc: 'Quem não acessa a internet fica excluído de saúde, emprego e participação cidadã.',                       icon: Wifi,       color: '#a78bfa' },
+    { id: 'ct3', text: 'Pesquisa científica com financiamento precário', desc: 'Cortes em ciência e tecnologia comprometem o futuro do país por décadas.',                             icon: Brain,      color: '#60a5fa' },
+    { id: 'ct4', text: 'Tecnologia inacessível para pessoas com deficiência', desc: 'Ferramentas digitais ignoram usuários com limitações físicas ou cognitivas.',                     icon: Users,      color: '#34d399' },
+    { id: 'ct5', text: 'Jovens talentos em ciência sem oportunidades', desc: 'Pesquisadores brilhantes migram para fora porque não encontram condições de trabalho no Brasil.',         icon: Briefcase,  color: '#fb923c' },
+    { id: 'ct6', text: 'Dados pessoais usados sem ética ou consentimento', desc: 'Empresas e governos monitoram, vendem e exploram dados de cidadãos sem transparência.',             icon: Target,     color: '#c084fc' },
+  ],
+  justica: [
+    { id: 'j1', text: 'Acesso à justiça negado a quem não tem recursos', desc: 'A lentidão e o custo do sistema judicial protegem quem pode pagar advogados — não os direitos.',     icon: ShieldCheck, color: '#60a5fa' },
+    { id: 'j2', text: 'Sistema prisional que fabrica reincidência',    desc: 'Cadeias superlotadas, violentas e sem ressocialização perpetuam o ciclo do crime.',                       icon: Home,       color: '#f87171' },
+    { id: 'j3', text: 'Trabalho análogo à escravidão ainda existente', desc: 'Milhares de brasileiros são resgatados anualmente em condições desumanas de trabalho forçado.',          icon: Briefcase,  color: '#fb923c' },
+    { id: 'j4', text: 'Violência doméstica sem punição efetiva',       desc: 'Mulheres morrem diariamente enquanto o sistema falha em protegê-las de agressores conhecidos.',          icon: Heart,      color: '#f97316' },
+    { id: 'j5', text: 'Crianças sem documentação e direitos básicos',  desc: 'Sem certidão de nascimento, crianças ficam invisíveis para o Estado e vulneráveis à exploração.',        icon: Users,      color: '#34d399' },
+    { id: 'j6', text: 'Discriminação racial no acesso a oportunidades', desc: 'Desigualdade estrutural persiste mesmo quando não há lei que a sustente — está no cotidiano.',         icon: Handshake,  color: '#a78bfa' },
+  ],
+  cultura: [
+    { id: 'cu1', text: 'Memória oral e cultura popular se apagando',  desc: 'Tradições, cantos, histórias e saberes transmitidos de geração em geração desaparecem com os idosos.',   icon: BookOpen,   color: '#d4af37' },
+    { id: 'cu2', text: 'Artistas sem sustento e reconhecimento justo', desc: 'Criadores que alimentam a alma do país não conseguem viver de arte no Brasil.',                          icon: Heart,      color: '#f97316' },
+    { id: 'cu3', text: 'Patrimônio histórico degradado e sem cuidado', desc: 'Prédios, monumentos e sítios históricos se deterioram por falta de investimento e política cultural.',  icon: Landmark,   color: '#fb923c' },
+    { id: 'cu4', text: 'Periferias sem acesso a espaços culturais',   desc: 'Cinema, teatro e museus são privilégio de quem mora nos bairros ricos das grandes cidades.',              icon: Home,       color: '#60a5fa' },
+    { id: 'cu5', text: 'Línguas indígenas em extinção',               desc: 'Com cada falante nativo que morre, uma visão de mundo única e irreplicável desaparece para sempre.',      icon: Globe,      color: '#34d399' },
+    { id: 'cu6', text: 'Jovens desconectados da própria história',    desc: 'Novas gerações crescem sem conhecer as raízes culturais que moldaram quem elas são.',                     icon: Users,      color: '#a78bfa' },
+  ],
+  meio_ambiente: [
+    { id: 'ma1', text: 'Desmatamento da Amazônia e Cerrado',          desc: 'O Brasil perde anualmente uma área equivalente a países inteiros em florestas que nunca voltarão.',       icon: TreePine,   color: '#4ade80' },
+    { id: 'ma2', text: 'Aquecimento global e eventos extremos',       desc: 'Enchentes, secas e calor intenso já afetam milhões de brasileiros — e vai piorar.',                       icon: Globe,      color: '#f59e0b' },
+    { id: 'ma3', text: 'Plástico contaminando rios e oceanos',        desc: 'Resíduos plásticos entram na cadeia alimentar e chegam à mesa de todos — visíveis ou não.',             icon: Leaf,       color: '#60a5fa' },
+    { id: 'ma4', text: 'Perda de biodiversidade e espécies extintas', desc: 'Animais e plantas desaparecem mais rápido do que a ciência consegue catalogar.',                          icon: TreePine,   color: '#34d399' },
+    { id: 'ma5', text: 'Falta de saneamento em comunidades',          desc: 'Milhões de brasileiros sem acesso a água tratada ou esgoto — um problema com solução conhecida.',         icon: Home,       color: '#a78bfa' },
+    { id: 'ma6', text: 'Cultura do desperdício e consumo irresponsável', desc: 'Produzimos lixo como se o planeta tivesse capacidade ilimitada de absorvê-lo.',                       icon: Target,     color: '#fb923c' },
+  ],
+  infraestrutura: [
+    { id: 'in1', text: 'Mobilidade urbana que paralisa cidades',      desc: 'Horas perdidas no trânsito todos os dias roubam qualidade de vida de milhões de brasileiros.',           icon: Target,     color: '#f59e0b' },
+    { id: 'in2', text: 'Acessibilidade inexistente para quem precisa', desc: 'Cadeirantes, idosos e pessoas com deficiência enfrentam cidades que não foram pensadas para elas.',     icon: Users,      color: '#34d399' },
+    { id: 'in3', text: 'Habitação precária e risco de desabamentos',  desc: 'Famílias em áreas de risco esperam por uma tragédia que poderia ser evitada com política habitacional.',  icon: Home,       color: '#f87171' },
+    { id: 'in4', text: 'Saneamento ausente em comunidades rurais',    desc: 'Municípios inteiros no Brasil ainda convivem com água contaminada e esgoto a céu aberto.',               icon: Leaf,       color: '#60a5fa' },
+    { id: 'in5', text: 'Internet precária em regiões remotas',        desc: 'Sem conectividade de qualidade, comunidades ficam fora da economia digital e do ensino à distância.',    icon: Wifi,       color: '#a78bfa' },
+    { id: 'in6', text: 'Lixo sem coleta nem destinação adequada',     desc: 'Resíduos sólidos lançados em lixões a céu aberto contaminam solo, rios e a saúde de comunidades.',      icon: TreePine,   color: '#fb923c' },
+  ],
+  desenvolvimento_social: [
+    { id: 'ds1', text: 'Crianças em situação de vulnerabilidade extrema', desc: 'Fome, violência e abandono marcam os primeiros anos de vida de milhares de crianças brasileiras.',  icon: Heart,      color: '#f97316' },
+    { id: 'ds2', text: 'Pessoas em situação de rua sem perspectiva',  desc: 'Invisíveis para a cidade, sem endereço, sem documentos e sem acesso a nenhum serviço básico.',            icon: Home,       color: '#60a5fa' },
+    { id: 'ds3', text: 'Idosos abandonados sem rede de apoio',        desc: 'Solidão e negligência afetam milhões de idosos que deram tudo — e agora não recebem nada de volta.',     icon: Users,      color: '#33ccff' },
+    { id: 'ds4', text: 'Violência doméstica e ciclos intergeracionais', desc: 'Filhos que testemunham violência repetem os padrões — um ciclo que só se quebra com intervenção.',    icon: ShieldCheck, color: '#f87171' },
+    { id: 'ds5', text: 'Desigualdade de renda que se perpetua',       desc: 'No Brasil, nascer pobre quase sempre significa morrer pobre — mobilidade social segue restrita.',        icon: Briefcase,  color: '#fb923c' },
+    { id: 'ds6', text: 'Jovens sem oportunidades fora do crime',      desc: 'Sem escola boa, emprego ou perspectiva, o crime se torna a única saída para muitos jovens.',             icon: Handshake,  color: '#34d399' },
+  ],
+  economia: [
+    { id: 'ec1', text: 'Desemprego estrutural em periferias',         desc: 'Comunidades inteiras onde o desemprego é a norma — não a exceção — por falta de acesso e qualificação.',  icon: Briefcase,  color: '#fb923c' },
+    { id: 'ec2', text: 'Microempreendedores sem crédito ou suporte',  desc: 'Pequenos negócios com potencial real fecham por falta de acesso a crédito justo e orientação.',          icon: Target,     color: '#f59e0b' },
+    { id: 'ec3', text: 'Trabalhadores informais sem proteção',        desc: 'Metade da força de trabalho brasileira vive sem previdência, saúde ou direitos trabalhistas.',            icon: ShieldCheck, color: '#34d399' },
+    { id: 'ec4', text: 'Aposentados com renda insuficiente para viver', desc: 'Idosos que trabalharam a vida toda chegam à aposentadoria sem condições dignas de sustento.',          icon: Users,      color: '#33ccff' },
+    { id: 'ec5', text: 'Economia local sufocada pelo grande varejo',  desc: 'Comércio de bairro e produtores locais perdem espaço para grandes redes — matando a diversidade econômica.', icon: Home,    color: '#60a5fa' },
+    { id: 'ec6', text: 'Jovens sem preparo para o mercado de trabalho', desc: 'Currículos desatualizados formam jovens sem as habilidades que o mercado realmente precisa.',          icon: BookOpen,   color: '#a78bfa' },
+  ],
+  comunicacoes: [
+    { id: 'co1', text: 'Fake news destruindo confiança em instituições', desc: 'Desinformação mina a democracia, a saúde pública e a coesão social em velocidade alarmante.',        icon: Globe,      color: '#f87171' },
+    { id: 'co2', text: 'Voz de idosos e comunidades invisível na mídia', desc: 'Histórias reais e perspectivas valiosas de pessoas experientes raramente chegam ao grande público.', icon: Users,      color: '#33ccff' },
+    { id: 'co3', text: 'Jornalismo local moribundo e sem recursos',   desc: 'Cidades e comunidades perdem a cobertura local — e com ela, a accountability do poder público.',         icon: BookOpen,   color: '#d4af37' },
+    { id: 'co4', text: 'Conteúdo educativo de qualidade escasso',     desc: 'Muito ruído, pouca substância: há carência de material que realmente ensine e inspire em português.',    icon: Target,     color: '#60a5fa' },
+    { id: 'co5', text: 'Jovens sem habilidades de comunicação crítica', desc: 'A incapacidade de argumentar, questionar e se expressar bem limita vidas e empobrece o debate.',      icon: Brain,      color: '#a78bfa' },
+    { id: 'co6', text: 'Desinformação em saúde causando mortes evitáveis', desc: 'Remédios falsos, tratamentos negados e vacinas rejeitadas por causa de mentiras espalhadas online.', icon: ShieldCheck, color: '#34d399' },
+  ],
+};
 
 const MINISTRIES = [
   { id: 'economia',               name: 'Economia',               emoji: '💰' },
@@ -84,19 +130,6 @@ const CARGOS = [
   { id: 'secretario_social',    name: 'Secretário(a) de Bem-Estar',  profile: 'Cuida das pessoas e do impacto humano das ações.' },
 ];
 
-// Problemas relevantes por área de ministério
-const MINISTRY_PROBLEMS: Record<string, string[]> = {
-  educacao:             ['conhecimento_perdido', 'jovens_sem_mentores', 'experiencia_desvalorizada'],
-  saude:                ['solidao_idosos', 'cuidadores', 'saude_acesso'],
-  desenvolvimento_social: ['solidao_idosos', 'cuidadores', 'jovens_sem_mentores'],
-  cultura:              ['conhecimento_perdido', 'experiencia_desvalorizada', 'solidao_idosos'],
-  economia:             ['experiencia_desvalorizada', 'jovens_sem_mentores', 'saude_acesso'],
-  ciencia_tecnologia:   ['saude_acesso', 'conhecimento_perdido', 'experiencia_desvalorizada'],
-  justica:              ['experiencia_desvalorizada', 'solidao_idosos', 'jovens_sem_mentores'],
-  meio_ambiente:        ['solidao_idosos', 'saude_acesso', 'conhecimento_perdido'],
-  infraestrutura:       ['saude_acesso', 'cuidadores', 'experiencia_desvalorizada'],
-  comunicacoes:         ['conhecimento_perdido', 'jovens_sem_mentores', 'experiencia_desvalorizada'],
-};
 
 const TOTAL_COINS = 10;
 
@@ -131,10 +164,10 @@ export default function Mission3() {
   const coinsUsed    = Object.values(impactPoints).reduce((a, b) => a + b, 0);
   const coinsLeft    = TOTAL_COINS - coinsUsed;
 
-  const ministryInfo   = MINISTRIES.find(m => m.id === ministry);
-  const filteredProblems = ministry && MINISTRY_PROBLEMS[ministry]
-    ? PROBLEMS.filter(p => MINISTRY_PROBLEMS[ministry].includes(p.id))
-    : PROBLEMS;
+  const ministryInfo     = MINISTRIES.find(m => m.id === ministry);
+  const filteredProblems = ministry && PROBLEMS_BY_MINISTRY[ministry]
+    ? PROBLEMS_BY_MINISTRY[ministry]
+    : Object.values(PROBLEMS_BY_MINISTRY).flat().slice(0, 6);
 
   const handleCoinScore = (causeId: string, value: number) => {
     const current = impactPoints[causeId] || 0;
