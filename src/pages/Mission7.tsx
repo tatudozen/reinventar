@@ -75,6 +75,33 @@ const ROLE_LABELS: Record<string, string> = {
   embaixador: 'embaixador(a) de causas', empreendedor: 'empreendedorismo social',
 };
 
+const MINISTRY_LABELS: Record<string, string> = {
+  economia: 'Economia', saude: 'Saúde', ciencia_tecnologia: 'Ciência e Tecnologia',
+  educacao: 'Educação', justica: 'Justiça', cultura: 'Cultura',
+  meio_ambiente: 'Meio Ambiente', infraestrutura: 'Infraestrutura',
+  desenvolvimento_social: 'Desenvolvimento Social', comunicacoes: 'Comunicações',
+};
+
+const CARGO_LABELS: Record<string, string> = {
+  ministro: 'ministro(a)', consultor_tecnico: 'consultor(a) técnico(a)',
+  assessor_comunicacao: 'assessor(a) de comunicação', diretor_operacoes: 'diretor(a) de operações',
+  coordenador_campo: 'coordenador(a) de campo', secretario_social: 'secretário(a) de bem-estar',
+};
+
+const FIGURE_LABELS: Record<string, string> = {
+  mandela: 'Nelson Mandela', frankl: 'Viktor Frankl', gandhi: 'Mahatma Gandhi',
+  curie: 'Marie Curie', kahlo: 'Frida Kahlo', niemeyer: 'Oscar Niemeyer',
+  freire: 'Paulo Freire', evaristo: 'Conceição Evaristo', pele: 'Pelé',
+  senna: 'Ayrton Senna', teresa: 'Madre Teresa', wangari: 'Wangari Maathai',
+};
+
+const WHO_LABELS: Record<string, string> = {
+  jovens: 'crianças e jovens', adultos: 'adultos em transição', pares: 'pessoas da minha geração',
+  idosos: 'idosos', familia: 'minha família', comunidade: 'minha comunidade local',
+  vulneraveis: 'grupos vulneráveis', profissionais: 'profissionais da minha área',
+  estudantes: 'estudantes e aprendizes', cuidadores: 'cuidadores e famílias',
+};
+
 // step 0 = intro (MissionWrapper), 1-5 = questions, 6 = carta, 7 = concluída
 export default function Mission7() {
   const navigate = useNavigate();
@@ -87,41 +114,91 @@ export default function Mission7() {
   const [letter, setLetter] = useState('');
 
   const autoLetter = useMemo(() => {
-    const roles = (state.phase7?.savedRoles ?? [])
-      .slice(0, 3)
-      .map(id => ROLE_LABELS[id])
-      .filter(Boolean);
-    const intention: string = state.phase6?.intention ?? '';
+    // ── Dados de todas as fases ─────────────────────────────────────────────
+    const roles        = (state.phase7?.savedRoles ?? []).slice(0, 3).map(id => ROLE_LABELS[id]).filter(Boolean);
+    const cause        = state.phase3?.uniqueProblem ?? '';
+    const ministry     = state.phase3?.ministry ? MINISTRY_LABELS[state.phase3.ministry] : '';
+    const cargo        = state.phase3?.cargo    ? CARGO_LABELS[state.phase3.cargo]       : '';
+    const figures      = (state.phase5?.savedFigures ?? []).slice(0, 3).map(id => FIGURE_LABELS[id]).filter(Boolean);
+    const connections  = (state.phase6?.connections ?? []).slice(0, 3).map(id => WHO_LABELS[id]).filter(Boolean);
+    const talents      = (state.phase2?.hiddenTalents ?? []).slice(0, 2);
+    const curiosities  = (state.phase1?.curiosityThemes ?? []).slice(0, 2);
+    const flowActivities = Object.entries(state.phase1?.energyCards ?? {})
+      .filter(([, v]) => v === 'flow' || v === 'boost')
+      .map(([k]) => k.toLowerCase())
+      .slice(0, 2);
 
     const lines: string[] = ['Querida(o) eu do futuro,', ''];
 
-    lines.push(
-      `Imagino como vou estar nos próximos anos: morando ${future.morando?.toLowerCase() || 'em algum lugar que me faz bem'}, ${future.companhia?.toLowerCase() || 'com quem eu amo'}.`
-    );
+    // ── Visão de futuro ──────────────────────────────────────────────────────
+    const morando   = future.morando?.toLowerCase();
+    const companhia = future.companhia?.toLowerCase();
+    const manha     = future.manha?.toLowerCase();
+    const trabalho  = future.trabalho?.toLowerCase();
+    const fim       = future.fim_dia?.toLowerCase();
+
+    if (morando || companhia) {
+      lines.push(
+        `Imagino como vou estar nos próximos anos: ${morando ? `morando ${morando}` : 'em algum lugar que me faz bem'}, ${companhia || 'cercado(a) de quem amo'}.`
+      );
+    }
+
+    if (manha || trabalho || fim) {
+      lines.push(
+        `Minha manhã começa ${manha || 'com presença e intenção'}. Exerço minha contribuição ${trabalho || 'do meu jeito'}. E o que me faz sorrir ao final do dia é ${fim || 'saber que fiz algo que valeu'}.`
+      );
+    }
     lines.push('');
 
-    lines.push(
-      `Minha manhã começa assim: ${future.manha?.toLowerCase() || 'com presença e intenção'}. Exerço minha contribuição ${future.trabalho?.toLowerCase() || 'do meu jeito'}. E no final do dia, o que me faz sorrir é ${future.fim_dia?.toLowerCase() || 'saber que fiz algo que valeu'}.`
-    );
-    lines.push('');
+    // ── A causa que me move ──────────────────────────────────────────────────
+    if (cause) {
+      const atuacao = ministry && cargo
+        ? ` como ${cargo} na área de ${ministry}`
+        : ministry ? ` na área de ${ministry}` : '';
+      lines.push(`Escolhi dedicar minha energia a um problema que me move de verdade: "${cause}"${atuacao}.`);
+      lines.push('');
+    }
 
+    // ── O que trago: energias e talentos ────────────────────────────────────
+    if (talents.length > 0 || flowActivities.length > 0) {
+      const parts: string[] = [];
+      if (talents.length > 0) parts.push(talents.map(t => t.toLowerCase()).join(' e '));
+      if (flowActivities.length > 0) parts.push(`minha energia flui quando estou ${flowActivities.join(' ou ')}`);
+      lines.push(`Sei o que trago: ${parts.join('. ')}.`);
+      lines.push('');
+    }
+
+    // ── Curiosidades que me movem ────────────────────────────────────────────
+    if (curiosities.length > 0) {
+      lines.push(`Os temas que ainda me despertam curiosidade genuína são ${curiosities.join(' e ').toLowerCase()} — e isso diz muito sobre quem estou me tornando.`);
+      lines.push('');
+    }
+
+    // ── Quem quero impactar ──────────────────────────────────────────────────
+    if (connections.length > 0) {
+      lines.push(`Quero estar perto de ${connections.join(', ')} — são as pessoas com quem minha energia faz mais sentido.`);
+      lines.push('');
+    }
+
+    // ── Figuras inspiradoras ─────────────────────────────────────────────────
+    if (figures.length > 0) {
+      lines.push(`Me identifico com ${figures.join(', ')} — não por ser igual a elas, mas porque mostram que é possível viver com propósito e deixar uma marca real.`);
+      lines.push('');
+    }
+
+    // ── Possibilidades concretas ─────────────────────────────────────────────
     if (roles.length > 0) {
-      lines.push(`Descobri que posso contribuir como ${roles.join(', ')}.`);
+      lines.push(`Descobri que posso contribuir através de ${roles.join(', ')}.`);
       lines.push('');
     }
 
-    if (intention.length > 10) {
-      const snippet = intention.length > 120 ? intention.slice(0, 120) + '...' : intention;
-      lines.push(`Carrego esta intenção comigo: "${snippet}"`);
-      lines.push('');
-    }
-
-    lines.push('Não preciso ter tudo resolvido agora. O próximo capítulo começa com um único passo.');
+    // ── Fechamento ───────────────────────────────────────────────────────────
+    lines.push('Não preciso ter tudo resolvido agora. O próximo capítulo não começa com uma grande virada — começa com um único passo em direção ao que já sei que importa.');
     lines.push('');
     lines.push('Com carinho,\nEu do presente.');
 
     return lines.join('\n');
-  }, [future, state.phase6?.intention, state.phase7?.savedRoles]);
+  }, [future, state.phase1, state.phase2, state.phase3, state.phase5, state.phase6, state.phase7]);
 
   const handleFieldChange = (field: string, value: string) => {
     updatePhase('phase8', { future: { ...future, [field]: value } });
