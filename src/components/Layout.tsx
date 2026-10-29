@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Leaf, ArrowLeft } from 'lucide-react';
-import { useApp } from '../store';
+import { Leaf, ArrowLeft, RotateCcw } from 'lucide-react';
+import { useApp, type AppState } from '../store';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -18,15 +18,35 @@ const PHASE_TITLES: Record<string, string> = {
   '/comecar/salvar': 'Salvar Jornada',
 };
 
+// Fatias do store que cada fase preenche — usadas por "Refazer esta fase".
+const PHASE_SLICES: Record<number, (keyof AppState)[]> = {
+  1: ['phase1'],
+  2: ['phase2'],
+  3: ['phase3'],
+  4: ['phase4'],
+  5: ['phase5', 'phase6'],
+  6: ['phase7'],
+  7: ['businessModel'],
+  8: ['phase8'],
+};
+
 export default function Layout() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { state } = useApp();
-  
+  const { state, resetPhases } = useApp();
+  const [remountKey, setRemountKey] = useState(0);
+
   const phaseMatch = pathname.match(/\/comecar\/fase\/(\d)/);
   const missionId = phaseMatch ? parseInt(phaseMatch[1], 10) : null;
   const isSavePage = pathname.includes('salvar');
-  
+
+  const handleRedoPhase = () => {
+    if (!missionId) return;
+    const slices = PHASE_SLICES[missionId];
+    if (slices) resetPhases(slices);
+    setRemountKey(k => k + 1); // força remontar a fase do zero
+  };
+
   return (
     <div className="min-h-screen bg-transparent text-[var(--text-main)]">
       {/* Top Banner Wrapper - Cyber-Tech Themed */}
@@ -48,20 +68,36 @@ export default function Layout() {
 
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(step => (
-              <div 
-                key={step} 
+              <button
+                key={step}
+                onClick={() => navigate(`/comecar/fase/${step}`)}
+                aria-label={`Ir para a fase ${step}`}
+                title={`Ir para a fase ${step}`}
                 className={cn(
-                  "w-6 md:w-10 h-2 rounded-full",
-                  missionId && step <= missionId 
-                    ? "bg-[var(--neon-cyan)] shadow-[var(--btn-shadow)]" 
+                  "w-6 md:w-10 h-2 rounded-full transition-transform hover:scale-110 cursor-pointer",
+                  missionId && step <= missionId
+                    ? "bg-[var(--neon-cyan)] shadow-[var(--btn-shadow)]"
                     : "bg-[var(--glass)]"
                 )}
               />
             ))}
           </div>
 
-          <div className="text-sm font-bold opacity-70 hidden md:block uppercase tracking-wider text-[var(--text-main)]">
-            {missionId ? `FASE 0${missionId}` : 'FASE 00'}: {PHASE_TITLES[pathname] || ''}
+          <div className="flex items-center gap-3">
+            {missionId && (
+              <button
+                onClick={handleRedoPhase}
+                title="Refazer esta fase (apaga as respostas desta fase)"
+                aria-label="Refazer esta fase"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--color-brand-200)] text-[var(--color-text-muted)] hover:text-[var(--text-main)] hover:border-[var(--color-brand-400)] transition-colors text-xs font-medium"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span className="hidden md:inline">Refazer fase</span>
+              </button>
+            )}
+            <div className="text-sm font-bold opacity-70 hidden lg:block uppercase tracking-wider text-[var(--text-main)]">
+              {missionId ? `FASE 0${missionId}` : 'FASE 00'}: {PHASE_TITLES[pathname] || ''}
+            </div>
           </div>
         </header>
       )}
@@ -70,7 +106,7 @@ export default function Layout() {
       <main className="max-w-5xl mx-auto px-4 py-8">
         <AnimatePresence mode="wait">
           <motion.div
-            key={pathname}
+            key={`${pathname}-${remountKey}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}

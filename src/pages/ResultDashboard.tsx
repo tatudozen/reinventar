@@ -85,13 +85,6 @@ const HOW_LABELS: Record<string, string> = {
   sistema: '⚙️ Indiretamente', eventos: '🎤 Em eventos',
 };
 
-const MINISTRY_LABELS: Record<string, string> = {
-  economia: 'Economia', saude: 'Saúde', ciencia_tecnologia: 'Ciência e Tecnologia',
-  educacao: 'Educação', justica: 'Justiça', cultura: 'Cultura',
-  meio_ambiente: 'Meio Ambiente', infraestrutura: 'Infraestrutura',
-  desenvolvimento_social: 'Desenvolvimento Social', comunicacoes: 'Comunicações',
-};
-
 const CARGO_LABELS: Record<string, string> = {
   especialista: 'O(A) Especialista', criador: 'O(A) Criador(a)',
   vendedor: 'O(A) Conector(a)', organizador: 'O(A) Organizador(a)',
@@ -574,9 +567,10 @@ export default function ResultDashboard() {
     .map(([t]) => t);
   const hollandCode = riasecTop3.join('');
 
-  // ── Fase 3 (área + chapéu de dono) ───────────────────────────────────────────
-  const ministry     = phase3?.ministry ?? '';
-  const cargo        = phase3?.cargo    ?? '';
+  // ── Fase 3 (nicho + chapéu de dono) ──────────────────────────────────────────
+  const niche    = phase3?.niche    ?? '';
+  const subNiche = phase3?.subNiche ?? '';
+  const cargo    = phase3?.cargo    ?? '';
 
   // ── Phase 6 ─────────────────────────────────────────────────────────────────
   const connections = phase6?.connections ?? [];
@@ -911,12 +905,12 @@ export default function ResultDashboard() {
                     );
                   })}
                 </div>
-                {(ministry || cargo) && (
+                {(niche || cargo) && (
                   <div className="mt-4 pt-4 border-t border-stone-200">
-                    <div className="text-xs font-semibold text-stone-700 mb-1">Iniciativa de Impacto</div>
+                    <div className="text-xs font-semibold text-stone-700 mb-1">Nicho & Papel</div>
                     <p className="text-xs text-stone-600">
-                      {ministry && `Área: ${MINISTRY_LABELS[ministry] || ministry}`}
-                      {ministry && cargo && ' · '}
+                      {niche && `Nicho: ${niche}${subNiche ? ` (${subNiche})` : ''}`}
+                      {niche && cargo && ' · '}
                       {cargo && `Papel: ${CARGO_LABELS[cargo] || cargo}`}
                     </p>
                   </div>

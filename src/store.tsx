@@ -50,10 +50,12 @@ export interface AppState {
   };
 
   phase3: {
-    impactPoints: Record<string, number>; // coin allocation entre causas
-    uniqueProblem: string;                // problema único selecionado
-    ministry: string;                     // área de atuação escolhida
-    cargo: string;                        // papel preferido
+    impactPoints: Record<string, number>; // (legado) alocação de moedas — não mais usado na UI
+    uniqueProblem: string;                // a dor que o negócio resolve (opção ou texto livre)
+    niche: string;                        // nicho de mercado (label ou texto livre)
+    subNiche: string;                     // sub-nicho (texto livre)
+    ministry: string;                     // (legado) área — mantido por compat, não mais escrito
+    cargo: string;                        // chapéu de dono(a) preferido
   };
 
   phase4: {
@@ -118,7 +120,7 @@ const initialState: AppState = {
 
   phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [] },
   phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [] },
-  phase3: { impactPoints: {}, uniqueProblem: '', ministry: '', cargo: '' },
+  phase3: { impactPoints: {}, uniqueProblem: '', niche: '', subNiche: '', ministry: '', cargo: '' },
   phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
   phase5: { archetype: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },
@@ -136,6 +138,7 @@ interface AppContextType {
   updatePhase: <K extends keyof AppState>(phase: K, data: Partial<AppState[K]>) => void;
   replacePhase: <K extends keyof AppState>(phase: K, data: AppState[K]) => void;
   completePhase: (phaseId: number) => void;
+  resetPhases: (keys: (keyof AppState)[]) => void;
   setGuide: (guide: string) => void;
   setUserData: (name: string, email: string, phone?: string) => void;
   updateAdminConfig: (data: Partial<AppState['adminConfig']>) => void;
@@ -229,6 +232,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  // Reseta fatias específicas de fase aos valores iniciais (usado por "Refazer esta fase").
+  // Não mexe em completedPhases — a barra de progresso é baseada na URL, não nesse array.
+  const resetPhases = (keys: (keyof AppState)[]) => {
+    setState((prev) => {
+      const patch: Record<string, unknown> = {};
+      keys.forEach((k) => {
+        patch[k as string] = JSON.parse(JSON.stringify(initialState[k]));
+      });
+      return { ...prev, ...(patch as unknown as Partial<AppState>) };
+    });
+  };
+
   const setGuide = (guide: string) => {
     setState((prev) => ({ ...prev, guide, mentor: guide }));
   };
@@ -269,6 +284,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updatePhase,
         replacePhase,
         completePhase,
+        resetPhases,
         setGuide,
         setUserData,
         updateAdminConfig,

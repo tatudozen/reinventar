@@ -26,6 +26,8 @@ interface Phase2 {
 interface Phase3 {
   impactPoints?:  Record<string, number>;
   uniqueProblem?: string;
+  niche?:         string;
+  subNiche?:      string;
   ministry?:      string;
   cargo?:         string;
 }
@@ -88,19 +90,6 @@ const SKILL_LABELS: Record<string, string> = {
   sabedoria:    'Autoconhecimento e Sabedoria',
 };
 
-const CAUSE_LABELS: Record<string, string> = {
-  solidao:          'Solidão e Isolamento',
-  educacao:         'Educação e Formação',
-  saude:            'Saúde e Longevidade',
-  cuidado:          'Cuidado com Idosos',
-  desigualdade:     'Desigualdade Social',
-  meio_ambiente:    'Meio Ambiente e Legado',
-  saude_mental:     'Saúde Mental',
-  empreendedorismo: 'Empreendedorismo',
-  cultura:          'Arte, Cultura e Memória',
-  intergeracoes:    'Conexão entre Gerações',
-};
-
 const PROBLEM_LABELS: Record<string, string> = {
   solidao_idosos:          'Idosos sozinhos sem apoio ou companhia',
   conhecimento_perdido:    'Conhecimento que se perde sem ser transmitido',
@@ -108,19 +97,6 @@ const PROBLEM_LABELS: Record<string, string> = {
   jovens_sem_mentores:     'Jovens sem mentores ou referências',
   saude_acesso:            'Comunidades sem acesso à saúde de qualidade',
   experiencia_desvalorizada: 'Desvalorização de quem tem mais experiência',
-};
-
-const MINISTRY_LABELS: Record<string, string> = {
-  economia:              'Economia',
-  saude:                 'Saúde',
-  ciencia_tecnologia:    'Ciência e Tecnologia',
-  educacao:              'Educação',
-  justica:               'Justiça',
-  cultura:               'Cultura',
-  meio_ambiente:         'Meio Ambiente',
-  infraestrutura:        'Infraestrutura',
-  desenvolvimento_social: 'Desenvolvimento Social',
-  comunicacoes:          'Comunicações',
 };
 
 // Chapéu que o(a) dono(a) do negócio mais veste (é o CEO do negócio de 1 pessoa)
@@ -326,27 +302,18 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     lines.push('');
   }
 
-  // FASE 3 — A dor que resolve + mercado + chapéu de dono(a)
+  // FASE 3 — Nicho + sub-nicho + chapéu de dono(a) + a dor que resolve
   const p3 = d.phase3 ?? {};
-  if (nonEmptyObj(p3.impactPoints) || p3.uniqueProblem || p3.ministry || p3.cargo) {
-    lines.push('── FASE 3: A DOR QUE RESOLVE (mercado e papel) ──');
-    if (nonEmptyObj(p3.impactPoints)) {
-      const sorted = Object.entries(p3.impactPoints!)
-        .filter(([, v]) => v > 0)
-        .sort(([, a], [, b]) => b - a);
-      lines.push('Distribuição de moedas por tema (10 no total):');
-      for (const [id, pts] of sorted) {
-        lines.push(`  • ${CAUSE_LABELS[id] ?? id}: ${pts} moeda(s)`);
-      }
-    }
-    if (p3.ministry) {
-      lines.push(`Mercado / área do negócio: ${MINISTRY_LABELS[p3.ministry] ?? p3.ministry}`);
+  if (p3.niche || p3.subNiche || p3.uniqueProblem || p3.cargo) {
+    lines.push('── FASE 3: NICHO E A DOR QUE RESOLVE ──');
+    if (p3.niche) {
+      lines.push(`Nicho de mercado: ${p3.niche}${p3.subNiche ? ` (sub-nicho: ${p3.subNiche})` : ''}`);
     }
     if (p3.cargo) {
       lines.push(`Chapéu de dono(a) que mais veste: ${CARGO_LABELS[p3.cargo] ?? p3.cargo}`);
     }
     if (p3.uniqueProblem) {
-      lines.push(`Dor única que o negócio vai resolver: ${PROBLEM_LABELS[p3.uniqueProblem] ?? p3.uniqueProblem}`);
+      lines.push(`Dor que o negócio vai resolver: ${PROBLEM_LABELS[p3.uniqueProblem] ?? p3.uniqueProblem}`);
     }
     lines.push('');
   }
