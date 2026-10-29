@@ -309,9 +309,27 @@ interface Tension {
 
 // ── Analysis helpers ───────────────────────────────────────────────────────────
 
-function computeRIASECScores(duels: Record<string, string>): Record<RIASECType, number> {
+// Escolhas forçadas (Fase Cenários) → tipo RIASEC. Peso 1 cada, como um duelo.
+// Só mapeamos opções com correspondência limpa; "liberdade" fica sem pontuar.
+const FORCED_RIASEC: Record<string, RIASECType> = {
+  estrutura: 'C', mentor: 'S', executor: 'R', profundo: 'S', amplo: 'E',
+};
+
+const FORCED_SOURCE_LABELS: Record<string, string> = {
+  estrutura: 'Estrutura e equipe', mentor: 'Guiar e transmitir',
+  executor: 'Executar e implementar', profundo: 'Impacto profundo', amplo: 'Alcance amplo',
+};
+
+function computeRIASECScores(
+  duels: Record<string, string>,
+  forcedChoices: Record<string, string> = {},
+): Record<RIASECType, number> {
   const scores: Record<RIASECType, number> = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
   Object.values(duels).forEach(t => { if (t in scores) scores[t as RIASECType]++; });
+  Object.values(forcedChoices).forEach(optId => {
+    const t = FORCED_RIASEC[optId];
+    if (t) scores[t]++; // peso 1
+  });
   return scores;
 }
 
@@ -319,6 +337,7 @@ function buildCrossSignals(
   riasecTop3: RIASECType[],
   topSkillIds: string[],
   savedRoles: string[],
+  forcedChoices: Record<string, string> = {},
 ): CrossSignal[] {
   const sources: Record<RIASECType, string[]> = { R: [], I: [], A: [], S: [], E: [], C: [] };
 
@@ -335,6 +354,11 @@ function buildCrossSignals(
   savedRoles.forEach(role => {
     const t = ROLE_RIASEC[role];
     if (t) sources[t].push(`Papel salvo: ${ROLE_LABELS[role] ? ROLE_LABELS[role].split(' ').slice(0, 3).join(' ') + '…' : role}`);
+  });
+
+  Object.values(forcedChoices).forEach(optId => {
+    const t = FORCED_RIASEC[optId];
+    if (t) sources[t].push(`Escolha de estilo: ${FORCED_SOURCE_LABELS[optId] || optId}`);
   });
 
   return (Object.entries(sources) as [RIASECType, string[]][])
@@ -559,7 +583,8 @@ export default function ResultDashboard() {
   const topCauseLabel = topCauses[0] ? (CAUSE_LABELS[topCauses[0][0]] || topCauses[0][0]) : '';
 
   // ── Phase 4 ─────────────────────────────────────────────────────────────────
-  const riasecScores = computeRIASECScores(phase4?.sceneDuels ?? {});
+  const forcedChoices = phase4?.forcedChoices ?? {};
+  const riasecScores = computeRIASECScores(phase4?.sceneDuels ?? {}, forcedChoices);
   const riasecTop3 = (Object.entries(riasecScores) as [RIASECType, number][])
     .sort((a, b) => b[1] - a[1])
     .filter(([, n]) => n > 0)
@@ -585,7 +610,7 @@ export default function ResultDashboard() {
   const letter = phase8?.letter ?? '';
 
   // ── Cross-phase analysis ────────────────────────────────────────────────────
-  const crossSignals   = buildCrossSignals(riasecTop3, topSkillIds, savedRoles);
+  const crossSignals   = buildCrossSignals(riasecTop3, topSkillIds, savedRoles, forcedChoices);
   const topSignal      = crossSignals[0];
   const tensions       = detectTensions(riasecTop3, savedRoles, topSkillIds);
   const synthesisSentence = buildSynthesisSentence(riasecTop3, topCauseLabel, topRole, flowActivities);

@@ -178,9 +178,15 @@ type ScoringMissions = Pick<AppState, 'mission1' | 'mission2' | 'mission3' | 'mi
 export const RIASEC_BLEND = {
   duel:      2, // por vitória de Duelo de Cena (M4)
   archetype: 2, // por arquétipo selecionado (M6)
-  cargo:     2, // pelo cargo escolhido no Ministério dos Sonhos (M5)
+  cargo:     2, // pelo chapéu de dono(a) escolhido (Fase Talentos)
   passion:   1, // por atividade em flow/boost (M1)
   curiosity: 1, // por tema de curiosidade (M1)
+  forced:    1, // por escolha forçada de estilo (Fase Cenários)
+};
+
+// Escolhas forçadas (Fase Cenários) → tipo RIASEC. "liberdade" fica sem mapear.
+export const FORCED_RIASEC: Record<string, RIASECType> = {
+  estrutura: 'C', mentor: 'S', executor: 'R', profundo: 'S', amplo: 'E',
 };
 
 // Orçamento de pontos da compatibilidade de carreira (soma = 100).
@@ -220,6 +226,12 @@ export function computeBlendedRIASEC(
   (md.mission1?.curiosityRadar || []).forEach(theme => {
     const t = CURIOSITY_RIASEC[theme];
     if (t) scores[t] += w.curiosity;
+  });
+  // Escolhas forçadas de estilo (Fase Cenários). Nota: o blended lê dos shims
+  // mission*, hoje só usados pelas páginas Explorar (não roteadas no Reinventar).
+  Object.values(md.mission4?.forcedChoices || {}).forEach(optId => {
+    const t = FORCED_RIASEC[optId as string];
+    if (t) scores[t] += w.forced;
   });
 
   return scores;
@@ -343,7 +355,7 @@ export const RESULT_LENSES: ResultLens[] = [
     title: 'Sua essência',
     shortLabel: 'Essência',
     question: 'Por quem você naturalmente é',
-    blend: { duel: 3, archetype: 1, cargo: 1, passion: 1, curiosity: 1 },
+    blend: { duel: 3, archetype: 1, cargo: 1, passion: 1, curiosity: 1, forced: 1 },
     weights: { riasec: [35, 25, 15], intelligence: 20, pillar: 5, area: 0 },
     areaSource: 'none',
   },
@@ -352,7 +364,7 @@ export const RESULT_LENSES: ResultLens[] = [
     title: 'O que você quer construir',
     shortLabel: 'Impacto',
     question: 'Pelo impacto e pela criação que te atraem',
-    blend: { duel: 1, archetype: 4, cargo: 1, passion: 1, curiosity: 1 },
+    blend: { duel: 1, archetype: 4, cargo: 1, passion: 1, curiosity: 1, forced: 1 },
     weights: { riasec: [28, 18, 10], intelligence: 12, pillar: 22, area: 22 },
     areaSource: 'tech',
   },
@@ -361,7 +373,7 @@ export const RESULT_LENSES: ResultLens[] = [
     title: 'A arena que você escolheu',
     shortLabel: 'Território',
     question: 'Pelo território e papel que você quer ocupar',
-    blend: { duel: 1, archetype: 1, cargo: 4, passion: 0, curiosity: 0 },
+    blend: { duel: 1, archetype: 1, cargo: 4, passion: 0, curiosity: 0, forced: 1 },
     weights: { riasec: [24, 16, 8], intelligence: 12, pillar: 8, area: 30 },
     areaSource: 'ministry',
   },
