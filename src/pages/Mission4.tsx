@@ -223,7 +223,7 @@ export default function Mission4() {
   const handleNextStep = () => {
     if (step === 1 && environments.length >= 2 && isForcedComplete) {
       addXP(100);
-      completePhase(4);
+      completePhase(3);
       setStep(2);
     }
   };
@@ -515,9 +515,9 @@ export default function Mission4() {
                 </div>
               </div>
 
-              <button onClick={() => navigate('/comecar/fase/5')}
+              <button onClick={() => navigate('/comecar/fase/4')}
                 className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform">
-                Avançar para Fase 5 →
+                Avançar para Fase 4 →
               </button>
 
               <button onClick={() => { setCurrentDuelIndex(0); setSelectedSide(null); setStep(0); }}

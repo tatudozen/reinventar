@@ -168,7 +168,7 @@ export interface CareerSuggestion {
 
 export type Pillar = 'love' | 'good' | 'world' | 'paid';
 
-type ScoringMissions = Pick<AppState, 'mission1' | 'mission2' | 'mission3' | 'mission4' | 'mission5' | 'mission6' | 'phase3'>;
+type ScoringMissions = Pick<AppState, 'mission1' | 'mission2' | 'mission3' | 'mission4' | 'mission5' | 'mission6' | 'phase2' | 'phase3'>;
 
 // ── Pesos calibráveis (ajuste aqui para rebalancear todo o ranking) ──────────
 
@@ -209,7 +209,7 @@ export function computeBlendedRIASEC(
     const t = ARCH_RIASEC[a];
     if (t) scores[t] += w.archetype;
   });
-  const cargoType = md.phase3?.cargo ? CARGO_RIASEC[md.phase3.cargo] : undefined;
+  const cargoType = md.phase2?.cargo ? CARGO_RIASEC[md.phase2.cargo] : undefined;
   if (cargoType) scores[cargoType] += w.cargo;
   Object.entries(md.mission1?.energyCards || {}).forEach(([act, q]) => {
     if (q === 'flow' || q === 'boost') {
@@ -555,9 +555,9 @@ export function formatMissionDataText(state: AppState): string {
 
   const m3extra = state.phase3;
   lines.push('');
-  lines.push('=== FASE 3 — ÁREA E PAPEL ===');
-  lines.push(`Área de atuação: ${m3extra?.ministry ? (MINISTRY_NAMES[m3extra.ministry] ?? m3extra.ministry) : '—'}`);
-  lines.push(`Papel preferido: ${m3extra?.cargo ? (CARGO_NAMES[m3extra.cargo] ?? m3extra.cargo) : '—'}`);
+  lines.push('=== FASE 3 — NICHO E PAPEL ===');
+  lines.push(`Nicho: ${m3extra?.niche ? `${m3extra.niche}${m3extra.subNiche ? ` (${m3extra.subNiche})` : ''}` : '—'}`);
+  lines.push(`Papel preferido: ${state.phase2?.cargo ? (CARGO_NAMES[state.phase2.cargo] ?? state.phase2.cargo) : '—'}`);
   lines.push(`Equipe (inspirações): ${list(m5?.saved?.map(id => MENTOR_NAMES[id] ?? id))}`);
   lines.push(`Descartadas: ${list(m5?.discarded?.map(id => MENTOR_NAMES[id] ?? id))}`);
 
@@ -1268,8 +1268,8 @@ export function generateReinventarRelatorioHtml(
       `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;margin:4px 0">${dict(REINVENTAR_PROBLEMS, uniqueProblem)}</p>` : ''}
     ${phase3?.ministry ? sublabel('Área de atuação', '#16a34a') +
       `<p style="font-size:14px;color:#374151;margin:4px 0">${dict(REINVENTAR_MINISTRIES, phase3.ministry)}</p>` : ''}
-    ${phase3?.cargo ? sublabel('Papel preferido', '#16a34a') +
-      `<p style="font-size:13px;color:#166534;margin:4px 0">${dict(REINVENTAR_CARGOS, phase3.cargo)}</p>` : ''}
+    ${phase2?.cargo ? sublabel('Papel preferido', '#16a34a') +
+      `<p style="font-size:13px;color:#166534;margin:4px 0">${dict(REINVENTAR_CARGOS, phase2.cargo)}</p>` : ''}
   `);
 
   // ── Phase 4 — Duelo de Mundos ─────────────────────────────────────────────
@@ -1309,7 +1309,7 @@ export function generateReinventarRelatorioHtml(
 
   // ── Phase 3 extra — Área e Papel (movidos da F5) ─────────────────────────
   const ministry      = phase3?.ministry ?? '';
-  const cargo         = phase3?.cargo ?? '';
+  const cargo         = phase2?.cargo ?? '';
 
   // ── Phase 5 — Conexões / Figuras ─────────────────────────────────────────
   const archetype     = phase5?.archetype ?? '';

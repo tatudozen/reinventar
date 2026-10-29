@@ -9,10 +9,10 @@ const PHASE_TITLES: Record<string, string> = {
   '/comecar/guia':   'Intenções de Jornada',
   '/comecar/fase/1': 'Mapa de Energia',
   '/comecar/fase/2': 'Talentos na Mochila',
-  '/comecar/fase/3': 'A Dor que Você Resolve',
-  '/comecar/fase/4': 'Cenários de Vida',
-  '/comecar/fase/5': 'Público e Cliente',
-  '/comecar/fase/6': 'O Garimpo',
+  '/comecar/fase/3': 'Cenários de Vida',
+  '/comecar/fase/4': 'O Garimpo',
+  '/comecar/fase/5': 'A Dor que Você Resolve',
+  '/comecar/fase/6': 'Público e Cliente',
   '/comecar/fase/7': 'O Modelo da Reinvenção',
   '/comecar/fase/8': 'A Carta para o Eu de Amanhã',
   '/comecar/salvar': 'Salvar Jornada',
@@ -20,14 +20,14 @@ const PHASE_TITLES: Record<string, string> = {
 
 // Fatias do store que cada fase preenche — usadas por "Refazer esta fase".
 const PHASE_SLICES: Record<number, (keyof AppState)[]> = {
-  1: ['phase1'],
-  2: ['phase2'],
-  3: ['phase3'],
-  4: ['phase4'],
-  5: ['phase5', 'phase6'],
-  6: ['phase7'],
-  7: ['businessModel'],
-  8: ['phase8'],
+  1: ['phase1'],       // Mapa de Energia
+  2: ['phase2'],       // Talentos + chapéu de dono
+  3: ['phase4'],       // Cenários de Vida
+  4: ['phase7'],       // O Garimpo
+  5: ['phase3'],       // A Dor que Você Resolve
+  6: ['phase6'],       // Público e Cliente
+  7: ['businessModel'],// O Modelo da Reinvenção
+  8: ['phase8'],       // A Carta
 };
 
 export default function Layout() {

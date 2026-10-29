@@ -41,15 +41,35 @@ export default function Mission5() {
   const connections: string[] = state.phase6.connections ?? [];
   const modes: string[]       = state.phase6.modes       ?? [];
 
+  // Separa públicos da lista (presets) de um público específico digitado (texto livre)
+  const isPreset = (id: string) => WHO_OPTIONS.some(o => o.id === id);
+  const presetConnections = connections.filter(isPreset);
+  const [customAudience, setCustomAudience] = useState<string>(
+    () => connections.find(c => !isPreset(c)) ?? '',
+  );
+
   const [step, setStep] = useState<Step>(() => {
     if (connections.length > 0 && modes.length > 0) return 'done';
     if (connections.length > 0) return 'how';
     return 'who';
   });
 
-  const toggleConnection = (id: string) => {
-    const next = connections.includes(id) ? connections.filter(c => c !== id) : [...connections, id];
+  // Reconstrói connections = presets selecionados + público específico (se houver)
+  const writeConnections = (presets: string[], custom: string) => {
+    const next = [...presets, ...(custom.trim() ? [custom.trim()] : [])];
     updatePhase('phase6', { connections: next });
+  };
+
+  const toggleConnection = (id: string) => {
+    const nextPresets = presetConnections.includes(id)
+      ? presetConnections.filter(c => c !== id)
+      : [...presetConnections, id];
+    writeConnections(nextPresets, customAudience);
+  };
+
+  const handleCustomAudience = (value: string) => {
+    setCustomAudience(value);
+    writeConnections(presetConnections, value);
   };
 
   const toggleMode = (id: string) => {
@@ -59,7 +79,6 @@ export default function Mission5() {
 
   const handleFinish = () => {
     addXP(100);
-    completePhase(5);
     completePhase(6);
     setStep('done');
   };
@@ -86,14 +105,14 @@ export default function Mission5() {
                     Todo negócio existe para alguém. Quais grupos de pessoas você quer ter no centro do seu negócio nesta próxima fase?
                   </p>
                   <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">
-                    ● Selecione 2 ou mais
+                    ● Escolha 1 ou mais — ou descreva um público específico
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-6 flex-grow">
+              <div className="grid grid-cols-2 gap-3 mb-4 flex-grow">
                 {WHO_OPTIONS.map(opt => {
-                  const active = connections.includes(opt.id);
+                  const active = presetConnections.includes(opt.id);
                   return (
                     <button key={opt.id} onClick={() => toggleConnection(opt.id)}
                       className={cn('p-4 rounded-xl border text-left transition-all flex items-center gap-3',
@@ -109,11 +128,24 @@ export default function Mission5() {
                 })}
               </div>
 
+              <div className="mb-6">
+                <label className="text-xs font-mono uppercase tracking-widest text-[var(--color-brand-500)] block mb-2">
+                  Público específico (nicho)
+                </label>
+                <input
+                  type="text"
+                  value={customAudience}
+                  onChange={e => handleCustomAudience(e.target.value)}
+                  placeholder="Ex.: mulheres empreendedoras 50+, aposentados que querem renda extra…"
+                  className="w-full rounded-xl border border-[var(--color-brand-200)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm text-[var(--text-main)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-brand-500)] focus:outline-none"
+                />
+              </div>
+
               <div className="flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
-                <span className="text-sm font-mono opacity-60">{connections.length} selecionados</span>
-                <button onClick={() => setStep('how')} disabled={connections.length < 2}
+                <span className="text-sm font-mono opacity-60">{connections.length} selecionado{connections.length !== 1 ? 's' : ''}</span>
+                <button onClick={() => setStep('how')} disabled={connections.length < 1}
                   className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    connections.length >= 2
+                    connections.length >= 1
                       ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)]'
                       : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
                   Próxima Etapa
@@ -191,11 +223,11 @@ export default function Mission5() {
                     <div className="flex flex-wrap gap-1.5">
                       {connections.map(id => {
                         const opt = WHO_OPTIONS.find(o => o.id === id);
-                        return opt ? (
+                        return (
                           <span key={id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)] font-medium">
-                            {opt.emoji} {opt.label}
+                            {opt ? `${opt.emoji} ${opt.label}` : `🎯 ${id}`}
                           </span>
-                        ) : null;
+                        );
                       })}
                     </div>
                   </div>
@@ -217,9 +249,9 @@ export default function Mission5() {
                 )}
               </div>
 
-              <button onClick={() => navigate('/comecar/fase/6')}
+              <button onClick={() => navigate('/comecar/fase/7')}
                 className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform">
-                Avançar para Fase 6 →
+                Avançar para Fase 7 →
               </button>
             </motion.div>
           )}

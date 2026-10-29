@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Users, MessageCircle, Lightbulb, Heart,
   LayoutGrid, BookOpen, Sparkles, Brain,
-  Star, Gem,
+  Star, Gem, Briefcase, Check,
 } from 'lucide-react';
 import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
@@ -127,17 +127,32 @@ const cardVariants = {
   exit:  (dir: number) => ({ x: dir >= 0 ? -300 : 300, opacity: 0, scale: 0.95 }),
 };
 
+// Chapéu que o(a) dono(a) do negócio mais veste (CEO do negócio de uma pessoa só)
+const CARGOS = [
+  { id: 'especialista', name: 'O(A) Especialista', profile: 'Entrego meu conhecimento direto: consultoria, mentoria, diagnóstico.' },
+  { id: 'criador',      name: 'O(A) Criador(a)',   profile: 'Crio produtos, conteúdo e soluções com a minha marca.' },
+  { id: 'vendedor',     name: 'O(A) Conector(a)',  profile: 'Faço acontecer: vendo, fecho parcerias e conecto pessoas.' },
+  { id: 'organizador',  name: 'O(A) Organizador(a)', profile: 'Estruturo, planejo e faço a operação rodar com ordem.' },
+  { id: 'mao_na_massa', name: 'Mão na Massa',      profile: 'Produzo e executo com as próprias mãos, no detalhe.' },
+  { id: 'cuidador',     name: 'O(A) Cuidador(a)',  profile: 'Atendo e cuido das pessoas de perto, com presença.' },
+];
+
 export default function Mission2() {
   const navigate = useNavigate();
   const { state, updatePhase, addXP, completePhase } = useApp();
 
-  const [step, setStep]             = useState(0);
+  const skillRatings  = state.phase2.skillRatings  ?? {};
+  const hiddenTalents = state.phase2.hiddenTalents ?? [];
+  const cargo         = state.phase2.cargo         ?? '';
+
+  const [step, setStep] = useState(() => {
+    if (cargo) return 2;
+    if (Object.keys(skillRatings).length === COMPETENCIES.length) return 1;
+    return 0;
+  });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection]   = useState(1);
   const [hoverScore, setHoverScore] = useState<number | null>(null);
-
-  const skillRatings  = state.phase2.skillRatings  ?? {};
-  const hiddenTalents = state.phase2.hiddenTalents ?? [];
 
   const currentCard     = COMPETENCIES[currentIndex];
   const currentScore    = skillRatings[currentCard.id];
@@ -182,7 +197,8 @@ export default function Mission2() {
 
   const handleNextStep = () => {
     if (step === 0 && isComplete) setStep(1);
-    else if (step === 1 && hiddenTalents.length >= 1) {
+    else if (step === 1 && hiddenTalents.length >= 1) setStep(2);
+    else if (step === 2 && cargo) {
       addXP(100);
       completePhase(2);
       navigate('/comecar/fase/3');
@@ -338,6 +354,52 @@ export default function Mission2() {
                 <button onClick={handleNextStep} disabled={hiddenTalents.length < 1}
                   className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
                     hiddenTalents.length >= 1
+                      ? 'bg-[var(--color-brand-600)] text-[var(--bg-dark)] shadow-[var(--btn-shadow)] hover:opacity-90'
+                      : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
+                  Próxima Etapa →
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── STEP 2: Chapéu de dono(a) ── */}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Briefcase className="w-4 h-4 text-[var(--color-brand-500)]" />
+                  <h3 className="font-bold text-xl text-[var(--text-main)]">No seu negócio, você é o(a) dono(a). Qual chapéu veste melhor?</h3>
+                </div>
+                <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+                  Com tudo que você sabe fazer, qual função combina mais com você no dia a dia? Você será o CEO do seu negócio de uma pessoa só — o resto dá para delegar com o tempo.
+                </p>
+              </div>
+              <div className="space-y-2 mb-auto">
+                {CARGOS.map(c => {
+                  const active = cargo === c.id;
+                  return (
+                    <button key={c.id} onClick={() => updatePhase('phase2', { cargo: c.id })}
+                      className={cn('w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all',
+                        active
+                          ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
+                          : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]')}>
+                      <div className={cn('w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center',
+                        active ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)]' : 'border-[var(--color-brand-300)]')}>
+                        {active && <Check className="w-2.5 h-2.5 text-[var(--bg-dark)]" />}
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-[var(--text-main)]">{c.name}</div>
+                        <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">{c.profile}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-10 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
+                <button onClick={() => setStep(1)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
+                <button onClick={handleNextStep} disabled={!cargo}
+                  className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
+                    cargo
                       ? 'bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] text-white shadow-[var(--btn-shadow)] hover:opacity-90'
                       : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
                   Concluir Fase 2 →

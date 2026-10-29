@@ -69,8 +69,8 @@ export default function Mission6() {
 
   const handleFinish = () => {
     addXP(100);
-    completePhase(6);
-    navigate('/comecar/fase/7');
+    completePhase(4);
+    navigate('/comecar/fase/5');
   };
 
   return (
@@ -185,7 +185,7 @@ export default function Mission6() {
 
               <button onClick={handleFinish}
                 className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform flex items-center gap-2">
-                Avançar para Fase 7 <Sparkles className="w-5 h-5" />
+                Avançar para Fase 5 <Sparkles className="w-5 h-5" />
               </button>
             </motion.div>
           )}

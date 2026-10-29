@@ -6,11 +6,11 @@ import { getEmbedUrl, isSafeEmbedUrl } from '../components/MentorVideo';
 
 const PHASES = [
   { n: '01', title: 'Mapa de Energia',         desc: 'Descubra quais atividades ainda te fazem brilhar — a energia que vai sustentar o que você construir.' },
-  { n: '02', title: 'Talentos na Mochila',     desc: 'Reconheça as competências de décadas de vida — sua autoridade e vantagem real nesta nova fase.' },
-  { n: '03', title: 'A Dor que Você Resolve',  desc: 'Identifique o problema do mundo que te move — e que outras pessoas pagariam para resolver.' },
-  { n: '04', title: 'Cenários de Vida',        desc: 'Explore os contextos e ambientes onde você trabalha e se sente mais vivo.' },
-  { n: '05', title: 'Público e Cliente',        desc: 'Defina quem você quer servir e como entregar valor — o outro lado do seu negócio.' },
-  { n: '06', title: 'O Garimpo',               desc: 'Garimpe formatos concretos de atuação — as sementes da sua futura oferta.' },
+  { n: '02', title: 'Talentos na Mochila',     desc: 'Reconheça suas competências de décadas e o chapéu de dono(a) que você veste melhor.' },
+  { n: '03', title: 'Cenários de Vida',        desc: 'Explore os contextos e ambientes onde você trabalha e se sente mais vivo.' },
+  { n: '04', title: 'O Garimpo',               desc: 'Garimpe formatos concretos de atuação — as sementes da sua futura oferta.' },
+  { n: '05', title: 'A Dor que Você Resolve',  desc: 'Encontre seu nicho e a dor real que o seu negócio vai resolver.' },
+  { n: '06', title: 'Público e Cliente',       desc: 'Defina quem você quer servir e como entregar valor — o outro lado do seu negócio.' },
   { n: '07', title: 'O Modelo da Reinvenção',  desc: 'Desenhe sua oferta, quem paga e sua meta — a engrenagem que transforma experiência em renda.' },
   { n: '08', title: 'Carta ao Eu de Amanhã',   desc: 'Feche com a visão do seu próximo capítulo — e do negócio que nasce dele.' },
 ];

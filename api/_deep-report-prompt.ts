@@ -21,6 +21,7 @@ interface Phase2 {
   detailRatings?: Record<string, number[]>;
   whoAsksYou?:    string[];
   hiddenTalents?: string[];
+  cargo?:         string;
 }
 
 interface Phase3 {
@@ -29,7 +30,6 @@ interface Phase3 {
   niche?:         string;
   subNiche?:      string;
   ministry?:      string;
-  cargo?:         string;
 }
 
 interface Phase4 {
@@ -279,10 +279,10 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     lines.push('');
   }
 
-  // FASE 2
+  // FASE 2 — Talentos + chapéu de dono(a)
   const p2 = d.phase2 ?? {};
-  if (nonEmptyObj(p2.skillRatings) || nonEmpty(p2.whoAsksYou).length || nonEmpty(p2.hiddenTalents).length) {
-    lines.push('── FASE 2: TALENTOS MADUROS ──');
+  if (nonEmptyObj(p2.skillRatings) || nonEmpty(p2.whoAsksYou).length || nonEmpty(p2.hiddenTalents).length || p2.cargo) {
+    lines.push('── FASE 2: TALENTOS MADUROS E PAPEL ──');
     if (nonEmptyObj(p2.skillRatings)) {
       lines.push('Autoavaliação de talentos (1-5):');
       const detail = p2.detailRatings ?? {};
@@ -299,18 +299,18 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     if (nonEmpty(p2.hiddenTalents).length) {
       lines.push(`Talentos que ${firstName} subestima: ${p2.hiddenTalents!.join(', ')}`);
     }
+    if (p2.cargo) {
+      lines.push(`Chapéu de dono(a) que mais veste: ${CARGO_LABELS[p2.cargo] ?? p2.cargo}`);
+    }
     lines.push('');
   }
 
-  // FASE 3 — Nicho + sub-nicho + chapéu de dono(a) + a dor que resolve
+  // FASE 3 — Nicho + sub-nicho + a dor que resolve
   const p3 = d.phase3 ?? {};
-  if (p3.niche || p3.subNiche || p3.uniqueProblem || p3.cargo) {
+  if (p3.niche || p3.subNiche || p3.uniqueProblem) {
     lines.push('── FASE 3: NICHO E A DOR QUE RESOLVE ──');
     if (p3.niche) {
       lines.push(`Nicho de mercado: ${p3.niche}${p3.subNiche ? ` (sub-nicho: ${p3.subNiche})` : ''}`);
-    }
-    if (p3.cargo) {
-      lines.push(`Chapéu de dono(a) que mais veste: ${CARGO_LABELS[p3.cargo] ?? p3.cargo}`);
     }
     if (p3.uniqueProblem) {
       lines.push(`Dor que o negócio vai resolver: ${PROBLEM_LABELS[p3.uniqueProblem] ?? p3.uniqueProblem}`);

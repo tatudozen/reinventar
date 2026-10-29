@@ -41,10 +41,10 @@ export default function App() {
             <Route path="guia" element={<GuideSelection />} />
             <Route path="fase/1" element={<Mission1 />} />
             <Route path="fase/2" element={<Mission2 />} />
-            <Route path="fase/3" element={<Mission3 />} />
-            <Route path="fase/4" element={<Mission4 />} />
-            <Route path="fase/5" element={<Mission5 />} />
-            <Route path="fase/6" element={<Mission6 />} />
+            <Route path="fase/3" element={<Mission4 />} />
+            <Route path="fase/4" element={<Mission6 />} />
+            <Route path="fase/5" element={<Mission3 />} />
+            <Route path="fase/6" element={<Mission5 />} />
             <Route path="fase/7" element={<MissionModelo />} />
             <Route path="fase/8" element={<Mission7 />} />
             <Route path="salvar" element={<SaveResult />} />

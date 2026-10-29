@@ -567,10 +567,10 @@ export default function ResultDashboard() {
     .map(([t]) => t);
   const hollandCode = riasecTop3.join('');
 
-  // ── Fase 3 (nicho + chapéu de dono) ──────────────────────────────────────────
+  // ── Fase 3 (nicho) + chapéu de dono (agora na fase Talentos) ──────────────────
   const niche    = phase3?.niche    ?? '';
   const subNiche = phase3?.subNiche ?? '';
-  const cargo    = phase3?.cargo    ?? '';
+  const cargo    = phase2?.cargo    ?? '';
 
   // ── Phase 6 ─────────────────────────────────────────────────────────────────
   const connections = phase6?.connections ?? [];

@@ -47,6 +47,7 @@ export interface AppState {
     detailRatings: Record<string, number[]>; // sub-perguntas de aprofundamento
     whoAsksYou: string[];                    // "quem te procura" (tipos de pedido de ajuda)
     hiddenTalents: string[];                 // talentos ocultos selecionados
+    cargo: string;                           // chapéu de dono(a) preferido (CEO do negócio de 1 pessoa)
   };
 
   phase3: {
@@ -55,7 +56,6 @@ export interface AppState {
     niche: string;                        // nicho de mercado (label ou texto livre)
     subNiche: string;                     // sub-nicho (texto livre)
     ministry: string;                     // (legado) área — mantido por compat, não mais escrito
-    cargo: string;                        // chapéu de dono(a) preferido
   };
 
   phase4: {
@@ -119,8 +119,8 @@ const initialState: AppState = {
   mission5: {}, mission6: {}, mission7: {}, mission8: {},
 
   phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [] },
-  phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [] },
-  phase3: { impactPoints: {}, uniqueProblem: '', niche: '', subNiche: '', ministry: '', cargo: '' },
+  phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [], cargo: '' },
+  phase3: { impactPoints: {}, uniqueProblem: '', niche: '', subNiche: '', ministry: '' },
   phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
   phase5: { archetype: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },

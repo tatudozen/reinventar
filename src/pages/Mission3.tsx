@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, Flame, Briefcase, Compass, Check, CheckCircle2 } from 'lucide-react';
+import { Target, Flame, Compass, Check, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -22,17 +22,7 @@ const NICHES = [
   { id: 'natureza',       label: 'Natureza, Pets & Sustentabilidade', emoji: '🌿', examples: ['pets', 'horta', 'consumo consciente'] },
 ];
 
-// Chapéu que o(a) dono(a) do negócio mais veste (CEO do negócio de uma pessoa só)
-const CARGOS = [
-  { id: 'especialista', name: 'O(A) Especialista', profile: 'Entrego meu conhecimento direto: consultoria, mentoria, diagnóstico.' },
-  { id: 'criador',      name: 'O(A) Criador(a)',   profile: 'Crio produtos, conteúdo e soluções com a minha marca.' },
-  { id: 'vendedor',     name: 'O(A) Conector(a)',  profile: 'Faço acontecer: vendo, fecho parcerias e conecto pessoas.' },
-  { id: 'organizador',  name: 'O(A) Organizador(a)', profile: 'Estruturo, planejo e faço a operação rodar com ordem.' },
-  { id: 'mao_na_massa', name: 'Mão na Massa',      profile: 'Produzo e executo com as próprias mãos, no detalhe.' },
-  { id: 'cuidador',     name: 'O(A) Cuidador(a)',  profile: 'Atendo e cuido das pessoas de perto, com presença.' },
-];
-
-// Dores genéricas que um negócio pode resolver (sem foco em público — isso vem na Fase 5)
+// Dores genéricas que um negócio pode resolver (sem foco em público — isso vem na Fase 6)
 const PROBLEMS = [
   { id: 'conhecimento', text: 'Falta de conhecimento ou orientação', desc: 'As pessoas não sabem por onde começar nem em quem confiar.' },
   { id: 'tempo',        text: 'Falta de tempo e sobrecarga',          desc: 'Vida corrida: precisam de ajuda para resolver mais rápido.' },
@@ -51,12 +41,11 @@ export default function Mission3() {
 
   const niche    = state.phase3.niche    || '';
   const subNiche = state.phase3.subNiche || '';
-  const cargo    = state.phase3.cargo    || '';
 
-  // Steps: 0 = nicho + sub-nicho + chapéu · 1 = a dor que resolve · 2 = conclusão
+  // Steps: 0 = nicho + sub-nicho · 1 = a dor que resolve · 2 = conclusão
   const [step, setStep] = useState(() => {
     if (state.phase3.uniqueProblem) return 2;
-    if (niche && cargo) return 1;
+    if (niche) return 1;
     return 0;
   });
 
@@ -73,13 +62,13 @@ export default function Mission3() {
   const selectedNicheObj = NICHES.find(n => n.label === niche);
 
   const handleNextStep = () => {
-    if (step === 0 && niche && cargo) setStep(1);
+    if (step === 0 && niche) setStep(1);
     else if (step === 1) {
       const problem = (customProblem.trim() || selectedProblem || '').trim();
       if (!problem) return;
       updatePhase('phase3', { uniqueProblem: problem });
       addXP(100);
-      completePhase(3);
+      completePhase(5);
       setStep(2);
     }
   };
@@ -137,7 +126,7 @@ export default function Mission3() {
               </div>
 
               {/* Sub-nicho */}
-              <div className="mb-6">
+              <div className="mb-auto">
                 <h3 className="font-bold text-base text-[var(--text-main)] mb-1">Dá para ser mais específico? (sub-nicho)</h3>
                 <p className="text-xs text-[var(--color-text-muted)] mb-3 leading-relaxed">
                   Quanto mais afunilado, mais fácil se destacar. Opcional.
@@ -161,40 +150,8 @@ export default function Mission3() {
                 )}
               </div>
 
-              {/* Chapéu de dono(a) */}
-              <div className="mb-auto">
-                <div className="flex items-center gap-2 mb-1">
-                  <Briefcase className="w-4 h-4 text-[var(--color-brand-500)]" />
-                  <h3 className="font-bold text-base text-[var(--text-main)]">No seu negócio, você é o(a) dono(a). Qual chapéu veste melhor?</h3>
-                </div>
-                <p className="text-xs text-[var(--color-text-muted)] mb-3 leading-relaxed">
-                  Você será o CEO do seu negócio de uma pessoa só. Escolha a função que mais combina — o resto dá para delegar com o tempo.
-                </p>
-                <div className="space-y-2">
-                  {CARGOS.map(c => {
-                    const active = cargo === c.id;
-                    return (
-                      <button key={c.id} onClick={() => updatePhase('phase3', { cargo: c.id })}
-                        className={cn('w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all',
-                          active
-                            ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
-                            : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]')}>
-                        <div className={cn('w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center',
-                          active ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)]' : 'border-[var(--color-brand-300)]')}>
-                          {active && <Check className="w-2.5 h-2.5 text-[var(--bg-dark)]" />}
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-[var(--text-main)]">{c.name}</div>
-                          <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">{c.profile}</div>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               <div className="mt-6 flex justify-end pt-4 border-t border-[var(--color-brand-100)]">
-                <button onClick={handleNextStep} disabled={!niche || !cargo}
+                <button onClick={handleNextStep} disabled={!niche}
                   className="px-8 py-3 bg-[var(--color-brand-600)] text-white rounded-xl font-medium hover:opacity-90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                   Escolher minha dor →
                 </button>
@@ -292,9 +249,9 @@ export default function Mission3() {
                   </div>
                 )}
               </div>
-              <button onClick={() => navigate('/comecar/fase/4')}
+              <button onClick={() => navigate('/comecar/fase/6')}
                 className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform">
-                Avançar para Fase 4 →
+                Avançar para Fase 6 →
               </button>
             </motion.div>
           )}
