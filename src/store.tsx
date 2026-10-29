@@ -40,6 +40,7 @@ export interface AppState {
     energyCards: ActivityMap;  // card sort de atividades
     maturityVerbs: string[];   // verbos que sempre fizeram naturalmente
     curiosityThemes: string[]; // temas de curiosidade
+    curiosityRanking: Record<string, number>; // moedas por tema (preferência)
   };
 
   phase2: {
@@ -80,6 +81,7 @@ export interface AppState {
     fields: Record<string, string>;
     savedRoles: string[];
     discardedRoles: string[];
+    rolesRanking: Record<string, number>; // moedas por possibilidade salva (preferência)
   };
 
   phase8: {
@@ -118,13 +120,13 @@ const initialState: AppState = {
   mission1: {}, mission2: {}, mission3: {}, mission4: {},
   mission5: {}, mission6: {}, mission7: {}, mission8: {},
 
-  phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [] },
+  phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [], curiosityRanking: {} },
   phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [], cargo: '' },
   phase3: { impactPoints: {}, uniqueProblem: '', niche: '', subNiche: '', ministry: '' },
   phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
   phase5: { archetype: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },
-  phase7: { fields: {}, savedRoles: [], discardedRoles: [] },
+  phase7: { fields: {}, savedRoles: [], discardedRoles: [], rolesRanking: {} },
   phase8: { letter: '', future: {}, businessVision: '' },
   businessModel: { offerFormats: [], payer: [], ambition: '', financialGoal: '', assets: [] },
 

@@ -9,6 +9,7 @@ import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { MissionWrapper } from '../components/MissionWrapper';
+import { CoinRanker } from '../components/CoinRanker';
 import type { EnergyLevel } from '../store';
 
 const ACTIVITIES = [
@@ -56,6 +57,11 @@ export default function Mission1() {
 
   const energyCards     = state.phase1.energyCards     ?? {};
   const curiosityThemes = state.phase1.curiosityThemes ?? [];
+  const curiosityRanking = state.phase1.curiosityRanking ?? {};
+
+  const rankTotal     = curiosityThemes.length + 1;
+  const rankUsed      = Object.values(curiosityRanking).reduce((a: number, b: number) => a + (b || 0), 0);
+  const rankComplete  = curiosityThemes.length >= 2 && rankUsed === rankTotal;
 
   const classified      = Object.keys(energyCards).length;
   const isCardsComplete = classified === ACTIVITIES.length;
@@ -92,12 +98,17 @@ export default function Mission1() {
     const next = curiosityThemes.includes(theme)
       ? curiosityThemes.filter(t => t !== theme)
       : [...curiosityThemes, theme];
-    updatePhase('phase1', { curiosityThemes: next });
+    // mantém o ranking só com os temas ainda selecionados
+    const nextRanking = Object.fromEntries(
+      Object.entries(curiosityRanking).filter(([id]) => next.includes(id)),
+    );
+    updatePhase('phase1', { curiosityThemes: next, curiosityRanking: nextRanking });
   };
 
   const handleNextStep = () => {
     if (step === 0 && isCardsComplete) setStep(1);
-    else if (step === 1 && curiosityThemes.length >= 2) {
+    else if (step === 1 && curiosityThemes.length >= 2) setStep(2);
+    else if (step === 2 && rankComplete) {
       addXP(100);
       completePhase(1);
       navigate('/comecar/fase/2');
@@ -253,11 +264,42 @@ export default function Mission1() {
                   animate={{ opacity: curiosityThemes.length >= 2 ? 1 : 0.3 }}
                   disabled={curiosityThemes.length < 2}
                   onClick={handleNextStep}
+                  className="px-8 py-3 rounded-xl bg-[var(--color-brand-600)] font-bold uppercase tracking-wider text-[var(--bg-dark)] shadow-[var(--btn-shadow)] disabled:pointer-events-none"
+                >
+                  Próxima Etapa →
+                </motion.button>
+                <button onClick={() => setStep(0)} className="block mx-auto mt-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── STEP 2: Ranking das curiosidades (moedas) ── */}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl mx-auto w-full">
+              <div className="text-center mb-6">
+                <h3 className="font-bold text-xl text-[var(--text-main)] mb-2">Do que você tem MAIS curiosidade?</h3>
+                <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
+                  Distribua as moedas entre os temas que escolheu. Dê mais moedas ao que mais te puxa — isso revela sua preferência real.
+                </p>
+              </div>
+
+              <CoinRanker
+                items={curiosityThemes.map(t => ({ id: t, label: t }))}
+                values={curiosityRanking}
+                totalCoins={rankTotal}
+                onChange={next => updatePhase('phase1', { curiosityRanking: next })}
+              />
+
+              <div className="text-center mt-8">
+                <motion.button
+                  animate={{ opacity: rankComplete ? 1 : 0.3 }}
+                  disabled={!rankComplete}
+                  onClick={handleNextStep}
                   className="px-8 py-3 rounded-xl bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] font-bold uppercase tracking-wider text-white shadow-[var(--btn-shadow)] disabled:pointer-events-none"
                 >
                   Concluir Fase 1 →
                 </motion.button>
-                <button onClick={() => setStep(0)} className="block mx-auto mt-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
+                <button onClick={() => setStep(1)} className="block mx-auto mt-2 text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
               </div>
             </motion.div>
           )}

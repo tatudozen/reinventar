@@ -91,6 +91,36 @@ const CARGO_LABELS: Record<string, string> = {
   mao_na_massa: 'Mão na Massa', cuidador: 'O(A) Cuidador(a)',
 };
 
+// Chapéu de dono(a) → tipo RIASEC (para checar coerência perfil × plano)
+const CARGO_RIASEC: Record<string, RIASECType> = {
+  especialista: 'I', criador: 'A', vendedor: 'E', organizador: 'C', mao_na_massa: 'R', cuidador: 'S',
+};
+
+// ── Fase 7 — O Modelo da Reinvenção (oferta) ──────────────────────────────────
+const OFFER_LABELS: Record<string, string> = {
+  servico_1a1: 'Atendimento 1:1', oficina: 'Oficinas e cursos',
+  produto: 'Produto físico/artesanal', conteudo: 'Conteúdo/assinatura',
+  consultoria: 'Projetos para empresas', experiencia: 'Experiências e eventos',
+  intermediacao: 'Conectar pessoas e negócios', digital: 'Produto digital',
+};
+
+const PAYER_LABELS: Record<string, string> = {
+  pessoas: 'Pessoas físicas', familias: 'Famílias', empresas: 'Empresas',
+  escolas_ongs: 'Escolas e ONGs', poder_publico: 'Poder público',
+  turistas: 'Turistas', profissionais: 'Outros profissionais', plataformas: 'Marcas e plataformas',
+};
+
+const AMBITION_LABELS: Record<string, string> = {
+  extra_leve: 'Renda extra leve', meio_periodo: 'Atividade de meio período',
+  principal: 'Nova fonte principal',
+};
+
+const GOAL_LABELS: Record<string, string> = {
+  ate_1k: 'Até R$ 1.000/mês', '1k_3k': 'R$ 1.000–3.000/mês',
+  '3k_6k': 'R$ 3.000–6.000/mês', acima_6k: 'Acima de R$ 6.000/mês',
+  nao_sei: 'Meta a descobrir',
+};
+
 // ── Cross-signal maps ──────────────────────────────────────────────────────────
 
 const SKILL_RIASEC: Record<string, RIASECType> = {
@@ -293,6 +323,7 @@ interface JornadaRow {
     phase6: AppState['phase6'];
     phase7: AppState['phase7'];
     phase8: AppState['phase8'];
+    businessModel: AppState['businessModel'];
   }> | null;
 }
 
@@ -553,6 +584,7 @@ export default function ResultDashboard() {
   const phase6 = pd?.phase6 ?? state.phase6;
   const phase7 = pd?.phase7 ?? state.phase7;
   const phase8 = pd?.phase8 ?? state.phase8;
+  const businessModel = pd?.businessModel ?? state.businessModel;
 
   // ── Phase 1 ─────────────────────────────────────────────────────────────────
   const energyCards     = phase1?.energyCards    ?? {};
@@ -596,6 +628,13 @@ export default function ResultDashboard() {
   const niche    = phase3?.niche    ?? '';
   const subNiche = phase3?.subNiche ?? '';
   const cargo    = phase2?.cargo    ?? '';
+
+  // ── Fase 7 (O Modelo da Reinvenção — oferta) ─────────────────────────────────
+  const offerFormats = (businessModel?.offerFormats ?? []).map(id => OFFER_LABELS[id] || id);
+  const payers       = (businessModel?.payer ?? []).map(id => PAYER_LABELS[id] || id);
+  const ambition     = businessModel?.ambition ? (AMBITION_LABELS[businessModel.ambition] || businessModel.ambition) : '';
+  const goal         = businessModel?.financialGoal ? (GOAL_LABELS[businessModel.financialGoal] || businessModel.financialGoal) : '';
+  const hasBusinessModel = offerFormats.length > 0 || payers.length > 0 || !!ambition || !!goal;
 
   // ── Phase 6 ─────────────────────────────────────────────────────────────────
   const connections = phase6?.connections ?? [];
@@ -815,7 +854,29 @@ export default function ResultDashboard() {
           {/* Pilar 2: O que Você Sabe Fazer */}
           <div className="bg-orange-50 border border-orange-200 rounded-xl p-6">
             <div className="text-xs font-mono text-orange-700 tracking-wider uppercase mb-1">O que Você Sabe Fazer</div>
-            <div className="text-sm text-stone-500 mb-4">Competências, talentos e o que pedem para você</div>
+            <div className="text-sm text-stone-500 mb-4">Competências, perfil e o papel que você veste</div>
+
+            {/* Chapéu de dono + perfil RIASEC */}
+            {(cargo || riasecTop3.length > 0) && (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {cargo && (
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                    🎩 {CARGO_LABELS[cargo] || cargo}
+                  </span>
+                )}
+                {hollandCode && (
+                  <span className="font-mono font-black text-xs tracking-widest px-2 py-1 rounded bg-white border border-orange-300 text-orange-700">
+                    {hollandCode}
+                  </span>
+                )}
+                {riasecTop3.map(t => (
+                  <span key={t} className="text-xs px-2 py-1 rounded-full border"
+                    style={{ color: RIASEC[t].color, borderColor: RIASEC[t].color + '55', background: RIASEC[t].color + '12' }}>
+                    {RIASEC[t].icon} {RIASEC[t].full}
+                  </span>
+                ))}
+              </div>
+            )}
 
             {topSkills.length > 0 && (
               <div className="mb-4">
@@ -869,80 +930,63 @@ export default function ResultDashboard() {
           {/* Pilar 3: O que o Mundo Precisa */}
           <div className="bg-lime-50 border border-lime-200 rounded-xl p-6">
             <div className="text-xs font-mono text-lime-700 tracking-wider uppercase mb-1">O que o Mundo Precisa</div>
-            <div className="text-sm text-stone-500 mb-4">Causas e problema único</div>
+            <div className="text-sm text-stone-500 mb-4">Seu nicho e a dor que você resolve</div>
 
-            {uniqueProblem && (
+            {(niche || subNiche) && (
               <div className="mb-4 p-3 bg-lime-100 rounded-lg border border-lime-300">
-                <div className="text-xs font-semibold text-lime-700 mb-1">Problema Foco</div>
+                <div className="text-xs font-semibold text-lime-700 mb-1">Nicho</div>
+                <p className="text-sm font-medium text-lime-900">{niche}{subNiche ? ` · ${subNiche}` : ''}</p>
+              </div>
+            )}
+            {uniqueProblem && (
+              <div className="mb-1 p-3 bg-lime-100 rounded-lg border border-lime-300">
+                <div className="text-xs font-semibold text-lime-700 mb-1">Dor principal</div>
                 <p className="text-sm font-medium text-lime-900">{uniqueProblem}</p>
               </div>
             )}
-            {topCauses.length > 0 && (
-              <div>
-                <div className="text-xs font-semibold text-lime-700 mb-2">Causas que mais importam</div>
-                <div className="space-y-2">
-                  {topCauses.map(([causeId, coins]) => {
-                    const pct = Math.round(((coins as number) / maxCoins) * 100);
-                    return (
-                      <div key={causeId}>
-                        <div className="flex justify-between text-xs mb-0.5">
-                          <span className="text-lime-800 font-medium">{CAUSE_LABELS[causeId] || causeId}</span>
-                          <span className="text-lime-600 font-mono">{coins as number}🪙</span>
-                        </div>
-                        <div className="h-1.5 bg-lime-100 rounded-full overflow-hidden">
-                          <div className="h-full bg-lime-500 rounded-full" style={{ width: `${pct}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            {!uniqueProblem && topCauses.length === 0 && (
-              <div className="text-stone-400 italic text-sm">Missão de impacto não definida.</div>
+            {!uniqueProblem && !niche && (
+              <div className="text-stone-400 italic text-sm">Nicho e dor não definidos.</div>
             )}
           </div>
 
-          {/* Pilar 4: Perfil de Personalidade */}
+          {/* Pilar 4: Gerar Renda (oferta / modelo de negócio) */}
           <div className="bg-stone-50 border border-stone-200 rounded-xl p-6">
-            <div className="text-xs font-mono text-stone-700 tracking-wider uppercase mb-1">Perfil de Personalidade</div>
-            <div className="text-sm text-stone-500 mb-4">Como você prefere trabalhar e criar</div>
+            <div className="text-xs font-mono text-stone-700 tracking-wider uppercase mb-1">Gerar Renda</div>
+            <div className="text-sm text-stone-500 mb-4">Sua oferta e modelo de negócio</div>
 
-            {riasecTop3.length > 0 ? (
-              <>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xs font-semibold text-stone-700">Código Holland</span>
-                  <span className="font-mono font-black text-sm tracking-widest px-2 py-0.5 rounded bg-stone-200 border border-stone-300 text-stone-800">
-                    {hollandCode}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {riasecTop3.map(t => {
-                    const info = RIASEC[t];
-                    return (
-                      <div key={t} className="flex items-start gap-2">
-                        <span className="shrink-0 text-base">{info.icon}</span>
-                        <div>
-                          <span className="text-sm font-semibold" style={{ color: info.color }}>{info.full}</span>
-                          <span className="text-xs text-stone-500 ml-1">— {info.desc}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {(niche || cargo) && (
-                  <div className="mt-4 pt-4 border-t border-stone-200">
-                    <div className="text-xs font-semibold text-stone-700 mb-1">Nicho & Papel</div>
+            {hasBusinessModel ? (
+              <div className="space-y-3">
+                {offerFormats.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold text-stone-700 mb-1.5">Oferta</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {offerFormats.map(o => (
+                        <span key={o} className="text-xs px-2.5 py-1 rounded-full bg-white text-stone-700 border border-stone-300">{o}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {payers.length > 0 && (
+                  <div>
+                    <div className="text-xs font-semibold text-stone-700 mb-1.5">Quem paga</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {payers.map(p => (
+                        <span key={p} className="text-xs px-2.5 py-1 rounded-full bg-white text-stone-700 border border-stone-300">{p}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(ambition || goal) && (
+                  <div className="pt-3 border-t border-stone-200">
+                    <div className="text-xs font-semibold text-stone-700 mb-1">Ambição & meta</div>
                     <p className="text-xs text-stone-600">
-                      {niche && `Nicho: ${niche}${subNiche ? ` (${subNiche})` : ''}`}
-                      {niche && cargo && ' · '}
-                      {cargo && `Papel: ${CARGO_LABELS[cargo] || cargo}`}
+                      {ambition}{ambition && goal && ' · '}{goal}
                     </p>
                   </div>
                 )}
-              </>
+              </div>
             ) : (
-              <div className="text-stone-400 italic text-sm">Perfil não mapeado.</div>
+              <div className="text-stone-400 italic text-sm">Modelo de negócio não definido.</div>
             )}
           </div>
         </div>
@@ -968,83 +1012,58 @@ export default function ResultDashboard() {
               </div>
             )}
 
-            {/* Possibilidades × Perfil RIASEC */}
-            {savedRoles.length > 0 && (
+            {/* Perfil × Plano de Reinvenção */}
+            {(hasBusinessModel || cargo || niche) && (
               <div className="bg-white border border-stone-200 rounded-xl p-6 mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-4 h-4 text-[var(--color-brand-600)]" />
-                  <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Possibilidades × Perfil</span>
+                  <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Perfil × Plano de Reinvenção</span>
                 </div>
                 <p className="text-sm text-stone-500 mb-5 leading-relaxed">
-                  As possibilidades que chamaram sua atenção, organizadas pelo tipo de personalidade que mais ativam — revelando onde há convergência e onde há espaço para expansão.
+                  Como quem você é (perfil) conversa com o negócio que você esboçou — onde há coerência e o que vale olhar com atenção.
                 </p>
+
                 {(() => {
-                  const byType = {} as Record<RIASECType, string[]>;
-                  for (const roleId of savedRoles) {
-                    const t = ROLE_RIASEC[roleId];
-                    if (t) {
-                      if (!byType[t]) byType[t] = [];
-                      byType[t].push(roleId);
-                    }
-                  }
-                  const presentTypes = (['R', 'I', 'A', 'S', 'E', 'C'] as RIASECType[]).filter(t => byType[t]?.length);
-                  if (presentTypes.length === 0) return null;
-                  const aligned = presentTypes.filter(t => riasecTop3.includes(t));
-                  const expansion = presentTypes.filter(t => !riasecTop3.includes(t));
+                  const cargoType = cargo ? CARGO_RIASEC[cargo] : undefined;
+                  const aligned = cargoType && riasecTop3.includes(cargoType);
                   return (
-                    <div className="space-y-4">
-                      {aligned.length > 0 && (
-                        <div>
-                          <div className="text-[10px] font-mono text-[var(--color-brand-600)] uppercase tracking-wider mb-2">
-                            Alinhadas com seu perfil natural
+                    <div className="space-y-3">
+                      {/* Coerência chapéu × perfil */}
+                      {cargoType && (
+                        <div className={`rounded-lg p-3 border ${aligned ? 'border-[var(--color-brand-200)]' : 'border-amber-200 bg-amber-50'}`}
+                          style={aligned ? { background: RIASEC[cargoType].color + '0d' } : {}}>
+                          <div className="flex items-center gap-2 flex-wrap text-sm">
+                            <span className="font-semibold text-stone-700">🎩 {CARGO_LABELS[cargo] || cargo}</span>
+                            <span className="text-stone-400">×</span>
+                            <span className="font-semibold" style={{ color: RIASEC[riasecTop3[0]]?.color }}>
+                              perfil {RIASEC[riasecTop3[0]]?.full}
+                            </span>
                           </div>
-                          <div className="space-y-2">
-                            {aligned.map(t => (
-                              <div key={t} className="rounded-lg p-3 border border-[var(--color-brand-200)]"
-                                style={{ background: RIASEC[t].color + '0d' }}>
-                                <div className="flex items-center gap-1.5 mb-2">
-                                  <span className="text-base">{RIASEC[t].icon}</span>
-                                  <span className="text-xs font-bold" style={{ color: RIASEC[t].color }}>{RIASEC[t].full}</span>
-                                  <span className="text-[10px] text-stone-400 ml-1">— {RIASEC[t].desc}</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {byType[t].map(roleId => (
-                                    <span key={roleId} className="text-xs px-2.5 py-1 rounded-full border font-medium"
-                                      style={{ background: RIASEC[t].color + '15', borderColor: RIASEC[t].color + '40', color: RIASEC[t].color }}>
-                                      {ROLE_LABELS[roleId] || roleId}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                          <p className="text-xs text-stone-600 mt-1.5 leading-relaxed">
+                            {aligned
+                              ? `O papel que você quer vestir conversa naturalmente com o seu perfil ${RIASEC[cargoType].full.toLowerCase()} — um bom sinal de que a execução vai fluir.`
+                              : `O papel escolhido pede um lado ${RIASEC[cargoType].full.toLowerCase()}, diferente do seu perfil dominante. Não é um problema — é onde vale buscar parceria ou se preparar com intenção.`}
+                          </p>
                         </div>
                       )}
-                      {expansion.length > 0 && (
-                        <div>
-                          <div className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-2">
-                            Aspirações de expansão
-                          </div>
-                          <div className="space-y-2">
-                            {expansion.map(t => (
-                              <div key={t} className="rounded-lg p-3 border border-stone-200 bg-stone-50">
-                                <div className="flex items-center gap-1.5 mb-2">
-                                  <span className="text-base">{RIASEC[t].icon}</span>
-                                  <span className="text-xs font-bold text-stone-500">{RIASEC[t].full}</span>
-                                  <span className="text-[10px] text-stone-400 italic ml-1">— explorar com curiosidade</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {byType[t].map(roleId => (
-                                    <span key={roleId} className="text-xs px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200 text-stone-500">
-                                      {ROLE_LABELS[roleId] || roleId}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+
+                      {/* Resumo do plano */}
+                      <div className="rounded-lg p-3 border border-stone-200 bg-stone-50">
+                        <div className="text-[10px] font-mono text-stone-400 uppercase tracking-wider mb-2">O negócio que você esboçou</div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {niche && (
+                            <span className="text-xs px-2.5 py-1 rounded-full bg-lime-50 border border-lime-200 text-lime-800">
+                              Nicho: {niche}{subNiche ? ` · ${subNiche}` : ''}
+                            </span>
+                          )}
+                          {offerFormats.map(o => (
+                            <span key={o} className="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-300 text-stone-700">{o}</span>
+                          ))}
+                          {ambition && (
+                            <span className="text-xs px-2.5 py-1 rounded-full bg-white border border-stone-300 text-stone-700">{ambition}</span>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   );
                 })()}
@@ -1131,7 +1150,9 @@ export default function ResultDashboard() {
               Caminhos para Explorar
             </h2>
             <p className="text-stone-500 mb-8 text-center lg:text-left leading-relaxed">
-              Com base nas suas respostas, estes caminhos têm maior compatibilidade com quem você é e o que te move. São hipóteses, não certezas — explore com curiosidade.
+              {niche
+                ? <>Dentro do seu nicho <strong className="text-[var(--color-brand-700)]">{niche}{subNiche ? ` · ${subNiche}` : ''}</strong>, estes caminhos têm maior compatibilidade com quem você é. Use-os como lentes para aplicar ao seu negócio — são hipóteses, não certezas.</>
+                : <>Com base nas suas respostas, estes caminhos têm maior compatibilidade com quem você é e o que te move. São hipóteses, não certezas — explore com curiosidade.</>}
             </p>
             <div className="space-y-4">
               {topPathScores.slice(0, 6).map(({ path, score, signals }, idx) => {

@@ -119,18 +119,20 @@ const CONNECTION_LABELS: Record<string, string> = {
   vulneraveis:   'Grupos vulneráveis',
   profissionais: 'Profissionais da minha área',
   estudantes:    'Estudantes e aprendizes',
-  cuidadores:    'Cuidadores e famílias',
+  pmes:          'Pequenas e médias empresas (PMEs)',
 };
 
 const MODE_LABELS: Record<string, string> = {
-  presencial: 'Presencialmente',
-  online:     'Online / Digital',
-  grupos:     'Em grupos e encontros',
-  individual: 'Um a um (1:1)',
-  escrito:    'Por escrito (blog, livro, cartas)',
-  arte:       'Através da arte / expressão',
-  sistema:    'Indiretamente (impacto em sistemas)',
-  eventos:    'Em eventos e palestras',
+  presencial:     'Presencialmente',
+  online:         'Online / Digital',
+  grupos:         'Em grupos e encontros',
+  individual:     'Um a um (1:1)',
+  produto_fisico: 'Produtos físicos (venda e entrega)',
+  loja_feira:     'Loja, feira ou ponto físico',
+  escrito:        'Por escrito (blog, livro, cartas)',
+  arte:           'Através da arte / expressão',
+  sistema:        'Indiretamente (impacto em sistemas)',
+  eventos:        'Em eventos e palestras',
 };
 
 const ROLE_LABELS: Record<string, string> = {

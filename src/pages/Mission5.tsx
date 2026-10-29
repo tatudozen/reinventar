@@ -17,7 +17,7 @@ const WHO_OPTIONS = [
   { id: 'vulneraveis',   label: 'Grupos vulneráveis',              emoji: '🫂' },
   { id: 'profissionais', label: 'Profissionais da minha área',     emoji: '💼' },
   { id: 'estudantes',    label: 'Estudantes e aprendizes',         emoji: '📖' },
-  { id: 'cuidadores',    label: 'Cuidadores e famílias',           emoji: '❤️‍🩹' },
+  { id: 'pmes',          label: 'Pequenas e médias empresas (PMEs)', emoji: '🏢' },
 ];
 
 // Como o seu negócio entrega valor
@@ -26,6 +26,8 @@ const HOW_OPTIONS = [
   { id: 'online',        label: 'Online / Digital',                emoji: '💻' },
   { id: 'grupos',        label: 'Em grupos e encontros',           emoji: '👥' },
   { id: 'individual',    label: 'Um a um (1:1)',                   emoji: '🫀' },
+  { id: 'produto_fisico',label: 'Produtos físicos (venda e entrega)', emoji: '📦' },
+  { id: 'loja_feira',    label: 'Loja, feira ou ponto físico',     emoji: '🏪' },
   { id: 'escrito',       label: 'Por escrito (blog, livro, cartas)', emoji: '✍️' },
   { id: 'arte',          label: 'Através da arte / expressão',     emoji: '🎨' },
   { id: 'sistema',       label: 'Indiretamente (impacto em sistemas)', emoji: '⚙️' },

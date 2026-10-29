@@ -4,6 +4,7 @@ import { Compass, X, Heart, Sparkles } from 'lucide-react';
 import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
 import { MissionWrapper } from '../components/MissionWrapper';
+import { CoinRanker } from '../components/CoinRanker';
 
 // 24 possibilidades concretas de atuação para quem reinventa a vida depois dos 55
 const ALL_ROLES = [
@@ -39,19 +40,30 @@ export default function Mission6() {
 
   const savedRoles:    string[] = state.phase7.savedRoles    ?? [];
   const discardedRoles: string[] = state.phase7.discardedRoles ?? [];
+  const rolesRanking: Record<string, number> = state.phase7.rolesRanking ?? {};
+
+  const rankTotal    = savedRoles.length + 1;
+  const rankUsed     = Object.values(rolesRanking).reduce((a, b) => a + (b || 0), 0);
+  // Se guardou <2, não há o que rankear; com >=2 exige distribuir todas as moedas.
+  const rankComplete = savedRoles.length < 2 || rankUsed === rankTotal;
 
   const [currentIndex, setCurrentIndex] = useState(() => {
     const answered = savedRoles.length + discardedRoles.length;
     return Math.min(answered, ALL_ROLES.length - 1);
   });
+  // Steps: 0 = cartas · 1 = ranking (se >=2) · 2 = conclusão
   const [step, setStep] = useState(() => {
-    if (savedRoles.length + discardedRoles.length >= ALL_ROLES.length) return 1;
+    if (savedRoles.length + discardedRoles.length >= ALL_ROLES.length) {
+      return savedRoles.length >= 2 ? 1 : 2;
+    }
     return 0;
   });
   const [exitDir, setExitDir] = useState(0);
 
   const currentRole = ALL_ROLES[currentIndex];
   const remaining   = ALL_ROLES.length - currentIndex;
+
+  const goAfterCards = (finalSaved: number) => setStep(finalSaved >= 2 ? 1 : 2);
 
   const handleAction = (action: 'save' | 'discard') => {
     setExitDir(action === 'save' ? 1 : -1);
@@ -63,7 +75,7 @@ export default function Mission6() {
     if (currentIndex < ALL_ROLES.length - 1) {
       setCurrentIndex(prev => prev + 1);
     } else {
-      setStep(1);
+      goAfterCards(savedRoles.length + (action === 'save' ? 1 : 0));
     }
   };
 
@@ -147,7 +159,7 @@ export default function Mission6() {
               </div>
 
               <div className="mt-6 flex items-center justify-center pt-6 border-t border-[var(--color-brand-100)]">
-                <button onClick={() => setStep(1)}
+                <button onClick={() => goAfterCards(savedRoles.length)}
                   className="px-6 py-2 rounded-xl text-sm font-mono text-[var(--color-text-muted)] hover:text-[var(--text-main)] hover:bg-[var(--glass)] transition-all">
                   Pular cartas restantes
                 </button>
@@ -155,9 +167,38 @@ export default function Mission6() {
             </motion.div>
           )}
 
-          {/* ── Step 1: Conclusão ── */}
+          {/* ── Step 1: Ranking das possibilidades (moedas) ── */}
           {step === 1 && (
-            <motion.div key="step1" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-10">
+            <motion.div key="rank" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl mx-auto w-full py-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-serif text-[var(--text-main)] mb-2">Quais te atraem MAIS?</h2>
+                <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
+                  Você guardou {savedRoles.length} possibilidades. Distribua as moedas para mostrar quais mais ressoam — isso ajuda a priorizar o que testar primeiro.
+                </p>
+              </div>
+
+              <CoinRanker
+                items={savedRoles.map(id => {
+                  const role = ALL_ROLES.find(r => r.id === id);
+                  return { id, label: role?.text ?? id, emoji: role?.emoji };
+                })}
+                values={rolesRanking}
+                totalCoins={rankTotal}
+                onChange={next => updatePhase('phase7', { rolesRanking: next })}
+              />
+
+              <div className="text-center mt-8">
+                <button onClick={() => setStep(2)} disabled={!rankComplete}
+                  className="px-10 py-3.5 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform disabled:opacity-40 disabled:pointer-events-none">
+                  Avançar →
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Step 2: Conclusão ── */}
+          {step === 2 && (
+            <motion.div key="step2" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center flex-grow justify-center py-10">
               <div className="w-24 h-24 rounded-full bg-[var(--glass)] border border-[var(--color-brand-400)] flex items-center justify-center mb-8 shadow-[var(--btn-shadow)] text-[var(--neon-magenta)]">
                 <Sparkles className="w-12 h-12" />
               </div>
