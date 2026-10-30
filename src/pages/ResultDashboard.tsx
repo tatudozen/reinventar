@@ -535,14 +535,14 @@ export default function ResultDashboard() {
   const { state } = useApp();
   const [remoteData, setRemoteData] = useState<JornadaRow | null>(null);
   const [loading, setLoading] = useState(!!id);
-  const [tenantConfig, setTenantConfig] = useState<{ home_url: string; explore_label: string; explore_url: string } | null>(null);
+  const [tenantConfig, setTenantConfig] = useState<{ home_url: string; explore_label: string; explore_url: string; explore_text: string } | null>(null);
 
   useEffect(() => {
     // tenant_configs está em public, não em reinventar
     supabase
       .schema('public')
       .from('tenant_configs')
-      .select('home_url, explore_label, explore_url')
+      .select('home_url, explore_label, explore_url, explore_text')
       .eq('host', window.location.hostname)
       .maybeSingle()
       .then(({ data }) => {
@@ -1220,8 +1220,8 @@ export default function ResultDashboard() {
               <h2 className="font-serif text-2xl text-[var(--color-brand-800)] mb-2">
                 Pronto para o próximo passo?
               </h2>
-              <p className="text-stone-500 max-w-sm mx-auto mb-6 text-sm leading-relaxed">
-                Leve o que você descobriu aqui para uma conversa real — e veja o que pode acontecer a partir daí.
+              <p className="text-stone-500 max-w-sm mx-auto mb-6 text-sm leading-relaxed whitespace-pre-line">
+                {tenantConfig.explore_text?.trim() || 'Leve o que você descobriu aqui para uma conversa real — e veja o que pode acontecer a partir daí.'}
               </p>
               <a
                 href={/^https?:\/\//.test(tenantConfig.explore_url)
