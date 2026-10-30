@@ -1090,12 +1090,12 @@ const REINVENTAR_MINISTRIES: Record<string, string> = {
 };
 
 const REINVENTAR_CARGOS: Record<string, string> = {
-  ministro:             'Ministro(a)',
-  consultor_tecnico:    'Consultor(a) Técnico(a)',
-  assessor_comunicacao: 'Assessor(a) de Comunicação',
-  diretor_operacoes:    'Diretor(a) de Operações',
-  coordenador_campo:    'Coordenador(a) de Campo',
-  secretario_social:    'Secretário(a) de Bem-Estar',
+  especialista: 'O(A) Especialista',
+  criador:      'O(A) Criador(a)',
+  vendedor:     'O(A) Conector(a)',
+  organizador:  'O(A) Organizador(a)',
+  mao_na_massa: 'Mão na Massa',
+  cuidador:     'O(A) Cuidador(a)',
 };
 
 const REINVENTAR_ROLES: Record<string, string> = {
@@ -1135,18 +1135,44 @@ const REINVENTAR_WHO: Record<string, string> = {
   vulneraveis:   '🫂 Grupos vulneráveis',
   profissionais: '💼 Profissionais da minha área',
   estudantes:    '📖 Estudantes e aprendizes',
-  cuidadores:    '❤️‍🩹 Cuidadores e famílias',
+  pmes:          '🏢 Pequenas e médias empresas (PMEs)',
 };
 
 const REINVENTAR_HOW: Record<string, string> = {
-  presencial: '🤲 Presencialmente',
-  online:     '💻 Online / Digital',
-  grupos:     '👥 Em grupos e encontros',
-  individual: '🫀 Um a um (1:1)',
-  escrito:    '✍️ Por escrito',
-  arte:       '🎨 Através da arte',
-  sistema:    '⚙️ Indiretamente (sistemas)',
-  eventos:    '🎤 Em eventos e palestras',
+  presencial:     '🤲 Presencialmente',
+  online:         '💻 Online / Digital',
+  grupos:         '👥 Em grupos e encontros',
+  individual:     '🫀 Um a um (1:1)',
+  produto_fisico: '📦 Produtos físicos (venda e entrega)',
+  loja_feira:     '🏪 Loja, feira ou ponto físico',
+  escrito:        '✍️ Por escrito',
+  arte:           '🎨 Através da arte',
+  sistema:        '⚙️ Indiretamente (sistemas)',
+  eventos:        '🎤 Em eventos e palestras',
+};
+
+const REINVENTAR_OFFER: Record<string, string> = {
+  servico_1a1: 'Atendimento 1:1', oficina: 'Oficinas e cursos',
+  produto: 'Produto físico/artesanal', conteudo: 'Conteúdo/assinatura',
+  consultoria: 'Projetos para empresas', experiencia: 'Experiências e eventos',
+  intermediacao: 'Conectar pessoas e negócios', digital: 'Produto digital',
+};
+
+const REINVENTAR_PAYER: Record<string, string> = {
+  pessoas: 'Pessoas físicas', familias: 'Famílias', empresas: 'Empresas',
+  escolas_ongs: 'Escolas e ONGs', poder_publico: 'Poder público',
+  turistas: 'Turistas', profissionais: 'Outros profissionais', plataformas: 'Marcas e plataformas',
+};
+
+const REINVENTAR_AMBITION: Record<string, string> = {
+  extra_leve: 'Renda extra leve', meio_periodo: 'Atividade de meio período',
+  principal: 'Nova fonte principal',
+};
+
+const REINVENTAR_GOAL: Record<string, string> = {
+  ate_1k: 'Até R$ 1.000/mês', '1k_3k': 'R$ 1.000–3.000/mês',
+  '3k_6k': 'R$ 3.000–6.000/mês', acima_6k: 'Acima de R$ 6.000/mês',
+  nao_sei: 'Meta a descobrir',
 };
 
 const REINVENTAR_FORCED: Record<string, Record<string, string>> = {
@@ -1203,32 +1229,50 @@ export function generateReinventarRelatorioHtml(
   const sublabel = (text: string, color = '#6b7280') =>
     `<div style="font-size:11px;font-weight:600;color:${color};margin:10px 0 5px;text-transform:uppercase;letter-spacing:1px">${text}</div>`;
 
-  // ── Phase 1 — Mapa de Energia ─────────────────────────────────────────────
+  // ── Dados derivados ───────────────────────────────────────────────────────
   const energyCards: Record<string, string> = phase1?.energyCards ?? {};
-  const flowActs    = Object.entries(energyCards).filter(([, q]) => q === 'flow').map(([a]) => a);
-  const boostActs   = Object.entries(energyCards).filter(([, q]) => q === 'boost').map(([a]) => a);
-  const neutralActs = Object.entries(energyCards).filter(([, q]) => q === 'neutral').map(([a]) => a);
-  const drainActs   = Object.entries(energyCards).filter(([, q]) => q === 'drain').map(([a]) => a);
-  const maturityVerbs  = phase1?.maturityVerbs ?? [];
+  const flowActs  = Object.entries(energyCards).filter(([, q]) => q === 'flow').map(([a]) => a);
+  const boostActs = Object.entries(energyCards).filter(([, q]) => q === 'boost').map(([a]) => a);
   const curiosityThemes = phase1?.curiosityThemes ?? [];
+  const curiosityRanking: Record<string, number> = phase1?.curiosityRanking ?? {};
+  const rankedCuriosity = [...curiosityThemes].sort((a, b) => (curiosityRanking[b] ?? 0) - (curiosityRanking[a] ?? 0));
 
-  const phase1Html = section('Fase 1', '#7c3aed', 'Mapa de Energia — o que te dá vida', `
-    ${flowActs.length > 0 ? sublabel('⚡ Flow — não vejo o tempo passar', '#7c3aed') + tags(flowActs, '#f5f3ff', '#6d28d9') : ''}
-    ${boostActs.length > 0 ? sublabel('🔋 Energiza', '#d97706') + tags(boostActs, '#fffbeb', '#b45309') : ''}
-    ${neutralActs.length > 0 ? sublabel('😐 Neutro', '#6b7280') + tags(neutralActs, '#f9fafb', '#4b5563') : ''}
-    ${drainActs.length > 0 ? sublabel('🔴 Drena', '#dc2626') + tags(drainActs, '#fef2f2', '#b91c1c') : ''}
-    ${maturityVerbs.length > 0 ? sublabel('Verbos da maturidade', '#4b5563') + tags(maturityVerbs, '#f9fafb', '#374151') : ''}
-    ${curiosityThemes.length > 0 ? sublabel('Temas de curiosidade', '#7c3aed') + tags(curiosityThemes, '#f5f3ff', '#6d28d9') : ''}
-  `);
-
-  // ── Phase 2 — Talentos na Mochila ────────────────────────────────────────
   const skillRatings: Record<string, number> = phase2?.skillRatings ?? {};
-  const topSkills = Object.entries(skillRatings)
-    .filter(([, v]) => v >= 4)
-    .sort((a, b) => b[1] - a[1])
-    .map(([id, v]) => `${REINVENTAR_COMPETENCIES[id] || id} (${v}/5)`);
   const whoAsksYou    = phase2?.whoAsksYou ?? [];
   const hiddenTalents = phase2?.hiddenTalents ?? [];
+  const cargo         = phase2?.cargo ?? '';
+
+  const niche    = phase3?.niche ?? '';
+  const subNiche = phase3?.subNiche ?? '';
+  const uniqueProblem = phase3?.uniqueProblem ?? '';
+
+  // RIASEC = duelos de cena + escolhas forçadas (peso 1 cada)
+  const sceneDuels: Record<string, string>    = phase4?.sceneDuels ?? {};
+  const forcedChoices: Record<string, string> = phase4?.forcedChoices ?? {};
+  const riasecCount: Record<string, number> = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+  Object.values(sceneDuels).forEach(t => { if (t in riasecCount) riasecCount[t]++; });
+  Object.values(forcedChoices).forEach(opt => { const t = FORCED_RIASEC[opt]; if (t) riasecCount[t]++; });
+  const riasecSorted = Object.entries(riasecCount).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  const top3 = riasecSorted.slice(0, 3).map(([t]) => t);
+  const hollandCode = top3.join('');
+  const RIASEC_TAG: Record<string, string> = {
+    R: '🛠️ Prático', I: '🔬 Investigativo', A: '🎨 Artístico',
+    S: '🤝 Social', E: '🚀 Empreendedor', C: '📊 Estruturador',
+  };
+  const RIASEC_NAME: Record<string, string> = {
+    R: 'Prático', I: 'Investigativo', A: 'Artístico', S: 'Social', E: 'Empreendedor', C: 'Estruturador',
+  };
+
+  const connections = phase6?.connections ?? [];
+  const modes       = phase6?.modes ?? [];
+
+  const bm = state.businessModel ?? { offerFormats: [], payer: [], ambition: '', financialGoal: '', assets: [] };
+  const offerFormats = (bm.offerFormats ?? []).map(oid => REINVENTAR_OFFER[oid] || oid);
+  const payers       = (bm.payer ?? []).map(pid => REINVENTAR_PAYER[pid] || pid);
+  const ambition     = bm.ambition ? (REINVENTAR_AMBITION[bm.ambition] || bm.ambition) : '';
+  const goal         = bm.financialGoal ? (REINVENTAR_GOAL[bm.financialGoal] || bm.financialGoal) : '';
+
+  const letter = phase8?.letter ?? '';
 
   const skillBarsHtml = Object.entries(skillRatings)
     .sort((a, b) => b[1] - a[1])
@@ -1240,134 +1284,64 @@ export function generateReinventarRelatorioHtml(
           <span style="color:#6b7280;font-family:monospace">${val}/5</span>
         </div>
         <div style="height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden">
-          <div style="height:100%;width:${pct}%;background:#7c3aed;border-radius:3px"></div>
+          <div style="height:100%;width:${pct}%;background:#c2410c;border-radius:3px"></div>
         </div>
       </div>`;
     }).join('');
 
-  const phase2Html = section('Fase 2', '#c2410c', 'Talentos na Mochila — seus pontos fortes', `
+  // ── Síntese ────────────────────────────────────────────────────────────────
+  const sinteseHtml = (top3.length > 0 || niche) ? `
+    <div style="border-radius:12px;padding:18px 20px;background:#faf5ff;border:1px solid #e9d5ff;margin-bottom:16px">
+      <div style="font-size:10px;font-family:monospace;text-transform:uppercase;letter-spacing:2px;color:#7c3aed;margin-bottom:8px">Síntese da Reinvenção</div>
+      ${hollandCode ? `<div style="margin-bottom:8px"><span style="font-family:monospace;font-weight:900;font-size:16px;letter-spacing:3px;padding:3px 10px;background:#fff;border:1px solid #d8b4fe;border-radius:6px;color:#6d28d9">${hollandCode}</span></div>` : ''}
+      <p style="font-size:13px;color:#4b5563;margin:0;line-height:1.6">
+        ${niche ? `Negócio no nicho de <strong>${esc(niche)}${subNiche ? ` · ${esc(subNiche)}` : ''}</strong>` : 'Perfil mapeado'}${cargo ? `, vestindo o chapéu de <strong>${dict(REINVENTAR_CARGOS, cargo)}</strong>` : ''}${top3[0] ? `, com perfil predominante <strong>${dict(RIASEC_NAME, top3[0])}</strong>` : ''}.
+      </p>
+    </div>` : '';
+
+  // ── Dimensão 1: O que te Move ───────────────────────────────────────────────
+  const pilarMove = section('O que te Move', '#7c3aed', 'Energia e curiosidade', `
+    ${flowActs.length > 0 ? sublabel('⚡ Flow — não vejo o tempo passar', '#7c3aed') + tags(flowActs, '#f5f3ff', '#6d28d9') : ''}
+    ${boostActs.length > 0 ? sublabel('🔋 Energiza', '#d97706') + tags(boostActs, '#fffbeb', '#b45309') : ''}
+    ${rankedCuriosity.length > 0 ? sublabel('Curiosidades (em ordem de preferência)', '#7c3aed') +
+      tags(rankedCuriosity.map(t => curiosityRanking[t] ? `${t} (${curiosityRanking[t]}🪙)` : t), '#f5f3ff', '#6d28d9') : ''}
+    ${flowActs.length === 0 && boostActs.length === 0 && rankedCuriosity.length === 0 ? '<div style="color:#9ca3af;font-style:italic;font-size:13px">Não mapeado ainda.</div>' : ''}
+  `);
+
+  // ── Dimensão 2: O que Você Sabe Fazer ───────────────────────────────────────
+  const pilarSkills = section('O que Você Sabe Fazer', '#c2410c', 'Competências, papel e perfil', `
+    ${(cargo || hollandCode) ? `<div style="margin-bottom:10px">
+      ${cargo ? `<span style="display:inline-block;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px 4px 2px 0">🎩 ${dict(REINVENTAR_CARGOS, cargo)}</span>` : ''}
+      ${hollandCode ? `<span style="display:inline-block;background:#fff;color:#c2410c;border:1px solid #fdba74;border-radius:6px;padding:3px 8px;font-size:12px;font-family:monospace;font-weight:900;letter-spacing:2px;margin:2px 4px 2px 0">${hollandCode}</span>` : ''}
+      ${top3.map(t => `<span style="display:inline-block;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:999px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0">${dict(RIASEC_TAG, t)}</span>`).join('')}
+    </div>` : ''}
     ${skillBarsHtml}
-    ${topSkills.length > 0 ? sublabel('Competências de destaque (≥4/5)', '#c2410c') + tags(topSkills, '#fff7ed', '#c2410c') : ''}
     ${whoAsksYou.length > 0 ? sublabel('Pedidos que você recebe', '#4b5563') + tags(whoAsksYou, '#f9fafb', '#374151') : ''}
     ${hiddenTalents.length > 0 ? sublabel('Talentos ocultos', '#6b7280') + tags(hiddenTalents, '#f9fafb', '#4b5563') : ''}
   `);
 
-  // ── Phase 3 — A Grande Causa ──────────────────────────────────────────────
-  const impactPoints: Record<string, number> = phase3?.impactPoints ?? {};
-  const uniqueProblem = phase3?.uniqueProblem ?? '';
-  const topCauses = Object.entries(impactPoints)
-    .filter(([, v]) => v > 0)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  const maxCoins = topCauses[0]?.[1] ?? 1;
-
-  const causeBarsHtml = topCauses.map(([id, coins]) => {
-    const pct = Math.round((coins / maxCoins) * 100);
-    return `<div style="margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-        <span style="color:#365314;font-weight:500">${dict(REINVENTAR_CAUSES, id)}</span>
-        <span style="color:#84cc16;font-family:monospace">${coins} moeda${coins !== 1 ? 's' : ''}</span>
-      </div>
-      <div style="height:5px;background:#f0fdf4;border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:#16a34a;border-radius:3px"></div>
-      </div>
-    </div>`;
-  }).join('');
-
-  const phase3Html = section('Fase 3', '#16a34a', 'A Grande Causa — onde quer deixar sua marca', `
-    ${causeBarsHtml}
-    ${uniqueProblem ? sublabel('Problema que mais te mobiliza', '#16a34a') +
+  // ── Dimensão 3: O que o Mundo Precisa ───────────────────────────────────────
+  const pilarWorld = section('O que o Mundo Precisa', '#16a34a', 'Nicho, dor e público', `
+    ${niche ? sublabel('Nicho', '#16a34a') + `<p style="font-size:14px;color:#166534;font-weight:600;margin:2px 0 8px">${esc(niche)}${subNiche ? ` · ${esc(subNiche)}` : ''}</p>` : ''}
+    ${uniqueProblem ? sublabel('Dor principal', '#16a34a') +
       `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:4px;margin:4px 0">${dict(REINVENTAR_PROBLEMS, uniqueProblem)}</p>` : ''}
-    ${phase3?.ministry ? sublabel('Área de atuação', '#16a34a') +
-      `<p style="font-size:14px;color:#374151;margin:4px 0">${dict(REINVENTAR_MINISTRIES, phase3.ministry)}</p>` : ''}
-    ${phase2?.cargo ? sublabel('Papel preferido', '#16a34a') +
-      `<p style="font-size:13px;color:#166534;margin:4px 0">${dict(REINVENTAR_CARGOS, phase2.cargo)}</p>` : ''}
+    ${connections.length > 0 ? sublabel('Quem você quer servir', '#16a34a') + tags(connections.map(cid => REINVENTAR_WHO[cid] || cid), '#ecfdf5', '#065f46') : ''}
+    ${modes.length > 0 ? sublabel('Como entrega valor', '#4b5563') + tags(modes.map(mid => REINVENTAR_HOW[mid] || mid), '#f9fafb', '#374151') : ''}
+    ${!niche && !uniqueProblem && connections.length === 0 ? '<div style="color:#9ca3af;font-style:italic;font-size:13px">Nicho e dor não definidos.</div>' : ''}
   `);
 
-  // ── Phase 4 — Duelo de Mundos ─────────────────────────────────────────────
-  const sceneDuels: Record<string, string>    = phase4?.sceneDuels ?? {};
-  const environments: string[]               = phase4?.environments ?? [];
-  const forcedChoices: Record<string, string> = phase4?.forcedChoices ?? {};
-
-  const riasecCount: Record<string, number> = {};
-  Object.values(sceneDuels).forEach(type => { riasecCount[type] = (riasecCount[type] || 0) + 1; });
-  const riasecSorted = Object.entries(riasecCount).sort((a, b) => b[1] - a[1]);
-  const riasecLabels: Record<string, string> = {
-    R: '🛠️ Prático', I: '🔬 Investigativo', A: '🎨 Artístico',
-    S: '🤝 Social',  E: '🚀 Empreendedor', C: '📊 Estruturador',
-  };
-  const riasecBarsHtml = riasecSorted.map(([type, count]) => {
-    const pct = Math.round((count / (riasecSorted[0]?.[1] || 1)) * 100);
-    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-      <span style="width:130px;font-size:12px;color:#374151">${dict(riasecLabels, type)}</span>
-      <div style="flex:1;height:5px;background:#f3f4f6;border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:#f59e0b;border-radius:3px"></div>
-      </div>
-      <span style="width:20px;font-size:11px;color:#9ca3af;font-family:monospace">${count}</span>
-    </div>`;
-  }).join('');
-
-  const forcedChoicesHtml = Object.entries(forcedChoices).map(([questionId, choiceId]) => {
-    const q = REINVENTAR_FORCED[questionId];
-    const label = esc(q?.[choiceId] || choiceId);
-    return `<div style="font-size:12px;color:#374151;padding:5px 10px;background:#fffbeb;border-radius:6px;margin-bottom:4px;border:1px solid #fde68a">✓ ${label}</div>`;
-  }).join('');
-
-  const phase4Html = section('Fase 4', '#d97706', 'Duelo de Mundos — perfil e preferências', `
-    ${riasecSorted.length > 0 ? sublabel('Perfil RIASEC (preferências de atuação)', '#d97706') + riasecBarsHtml : ''}
-    ${environments.length > 0 ? sublabel('Ambientes preferidos', '#4b5563') + tags(environments, '#fffbeb', '#92400e') : ''}
-    ${Object.keys(forcedChoices).length > 0 ? sublabel('Escolhas de estilo de vida', '#d97706') + forcedChoicesHtml : ''}
+  // ── Dimensão 4: Gerar Renda ─────────────────────────────────────────────────
+  const pilarRenda = section('Gerar Renda', '#0891b2', 'Sua oferta e modelo de negócio', `
+    ${offerFormats.length > 0 ? sublabel('Oferta', '#0891b2') + tags(offerFormats, '#ecfeff', '#0e7490') : ''}
+    ${payers.length > 0 ? sublabel('Quem paga', '#0891b2') + tags(payers, '#ecfeff', '#0e7490') : ''}
+    ${(ambition || goal) ? sublabel('Ambição & meta', '#4b5563') + `<p style="font-size:13px;color:#374151;margin:4px 0">${esc(ambition)}${ambition && goal ? ' · ' : ''}${esc(goal)}</p>` : ''}
+    ${offerFormats.length === 0 && payers.length === 0 && !ambition && !goal ? '<div style="color:#9ca3af;font-style:italic;font-size:13px">Modelo de negócio não definido.</div>' : ''}
   `);
 
-  // ── Phase 3 extra — Área e Papel (movidos da F5) ─────────────────────────
-  const ministry      = phase3?.ministry ?? '';
-  const cargo         = phase2?.cargo ?? '';
-
-  // ── Phase 5 — Conexões / Figuras ─────────────────────────────────────────
-  const archetype     = phase5?.archetype ?? '';
-  const savedFigures  = phase5?.savedFigures ?? [];
-
-  const figuresHtml = savedFigures.length > 0
-    ? `<div style="display:flex;flex-wrap:wrap;gap:6px">${
-        savedFigures.map(id =>
-          `<span style="display:inline-block;background:#fdf4ff;color:#7e22ce;border-radius:999px;padding:3px 10px;font-size:12px;border:1px solid #e9d5ff">${dict(REINVENTAR_FIGURES, id)}</span>`
-        ).join('')
-      }</div>` : '';
-
-  const phase5Html = section('Fase 5', '#0891b2', 'Conexões que Importam', `
-    ${archetype ? sublabel('Arquétipo', '#7e22ce') +
-      `<span style="display:inline-block;font-size:15px;font-weight:700;color:#7e22ce;padding:6px 14px;background:#fdf4ff;border-radius:8px;border:1px solid #e9d5ff">${dict(REINVENTAR_ARCHETYPES, archetype)}</span>` : ''}
-    ${savedFigures.length > 0 ? sublabel(`Figuras inspiradoras (${savedFigures.length})`, '#4b5563') + figuresHtml : ''}
-  `);
-
-  // ── Phase 6 — Conexões ────────────────────────────────────────────────────
-  const connections = phase6?.connections ?? [];
-  const modes       = phase6?.modes ?? [];
-  const intention   = phase6?.intention ?? '';
-
-  const phase6Html = section('Fase 6', '#0891b2', 'Conexões que Importam — com quem e como', `
-    ${connections.length > 0 ? sublabel('Quem você quer impactar', '#0891b2') + tags(connections.map(id => REINVENTAR_WHO[id] || id), '#ecfeff', '#0e7490') : ''}
-    ${modes.length > 0 ? sublabel('Como prefere se conectar', '#4b5563') + tags(modes.map(id => REINVENTAR_HOW[id] || id), '#f0f9ff', '#0369a1') : ''}
-    ${intention ? sublabel('Intenção de relação', '#0891b2') +
-      `<p style="font-size:13px;color:#374151;font-style:italic;padding:8px 12px;background:#ecfeff;border-left:3px solid #0891b2;border-radius:4px;margin:4px 0">"${esc(intention)}"</p>` : ''}
-  `);
-
-  // ── Phase 7 — O Garimpo ───────────────────────────────────────────────────
-  const savedRoles    = phase7?.savedRoles ?? [];
-  const discardedRoles = phase7?.discardedRoles ?? [];
-
-  const phase7Html = section('Fase 7', '#059669', 'O Garimpo — papéis que ressoam', `
-    ${savedRoles.length > 0 ? sublabel(`✓ Ressoam (${savedRoles.length})`, '#059669') +
-      tags(savedRoles.map(id => REINVENTAR_ROLES[id] || id), '#ecfdf5', '#065f46') : ''}
-    ${discardedRoles.length > 0 ? sublabel(`✗ Descartados (${discardedRoles.length})`, '#9ca3af') +
-      tags(discardedRoles.map(id => REINVENTAR_ROLES[id] || id), '#f9fafb', '#6b7280') : ''}
-  `);
-
-  // ── Phase 8 — A Carta ─────────────────────────────────────────────────────
-  const letter = phase8?.letter ?? '';
+  // ── A Carta ──────────────────────────────────────────────────────────────────
   const letterSection = letter
-    ? section('Fase 8', '#dc2626', 'A Carta para o Futuro', `
-        <div style="font-size:13px;color:#374151;line-height:1.7;white-space:pre-wrap;font-style:italic;padding:12px;background:#fff5f5;border-radius:8px;border:1px solid #fecaca">${esc(letter)}</div>
+    ? section('A Carta para o Eu de Amanhã', '#b45309', 'Uma mensagem para você mesmo(a)', `
+        <div style="font-size:13px;color:#78350f;line-height:1.7;white-space:pre-wrap;font-style:italic;padding:12px;background:#fffbeb;border-radius:8px;border:1px solid #fde68a">${esc(letter)}</div>
       `) : '';
 
   // ── Compose ───────────────────────────────────────────────────────────────
@@ -1375,25 +1349,25 @@ export function generateReinventarRelatorioHtml(
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Jornada Reinventar — ${esc(name)}</title>
+  <title>Plano de Reinvenção — ${esc(name)}</title>
 </head>
 <body style="margin:0;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:#1f2937;max-width:700px;margin:0 auto">
 
   <!-- Header -->
   <div style="background:linear-gradient(135deg,#7c3aed,#0891b2);border-radius:16px;padding:28px 24px;margin-bottom:24px;color:#fff">
-    <div style="font-size:11px;text-transform:uppercase;letter-spacing:3px;opacity:0.8;margin-bottom:4px">Jornada Reinventar</div>
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:3px;opacity:0.8;margin-bottom:4px">Plano de Reinvenção</div>
     <h1 style="margin:0 0 4px;font-size:26px;font-weight:700">${esc(name)}</h1>
     <div style="font-size:13px;opacity:0.8">${esc(email)}</div>
     <div style="font-size:11px;opacity:0.6;margin-top:8px;font-family:monospace">ID: ${esc(id)} · ${new Date().toLocaleDateString('pt-BR')}</div>
   </div>
 
-  ${phase1Html}
-  ${phase2Html}
-  ${phase3Html}
-  ${phase4Html}
-  ${phase5Html}
-  ${phase6Html}
-  ${phase7Html}
+  ${sinteseHtml}
+
+  <div style="font-size:14px;font-weight:700;color:#374151;margin:4px 0 12px">As Quatro Dimensões</div>
+  ${pilarMove}
+  ${pilarSkills}
+  ${pilarWorld}
+  ${pilarRenda}
   ${letterSection}
 
   <!-- Footer -->

@@ -14,6 +14,7 @@ interface Phase1 {
   energyCards?:    Record<string, 'flow' | 'boost' | 'neutral' | 'drain'>;
   maturityVerbs?:  string[];
   curiosityThemes?: string[];
+  curiosityRanking?: Record<string, number>;
 }
 
 interface Phase2 {
@@ -50,6 +51,7 @@ interface Phase6 {
 interface Phase7 {
   savedRoles?:    string[];
   discardedRoles?: string[];
+  rolesRanking?:  Record<string, number>;
 }
 
 interface Phase8 {
@@ -276,7 +278,12 @@ function buildDataSection(firstName: string, d: PhaseData): string {
       lines.push(`Verbos de quem é hoje: ${p1.maturityVerbs!.join(', ')}`);
     }
     if (nonEmpty(p1.curiosityThemes).length) {
-      lines.push(`Temas de curiosidade: ${p1.curiosityThemes!.join(', ')}`);
+      const rank = p1.curiosityRanking ?? {};
+      const ranked = [...p1.curiosityThemes!].sort((a, b) => (rank[b] ?? 0) - (rank[a] ?? 0));
+      const hasRank = Object.keys(rank).length > 0;
+      lines.push(`Temas de curiosidade${hasRank ? ' (em ordem de preferência, por moedas)' : ''}: ${
+        ranked.map(t => hasRank && rank[t] ? `${t} (${rank[t]}🪙)` : t).join(', ')
+      }`);
     }
     lines.push('');
   }
@@ -360,7 +367,15 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   if (nonEmpty(p7.savedRoles).length || nonEmpty(p7.discardedRoles).length) {
     lines.push('── FASE 6: FORMATOS DE OFERTA EXPLORADOS (GARIMPO) ──');
     if (nonEmpty(p7.savedRoles).length) {
-      lines.push(`Formatos que ressoaram: ${translateList(p7.savedRoles!, ROLE_LABELS)}`);
+      const rank = p7.rolesRanking ?? {};
+      const ranked = [...p7.savedRoles!].sort((a, b) => (rank[b] ?? 0) - (rank[a] ?? 0));
+      const hasRank = Object.keys(rank).length > 0;
+      lines.push(`Formatos que ressoaram${hasRank ? ' (priorizados por moedas — comece pelos primeiros)' : ''}: ${
+        ranked.map(id => {
+          const label = ROLE_LABELS[id] ?? id;
+          return hasRank && rank[id] ? `${label} (${rank[id]}🪙)` : label;
+        }).join(', ')
+      }`);
     }
     if (nonEmpty(p7.discardedRoles).length) {
       lines.push(`Formatos descartados: ${translateList(p7.discardedRoles!, ROLE_LABELS)}`);
@@ -483,6 +498,7 @@ Traduza a meta de renda em marcos realistas de 3, 6 e 12 meses, coerentes com a 
 ---
 
 ### REGRAS DO PLANO
+- Quando houver ordem de preferência por moedas (curiosidades na Fase 1, formatos no Garimpo), PRIORIZE os itens com mais moedas: a oferta principal e o "comece por aqui" devem nascer dos mais votados; os demais são alternativas futuras.
 - Cite as respostas REAIS de ${firstName} como base de cada recomendação — o plano precisa ser claramente DELE(A), não um template.
 - Cruze múltiplas fases ao propor a oferta e o cliente. Nunca conclua a partir de uma resposta isolada.
 - Seja concreto e acionável: nomes de oferta, faixas de preço, canais, números. Um plano que não dá para executar não serve.
