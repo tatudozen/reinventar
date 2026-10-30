@@ -1241,6 +1241,8 @@ export function generateReinventarRelatorioHtml(
   const whoAsksYou    = phase2?.whoAsksYou ?? [];
   const hiddenTalents = phase2?.hiddenTalents ?? [];
   const cargo         = phase2?.cargo ?? '';
+  const cargoAtual    = phase2?.cargoAtual ?? '';
+  const medalEmoji = (n: number) => (n === 3 ? '🥇' : n === 2 ? '🥈' : n === 1 ? '🥉' : '');
 
   const niche    = phase3?.niche ?? '';
   const subNiche = phase3?.subNiche ?? '';
@@ -1303,15 +1305,16 @@ export function generateReinventarRelatorioHtml(
   const pilarMove = section('O que te Move', '#7c3aed', 'Energia e curiosidade', `
     ${flowActs.length > 0 ? sublabel('⚡ Flow — não vejo o tempo passar', '#7c3aed') + tags(flowActs, '#f5f3ff', '#6d28d9') : ''}
     ${boostActs.length > 0 ? sublabel('🔋 Energiza', '#d97706') + tags(boostActs, '#fffbeb', '#b45309') : ''}
-    ${rankedCuriosity.length > 0 ? sublabel('Curiosidades (em ordem de preferência)', '#7c3aed') +
-      tags(rankedCuriosity.map(t => curiosityRanking[t] ? `${t} (${curiosityRanking[t]}🪙)` : t), '#f5f3ff', '#6d28d9') : ''}
+    ${rankedCuriosity.length > 0 ? sublabel('Curiosidades (pódio de preferência)', '#7c3aed') +
+      tags(rankedCuriosity.map(t => curiosityRanking[t] ? `${medalEmoji(curiosityRanking[t])} ${t}` : t), '#f5f3ff', '#6d28d9') : ''}
     ${flowActs.length === 0 && boostActs.length === 0 && rankedCuriosity.length === 0 ? '<div style="color:#9ca3af;font-style:italic;font-size:13px">Não mapeado ainda.</div>' : ''}
   `);
 
   // ── Dimensão 2: O que Você Sabe Fazer ───────────────────────────────────────
   const pilarSkills = section('O que Você Sabe Fazer', '#c2410c', 'Competências, papel e perfil', `
     ${(cargo || hollandCode) ? `<div style="margin-bottom:10px">
-      ${cargo ? `<span style="display:inline-block;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px 4px 2px 0">🎩 ${dict(REINVENTAR_CARGOS, cargo)}</span>` : ''}
+      ${cargoAtual ? `<span style="display:inline-block;background:#fff;color:#92400e;border:1px solid #fed7aa;border-radius:999px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0">Hoje: ${dict(REINVENTAR_CARGOS, cargoAtual)}</span>` : ''}
+      ${cargo ? `<span style="display:inline-block;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px 4px 2px 0">🎩 Quer: ${dict(REINVENTAR_CARGOS, cargo)}</span>` : ''}
       ${hollandCode ? `<span style="display:inline-block;background:#fff;color:#c2410c;border:1px solid #fdba74;border-radius:6px;padding:3px 8px;font-size:12px;font-family:monospace;font-weight:900;letter-spacing:2px;margin:2px 4px 2px 0">${hollandCode}</span>` : ''}
       ${top3.map(t => `<span style="display:inline-block;background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:999px;padding:3px 10px;font-size:12px;margin:2px 4px 2px 0">${dict(RIASEC_TAG, t)}</span>`).join('')}
     </div>` : ''}

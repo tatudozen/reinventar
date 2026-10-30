@@ -143,10 +143,11 @@ export default function Mission2() {
 
   const skillRatings  = state.phase2.skillRatings  ?? {};
   const hiddenTalents = state.phase2.hiddenTalents ?? [];
+  const cargoAtual    = state.phase2.cargoAtual    ?? '';
   const cargo         = state.phase2.cargo         ?? '';
 
   const [step, setStep] = useState(() => {
-    if (cargo) return 2;
+    if (cargoAtual && cargo) return 2;
     if (Object.keys(skillRatings).length === COMPETENCIES.length) return 1;
     return 0;
   });
@@ -198,7 +199,7 @@ export default function Mission2() {
   const handleNextStep = () => {
     if (step === 0 && isComplete) setStep(1);
     else if (step === 1 && hiddenTalents.length >= 1) setStep(2);
-    else if (step === 2 && cargo) {
+    else if (step === 2 && cargoAtual && cargo) {
       addXP(100);
       completePhase(2);
       navigate('/comecar/fase/3');
@@ -362,44 +363,55 @@ export default function Mission2() {
             </motion.div>
           )}
 
-          {/* ── STEP 2: Chapéu de dono(a) ── */}
+          {/* ── STEP 2: Chapéu de dono(a) — atual × desejado ── */}
           {step === 2 && (
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col flex-grow">
-              <div className="mb-6">
+              <div className="mb-5">
                 <div className="flex items-center gap-2 mb-1">
                   <Briefcase className="w-4 h-4 text-[var(--color-brand-500)]" />
-                  <h3 className="font-bold text-xl text-[var(--text-main)]">No seu negócio, você é o(a) dono(a). Qual chapéu veste melhor?</h3>
+                  <h3 className="font-bold text-xl text-[var(--text-main)]">Qual chapéu você veste — hoje e no novo negócio?</h3>
                 </div>
                 <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
-                  Com tudo que você sabe fazer, qual função combina mais com você no dia a dia? Você será o CEO do seu negócio de uma pessoa só — o resto dá para delegar com o tempo.
+                  No seu negócio de uma pessoa só, você é o CEO. Marque o papel que mais te define <strong>hoje</strong> e o que você <strong>quer</strong> exercer no novo negócio. Podem ser o mesmo.
                 </p>
               </div>
-              <div className="space-y-2 mb-auto">
+
+              <div className="grid grid-cols-2 gap-3 mb-auto">
+                {/* Coluna cabeçalho */}
+                <div className="text-center text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] pb-1">Hoje eu sou</div>
+                <div className="text-center text-xs font-mono uppercase tracking-widest text-[var(--color-brand-500)] pb-1">Quero ser</div>
+
                 {CARGOS.map(c => {
-                  const active = cargo === c.id;
+                  const atual = cargoAtual === c.id;
+                  const desej = cargo === c.id;
                   return (
-                    <button key={c.id} onClick={() => updatePhase('phase2', { cargo: c.id })}
-                      className={cn('w-full text-left rounded-xl border p-3 flex items-start gap-3 transition-all',
-                        active
-                          ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
-                          : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]')}>
-                      <div className={cn('w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center',
-                        active ? 'border-[var(--color-brand-500)] bg-[var(--color-brand-500)]' : 'border-[var(--color-brand-300)]')}>
-                        {active && <Check className="w-2.5 h-2.5 text-[var(--bg-dark)]" />}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-[var(--text-main)]">{c.name}</div>
-                        <div className="text-xs text-[var(--color-text-muted)] leading-relaxed">{c.profile}</div>
-                      </div>
-                    </button>
+                    <div key={c.id} className="contents">
+                      <button onClick={() => updatePhase('phase2', { cargoAtual: c.id })}
+                        className={cn('rounded-xl border p-2.5 text-left transition-all',
+                          atual ? 'border-[var(--color-brand-400)] bg-[var(--glass)] shadow-[var(--btn-shadow)]'
+                                : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]')}>
+                        <div className="text-xs font-semibold text-[var(--text-main)] leading-tight">{c.name}</div>
+                        <div className="text-[10px] text-[var(--color-text-muted)] leading-snug mt-0.5">{c.profile}</div>
+                      </button>
+                      <button onClick={() => updatePhase('phase2', { cargo: c.id })}
+                        className={cn('rounded-xl border p-2.5 text-left transition-all',
+                          desej ? 'border-[var(--color-brand-500)] bg-[var(--glass)] shadow-[var(--btn-shadow)] scale-[1.01]'
+                                : 'border-[var(--color-brand-200)] hover:border-[var(--color-brand-400)] bg-[rgba(255,255,255,0.03)]')}>
+                        <div className="text-xs font-semibold text-[var(--text-main)] leading-tight flex items-center gap-1">
+                          {desej && <Check className="w-3 h-3 text-[var(--color-brand-500)] shrink-0" />}{c.name}
+                        </div>
+                        <div className="text-[10px] text-[var(--color-text-muted)] leading-snug mt-0.5">{c.profile}</div>
+                      </button>
+                    </div>
                   );
                 })}
               </div>
-              <div className="mt-10 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
+
+              <div className="mt-6 flex justify-between items-center pt-6 border-t border-[var(--color-brand-100)]">
                 <button onClick={() => setStep(1)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--text-main)] py-1">← Voltar</button>
-                <button onClick={handleNextStep} disabled={!cargo}
+                <button onClick={handleNextStep} disabled={!cargoAtual || !cargo}
                   className={cn('px-8 py-3 rounded-xl font-bold uppercase tracking-wider transition-all',
-                    cargo
+                    (cargoAtual && cargo)
                       ? 'bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] text-white shadow-[var(--btn-shadow)] hover:opacity-90'
                       : 'bg-[var(--glass)] text-[var(--color-text-muted)] cursor-not-allowed border border-[var(--color-brand-200)]')}>
                   Concluir Fase 2 →

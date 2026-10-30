@@ -4,7 +4,7 @@ import { Compass, X, Heart, Sparkles } from 'lucide-react';
 import { useApp } from '../store';
 import { motion, AnimatePresence } from 'motion/react';
 import { MissionWrapper } from '../components/MissionWrapper';
-import { CoinRanker } from '../components/CoinRanker';
+import { MedalPodium } from '../components/MedalPodium';
 
 // 24 possibilidades concretas de atuação para quem reinventa a vida depois dos 55
 const ALL_ROLES = [
@@ -41,11 +41,20 @@ export default function Mission6() {
   const savedRoles:    string[] = state.phase7.savedRoles    ?? [];
   const discardedRoles: string[] = state.phase7.discardedRoles ?? [];
   const rolesRanking: Record<string, number> = state.phase7.rolesRanking ?? {};
+  const hobbyRoles:   string[] = state.phase7.hobbyRoles     ?? [];
 
-  const rankTotal    = savedRoles.length + 1;
-  const rankUsed     = Object.values(rolesRanking).reduce((a, b) => a + (b || 0), 0);
-  // Se guardou <2, não há o que rankear; com >=2 exige distribuir todas as moedas.
-  const rankComplete = savedRoles.length < 2 || rankUsed === rankTotal;
+  // Candidatas a negócio = guardadas que NÃO foram marcadas como "só por prazer"
+  const businessCandidates = savedRoles.filter(r => !hobbyRoles.includes(r));
+  const medalCap     = Math.min(3, businessCandidates.length);
+  const rankComplete = Object.keys(rolesRanking).length === medalCap;
+
+  const toggleHobby = (id: string) => {
+    const isHobby = hobbyRoles.includes(id);
+    const nextHobby = isHobby ? hobbyRoles.filter(x => x !== id) : [...hobbyRoles, id];
+    const nextRanking = { ...rolesRanking };
+    if (!isHobby) delete nextRanking[id]; // ao virar hobby, perde a medalha
+    updatePhase('phase7', { hobbyRoles: nextHobby, rolesRanking: nextRanking });
+  };
 
   const [currentIndex, setCurrentIndex] = useState(() => {
     const answered = savedRoles.length + discardedRoles.length;
@@ -167,28 +176,56 @@ export default function Mission6() {
             </motion.div>
           )}
 
-          {/* ── Step 1: Ranking das possibilidades (moedas) ── */}
+          {/* ── Step 1: Pódio do negócio + bucket de hobby ── */}
           {step === 1 && (
             <motion.div key="rank" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="max-w-xl mx-auto w-full py-6">
               <div className="text-center mb-6">
-                <h2 className="text-2xl font-serif text-[var(--text-main)] mb-2">Quais te atraem MAIS?</h2>
+                <h2 className="text-2xl font-serif text-[var(--text-main)] mb-2">O pódio do seu negócio</h2>
                 <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
-                  Você guardou {savedRoles.length} possibilidades. Distribua as moedas para mostrar quais mais ressoam — isso ajuda a priorizar o que testar primeiro.
+                  Toque para dar 🥇 ouro, 🥈 prata e 🥉 bronze às possibilidades que mais quer transformar em negócio.
                 </p>
               </div>
 
-              <CoinRanker
-                items={savedRoles.map(id => {
-                  const role = ALL_ROLES.find(r => r.id === id);
-                  return { id, label: role?.text ?? id, emoji: role?.emoji };
-                })}
-                values={rolesRanking}
-                totalCoins={rankTotal}
-                onChange={next => updatePhase('phase7', { rolesRanking: next })}
-              />
+              {businessCandidates.length > 0 ? (
+                <MedalPodium
+                  items={businessCandidates.map(id => {
+                    const role = ALL_ROLES.find(r => r.id === id);
+                    return { id, label: role?.text ?? id, emoji: role?.emoji };
+                  })}
+                  values={rolesRanking}
+                  onChange={next => updatePhase('phase7', { rolesRanking: next })}
+                />
+              ) : (
+                <p className="text-center text-sm text-[var(--color-text-muted)] italic">Todas foram marcadas como "só por prazer". Desmarque ao menos uma para seguir.</p>
+              )}
+
+              {/* Bucket: amaria fazer, mas só por prazer */}
+              <div className="mt-8 pt-5 border-t border-[var(--color-brand-100)]">
+                <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-1">Amaria fazer — mas só por prazer</p>
+                <p className="text-xs text-[var(--color-text-muted)] mb-3 leading-relaxed">
+                  Marque o que te atrai de verdade, mas você <strong>não</strong> quer como negócio (fica para o lazer). Opcional.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {savedRoles.map(id => {
+                    const role = ALL_ROLES.find(r => r.id === id);
+                    if (!role) return null;
+                    const isHobby = hobbyRoles.includes(id);
+                    return (
+                      <button key={id} onClick={() => toggleHobby(id)}
+                        className={`text-xs px-3 py-1.5 rounded-full border font-medium transition-all flex items-center gap-1 ${
+                          isHobby
+                            ? 'border-amber-400 bg-amber-500/15 text-amber-300'
+                            : 'border-white/10 bg-[var(--glass)] text-[var(--color-text-muted)] hover:border-white/25'
+                        }`}>
+                        {isHobby ? '🎡' : <span>{role.emoji}</span>} {role.text}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
               <div className="text-center mt-8">
-                <button onClick={() => setStep(2)} disabled={!rankComplete}
+                <button onClick={() => setStep(2)} disabled={!rankComplete || businessCandidates.length === 0}
                   className="px-10 py-3.5 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform disabled:opacity-40 disabled:pointer-events-none">
                   Avançar →
                 </button>

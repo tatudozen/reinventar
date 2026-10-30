@@ -48,7 +48,8 @@ export interface AppState {
     detailRatings: Record<string, number[]>; // sub-perguntas de aprofundamento
     whoAsksYou: string[];                    // "quem te procura" (tipos de pedido de ajuda)
     hiddenTalents: string[];                 // talentos ocultos selecionados
-    cargo: string;                           // chapéu de dono(a) preferido (CEO do negócio de 1 pessoa)
+    cargoAtual: string;                      // chapéu que mais veste HOJE
+    cargo: string;                           // chapéu que deseja no novo negócio (CEO do negócio de 1 pessoa)
   };
 
   phase3: {
@@ -81,7 +82,8 @@ export interface AppState {
     fields: Record<string, string>;
     savedRoles: string[];
     discardedRoles: string[];
-    rolesRanking: Record<string, number>; // moedas por possibilidade salva (preferência)
+    rolesRanking: Record<string, number>; // pódio das possibilidades (ouro=3, prata=2, bronze=1)
+    hobbyRoles: string[];                  // "amaria fazer, mas só por prazer" (não como negócio)
   };
 
   phase8: {
@@ -121,12 +123,12 @@ const initialState: AppState = {
   mission5: {}, mission6: {}, mission7: {}, mission8: {},
 
   phase1: { energyCards: {}, maturityVerbs: [], curiosityThemes: [], curiosityRanking: {} },
-  phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [], cargo: '' },
+  phase2: { skillRatings: {}, detailRatings: {}, whoAsksYou: [], hiddenTalents: [], cargoAtual: '', cargo: '' },
   phase3: { impactPoints: {}, uniqueProblem: '', niche: '', subNiche: '', ministry: '' },
   phase4: { sceneDuels: {}, environments: [], forcedChoices: {} },
   phase5: { archetype: '', savedFigures: [], discardedFigures: [] },
   phase6: { connections: [], modes: [], intention: '' },
-  phase7: { fields: {}, savedRoles: [], discardedRoles: [], rolesRanking: {} },
+  phase7: { fields: {}, savedRoles: [], discardedRoles: [], rolesRanking: {}, hobbyRoles: [] },
   phase8: { letter: '', future: {}, businessVision: '' },
   businessModel: { offerFormats: [], payer: [], ambition: '', financialGoal: '', assets: [] },
 

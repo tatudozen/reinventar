@@ -22,6 +22,7 @@ interface Phase2 {
   detailRatings?: Record<string, number[]>;
   whoAsksYou?:    string[];
   hiddenTalents?: string[];
+  cargoAtual?:    string;
   cargo?:         string;
 }
 
@@ -52,6 +53,7 @@ interface Phase7 {
   savedRoles?:    string[];
   discardedRoles?: string[];
   rolesRanking?:  Record<string, number>;
+  hobbyRoles?:    string[];
 }
 
 interface Phase8 {
@@ -251,6 +253,11 @@ function nonEmpty<T>(arr: T[] | undefined): T[] {
   return arr?.filter(Boolean) ?? [];
 }
 
+// Peso de pódio (3/2/1) → medalha
+function medal(n: number): string {
+  return n === 3 ? '🥇' : n === 2 ? '🥈' : n === 1 ? '🥉' : '';
+}
+
 function nonEmptyObj(obj: Record<string, unknown> | undefined): boolean {
   return !!obj && Object.keys(obj).length > 0;
 }
@@ -281,8 +288,8 @@ function buildDataSection(firstName: string, d: PhaseData): string {
       const rank = p1.curiosityRanking ?? {};
       const ranked = [...p1.curiosityThemes!].sort((a, b) => (rank[b] ?? 0) - (rank[a] ?? 0));
       const hasRank = Object.keys(rank).length > 0;
-      lines.push(`Temas de curiosidade${hasRank ? ' (em ordem de preferência, por moedas)' : ''}: ${
-        ranked.map(t => hasRank && rank[t] ? `${t} (${rank[t]}🪙)` : t).join(', ')
+      lines.push(`Temas de curiosidade${hasRank ? ' (pódio de preferência)' : ''}: ${
+        ranked.map(t => hasRank && rank[t] ? `${medal(rank[t])} ${t}` : t).join(', ')
       }`);
     }
     lines.push('');
@@ -308,8 +315,10 @@ function buildDataSection(firstName: string, d: PhaseData): string {
     if (nonEmpty(p2.hiddenTalents).length) {
       lines.push(`Talentos que ${firstName} subestima: ${p2.hiddenTalents!.join(', ')}`);
     }
-    if (p2.cargo) {
-      lines.push(`Chapéu de dono(a) que mais veste: ${CARGO_LABELS[p2.cargo] ?? p2.cargo}`);
+    if (p2.cargoAtual || p2.cargo) {
+      const atual = p2.cargoAtual ? (CARGO_LABELS[p2.cargoAtual] ?? p2.cargoAtual) : '—';
+      const desej = p2.cargo ? (CARGO_LABELS[p2.cargo] ?? p2.cargo) : '—';
+      lines.push(`Chapéu de dono(a) — hoje: ${atual} → deseja no negócio: ${desej}`);
     }
     lines.push('');
   }
@@ -370,12 +379,15 @@ function buildDataSection(firstName: string, d: PhaseData): string {
       const rank = p7.rolesRanking ?? {};
       const ranked = [...p7.savedRoles!].sort((a, b) => (rank[b] ?? 0) - (rank[a] ?? 0));
       const hasRank = Object.keys(rank).length > 0;
-      lines.push(`Formatos que ressoaram${hasRank ? ' (priorizados por moedas — comece pelos primeiros)' : ''}: ${
+      lines.push(`Formatos que ressoaram${hasRank ? ' (pódio do negócio — comece pelo ouro)' : ''}: ${
         ranked.map(id => {
           const label = ROLE_LABELS[id] ?? id;
-          return hasRank && rank[id] ? `${label} (${rank[id]}🪙)` : label;
+          return hasRank && rank[id] ? `${medal(rank[id])} ${label}` : label;
         }).join(', ')
       }`);
+    }
+    if (nonEmpty(p7.hobbyRoles).length) {
+      lines.push(`Faria só por prazer (não como negócio): ${translateList(p7.hobbyRoles!, ROLE_LABELS)}`);
     }
     if (nonEmpty(p7.discardedRoles).length) {
       lines.push(`Formatos descartados: ${translateList(p7.discardedRoles!, ROLE_LABELS)}`);
@@ -498,7 +510,9 @@ Traduza a meta de renda em marcos realistas de 3, 6 e 12 meses, coerentes com a 
 ---
 
 ### REGRAS DO PLANO
-- Quando houver ordem de preferência por moedas (curiosidades na Fase 1, formatos no Garimpo), PRIORIZE os itens com mais moedas: a oferta principal e o "comece por aqui" devem nascer dos mais votados; os demais são alternativas futuras.
+- Quando houver pódio (🥇🥈🥉 — curiosidades na Fase 1, formatos no Garimpo), PRIORIZE o ouro: a oferta principal e o "comece por aqui" nascem do 🥇; prata e bronze são alternativas/expansões futuras.
+- Respeite o que ${firstName} marcou como "só por prazer": NÃO transforme isso em oferta. No máximo, sugira reservar para lazer/recarga — a renda vem das candidatas de negócio.
+- Se o chapéu de HOJE for diferente do DESEJADO, trate isso como a ponte da reinvenção: reconheça de onde ${firstName} vem e o que precisa desenvolver (ou terceirizar) para ocupar o papel desejado.
 - Cite as respostas REAIS de ${firstName} como base de cada recomendação — o plano precisa ser claramente DELE(A), não um template.
 - Cruze múltiplas fases ao propor a oferta e o cliente. Nunca conclua a partir de uma resposta isolada.
 - Seja concreto e acionável: nomes de oferta, faixas de preço, canais, números. Um plano que não dá para executar não serve.

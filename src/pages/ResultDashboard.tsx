@@ -589,7 +589,9 @@ export default function ResultDashboard() {
   // ── Phase 1 ─────────────────────────────────────────────────────────────────
   const energyCards     = phase1?.energyCards    ?? {};
   const maturityVerbs   = phase1?.maturityVerbs  ?? [];
-  const curiosityThemes = phase1?.curiosityThemes ?? [];
+  const curiosityRanking: Record<string, number> = phase1?.curiosityRanking ?? {};
+  const curiosityThemes = [...(phase1?.curiosityThemes ?? [])].sort((a, b) => (curiosityRanking[b] ?? 0) - (curiosityRanking[a] ?? 0));
+  const medalEmoji = (n: number) => (n === 3 ? '🥇' : n === 2 ? '🥈' : n === 1 ? '🥉' : '');
   const flowActivities  = Object.entries(energyCards).filter(([, q]) => q === 'flow').map(([a]) => a);
   const boostActivities = Object.entries(energyCards).filter(([, q]) => q === 'boost').map(([a]) => a);
 
@@ -627,7 +629,8 @@ export default function ResultDashboard() {
   // ── Fase 3 (nicho) + chapéu de dono (agora na fase Talentos) ──────────────────
   const niche    = phase3?.niche    ?? '';
   const subNiche = phase3?.subNiche ?? '';
-  const cargo    = phase2?.cargo    ?? '';
+  const cargo      = phase2?.cargo      ?? '';
+  const cargoAtual = phase2?.cargoAtual ?? '';
 
   // ── Fase 7 (O Modelo da Reinvenção — oferta) ─────────────────────────────────
   const offerFormats = (businessModel?.offerFormats ?? []).map(id => OFFER_LABELS[id] || id);
@@ -838,10 +841,12 @@ export default function ResultDashboard() {
             )}
             {curiosityThemes.length > 0 && (
               <div>
-                <div className="text-xs font-semibold text-[var(--color-brand-700)] mb-1.5">Curiosidade natural</div>
+                <div className="text-xs font-semibold text-[var(--color-brand-700)] mb-1.5">Curiosidade natural (pódio)</div>
                 <div className="flex flex-wrap gap-1.5">
                   {curiosityThemes.map(t => (
-                    <span key={t} className="text-xs px-2.5 py-1 bg-[var(--color-brand-100)] text-[var(--color-brand-800)] rounded-full border border-[var(--color-brand-200)]">{t}</span>
+                    <span key={t} className="text-xs px-2.5 py-1 bg-[var(--color-brand-100)] text-[var(--color-brand-800)] rounded-full border border-[var(--color-brand-200)]">
+                      {curiosityRanking[t] ? `${medalEmoji(curiosityRanking[t])} ` : ''}{t}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -856,14 +861,24 @@ export default function ResultDashboard() {
             <div className="text-xs font-mono text-orange-700 tracking-wider uppercase mb-1">O que Você Sabe Fazer</div>
             <div className="text-sm text-stone-500 mb-4">Competências, perfil e o papel que você veste</div>
 
-            {/* Chapéu de dono + perfil RIASEC */}
-            {(cargo || riasecTop3.length > 0) && (
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                {cargo && (
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
-                    🎩 {CARGO_LABELS[cargo] || cargo}
+            {/* Chapéu de dono (hoje → desejado) + perfil RIASEC */}
+            {(cargoAtual || cargo) && (
+              <div className="mb-3 flex flex-wrap items-center gap-1.5 text-xs">
+                {cargoAtual && (
+                  <span className="px-2.5 py-1 rounded-full bg-white text-stone-500 border border-stone-300">
+                    Hoje: {CARGO_LABELS[cargoAtual] || cargoAtual}
                   </span>
                 )}
+                {cargoAtual && cargo && <span className="text-stone-400">→</span>}
+                {cargo && (
+                  <span className="font-semibold px-2.5 py-1 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
+                    🎩 Quer: {CARGO_LABELS[cargo] || cargo}
+                  </span>
+                )}
+              </div>
+            )}
+            {riasecTop3.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 {hollandCode && (
                   <span className="font-mono font-black text-xs tracking-widest px-2 py-1 rounded bg-white border border-orange-300 text-orange-700">
                     {hollandCode}
