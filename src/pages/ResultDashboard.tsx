@@ -96,6 +96,12 @@ const CARGO_RIASEC: Record<string, RIASECType> = {
   especialista: 'I', criador: 'A', vendedor: 'E', organizador: 'C', mao_na_massa: 'R', cuidador: 'S',
 };
 
+// Formato de oferta → tipos RIASEC que ele mais exige (coerência perfil × oferta)
+const OFFER_RIASEC: Record<string, RIASECType[]> = {
+  servico_1a1: ['I', 'S'], oficina: ['S'], produto: ['R', 'A'], conteudo: ['A'],
+  consultoria: ['E', 'I'], experiencia: ['E', 'S'], intermediacao: ['E'], digital: ['A', 'I'],
+};
+
 // ── Fase 7 — O Modelo da Reinvenção (oferta) ──────────────────────────────────
 const OFFER_LABELS: Record<string, string> = {
   servico_1a1: 'Atendimento 1:1', oficina: 'Oficinas e cursos',
@@ -646,7 +652,10 @@ export default function ResultDashboard() {
 
   // ── Phase 7 ─────────────────────────────────────────────────────────────────
   const savedRoles = phase7?.savedRoles ?? [];
-  const topRole = savedRoles[0] ?? '';
+  const rolesRanking: Record<string, number> = phase7?.rolesRanking ?? {};
+  const goldRoleId = Object.keys(rolesRanking).find(id => rolesRanking[id] === 3) ?? savedRoles[0] ?? '';
+  const goldRole = goldRoleId ? (ROLE_LABELS[goldRoleId] || goldRoleId) : '';
+  const topRole = goldRole;
 
   // ── Phase 8 ─────────────────────────────────────────────────────────────────
   const letter = phase8?.letter ?? '';
@@ -655,7 +664,17 @@ export default function ResultDashboard() {
   const crossSignals   = buildCrossSignals(riasecTop3, topSkillIds, savedRoles, forcedChoices);
   const topSignal      = crossSignals[0];
   const tensions       = detectTensions(riasecTop3, savedRoles, topSkillIds);
-  const synthesisSentence = buildSynthesisSentence(riasecTop3, topCauseLabel, topRole, flowActivities);
+  // Síntese com os dados atuais (perfil F1-F4 + negócio F3/F7)
+  const synthesisSentence = (() => {
+    const bits: string[] = [];
+    if (riasecTop3[0]) bits.push(`perfil predominante ${RIASEC[riasecTop3[0]].full.toLowerCase()}`);
+    if (cargo) bits.push(`vontade de atuar como ${(CARGO_LABELS[cargo] || cargo).toLowerCase()}`);
+    const base = bits.length ? `Você tem ${bits.join(' e ')}.` : '';
+    const biz = niche
+      ? ` O seu Plano de Reinvenção aponta para um negócio em ${niche}${subNiche ? ` (${subNiche})` : ''}${uniqueProblem ? `, resolvendo "${uniqueProblem}"` : ''}.`
+      : '';
+    return (base + biz).trim();
+  })();
   const hasAnalysis    = riasecTop3.length > 0 || crossSignals.length > 0;
 
   // Convergência: quando RIASEC, skills E roles apontam para o mesmo tipo
@@ -673,11 +692,6 @@ export default function ResultDashboard() {
     riasecTop3[0] &&
     skillDominant === riasecTop3[0] &&
     roleDominant === riasecTop3[0];
-
-  const archetype5 = phase5?.archetype ?? '';
-  const topPathScores = computePathScores(
-    riasecTop3, savedRoles, topSkillIds, impactPoints, archetype5, connections, modes,
-  );
 
   return (
     <div className="min-h-screen bg-[var(--color-bg-light)]">
@@ -720,30 +734,32 @@ export default function ResultDashboard() {
         <div className="flex flex-col lg:flex-row gap-8 mb-16 items-stretch">
 
           {/* Síntese card */}
-          {riasecTop3.length > 0 && (
+          {(riasecTop3.length > 0 || niche || hasBusinessModel) && (
             <div className="bg-white border border-stone-200 rounded-xl p-8 w-full lg:w-1/2 flex flex-col gap-5">
               <div className="text-[10px] font-mono text-[var(--color-brand-500)] tracking-widest uppercase">Síntese da Reinvenção</div>
 
               {/* Dominant RIASEC type */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl border-2 shrink-0"
-                  style={{ borderColor: RIASEC[riasecTop3[0]].color, background: RIASEC[riasecTop3[0]].color + '18' }}>
-                  {RIASEC[riasecTop3[0]].icon}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="font-bold text-lg" style={{ color: RIASEC[riasecTop3[0]].color }}>
-                      {RIASEC[riasecTop3[0]].full}
-                    </span>
-                    {hollandCode && (
-                      <span className="font-mono font-black text-xs tracking-widest px-2 py-0.5 rounded bg-stone-100 border border-stone-300 text-stone-700">
-                        {hollandCode}
-                      </span>
-                    )}
+              {riasecTop3.length > 0 && (
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl border-2 shrink-0"
+                    style={{ borderColor: RIASEC[riasecTop3[0]].color, background: RIASEC[riasecTop3[0]].color + '18' }}>
+                    {RIASEC[riasecTop3[0]].icon}
                   </div>
-                  <p className="text-xs text-stone-500">{RIASEC[riasecTop3[0]].desc}</p>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-bold text-lg" style={{ color: RIASEC[riasecTop3[0]].color }}>
+                        {RIASEC[riasecTop3[0]].full}
+                      </span>
+                      {hollandCode && (
+                        <span className="font-mono font-black text-xs tracking-widest px-2 py-0.5 rounded bg-stone-100 border border-stone-300 text-stone-700">
+                          {hollandCode}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-stone-500">{RIASEC[riasecTop3[0]].desc}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Synthesis sentence */}
               {synthesisSentence && (
@@ -752,30 +768,30 @@ export default function ResultDashboard() {
                 </p>
               )}
 
-              {/* Key attributes from across phases */}
+              {/* Atributos-chave (dados atuais) */}
               <div className="grid grid-cols-2 gap-3 border-t border-stone-100 pt-4">
-                {topCauseLabel && (
+                {niche && (
                   <div className="bg-lime-50 border border-lime-200 rounded-lg p-3">
-                    <div className="text-[10px] font-mono text-lime-600 uppercase tracking-wider mb-1">Principal causa</div>
-                    <p className="text-sm font-medium text-lime-900 leading-tight">{topCauseLabel}</p>
+                    <div className="text-[10px] font-mono text-lime-600 uppercase tracking-wider mb-1">Nicho</div>
+                    <p className="text-xs font-medium text-lime-900 leading-tight">{niche}{subNiche ? ` · ${subNiche}` : ''}</p>
                   </div>
                 )}
-                {topRole && (
+                {uniqueProblem && (
                   <div className="bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-lg p-3">
-                    <div className="text-[10px] font-mono text-[var(--color-brand-600)] uppercase tracking-wider mb-1">Papel que ressoou</div>
-                    <p className="text-xs font-medium text-[var(--color-brand-900)] leading-tight">{ROLE_LABELS[topRole] || topRole}</p>
+                    <div className="text-[10px] font-mono text-[var(--color-brand-600)] uppercase tracking-wider mb-1">Dor principal</div>
+                    <p className="text-xs font-medium text-[var(--color-brand-900)] leading-tight">{uniqueProblem}</p>
                   </div>
                 )}
-                {flowActivities.length > 0 && (
+                {cargo && (
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                    <div className="text-[10px] font-mono text-orange-600 uppercase tracking-wider mb-1">Energia máxima em</div>
-                    <p className="text-xs font-medium text-orange-900 leading-tight">{flowActivities.slice(0, 2).join(' · ')}</p>
+                    <div className="text-[10px] font-mono text-orange-600 uppercase tracking-wider mb-1">Papel desejado</div>
+                    <p className="text-xs font-medium text-orange-900 leading-tight">{CARGO_LABELS[cargo] || cargo}</p>
                   </div>
                 )}
-                {topSkills.length > 0 && (
+                {offerFormats.length > 0 && (
                   <div className="bg-stone-50 border border-stone-200 rounded-lg p-3">
-                    <div className="text-[10px] font-mono text-stone-500 uppercase tracking-wider mb-1">Competência forte</div>
-                    <p className="text-xs font-medium text-stone-800 leading-tight">{topSkills[0].label}</p>
+                    <div className="text-[10px] font-mono text-stone-500 uppercase tracking-wider mb-1">Oferta principal</div>
+                    <p className="text-xs font-medium text-stone-800 leading-tight">{offerFormats[0]}</p>
                   </div>
                 )}
               </div>
@@ -1032,15 +1048,21 @@ export default function ResultDashboard() {
               <div className="bg-white border border-stone-200 rounded-xl p-6 mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Sparkles className="w-4 h-4 text-[var(--color-brand-600)]" />
-                  <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Perfil × Plano de Reinvenção</span>
+                  <span className="text-xs font-mono text-[var(--color-brand-600)] tracking-wider uppercase">Parte 1 (quem você é) × Parte 2 (o que vai oferecer)</span>
                 </div>
                 <p className="text-sm text-stone-500 mb-5 leading-relaxed">
-                  Como quem você é (perfil) conversa com o negócio que você esboçou — onde há coerência e o que vale olhar com atenção.
+                  Cruzamento do seu perfil (Fases 1–4) com o negócio que você esboçou (Fases 5–7) — onde há coerência e onde há tensão que vale olhar com atenção.
                 </p>
 
                 {(() => {
                   const cargoType = cargo ? CARGO_RIASEC[cargo] : undefined;
                   const aligned = cargoType && riasecTop3.includes(cargoType);
+                  // Coerência da oferta com o perfil
+                  const offerIds = businessModel?.offerFormats ?? [];
+                  const offerTypes = offerIds.flatMap(id => OFFER_RIASEC[id] ?? []);
+                  const offerAligned = offerTypes.filter(t => riasecTop3.includes(t));
+                  const offerFit = offerTypes.length === 0 ? null
+                    : offerAligned.length > 0 ? 'ok' : 'tension';
                   return (
                     <div className="space-y-3">
                       {/* Coerência chapéu × perfil */}
@@ -1058,6 +1080,20 @@ export default function ResultDashboard() {
                             {aligned
                               ? `O papel que você quer vestir conversa naturalmente com o seu perfil ${RIASEC[cargoType].full.toLowerCase()} — um bom sinal de que a execução vai fluir.`
                               : `O papel escolhido pede um lado ${RIASEC[cargoType].full.toLowerCase()}, diferente do seu perfil dominante. Não é um problema — é onde vale buscar parceria ou se preparar com intenção.`}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Coerência oferta × perfil */}
+                      {offerFit && (
+                        <div className={`rounded-lg p-3 border ${offerFit === 'ok' ? 'border-[var(--color-brand-200)] bg-[var(--color-brand-50)]' : 'border-amber-200 bg-amber-50'}`}>
+                          <div className="text-[10px] font-mono uppercase tracking-wider mb-1" style={{ color: offerFit === 'ok' ? 'var(--color-brand-600)' : '#b45309' }}>
+                            Sua oferta × seu perfil
+                          </div>
+                          <p className="text-xs text-stone-600 leading-relaxed">
+                            {offerFit === 'ok'
+                              ? `A forma como você quer entregar (${offerFormats.slice(0, 2).join(', ')}) usa pontos fortes do seu perfil ${riasecTop3[0] ? RIASEC[riasecTop3[0]].full.toLowerCase() : ''} — tende a fluir com naturalidade.`
+                              : `A sua oferta (${offerFormats.slice(0, 2).join(', ')}) puxa um lado diferente do seu perfil dominante. Pode dar certo, mas exige mais esforço ou uma parceria — vale testar em pequena escala antes de escalar.`}
                           </p>
                         </div>
                       )}
@@ -1155,73 +1191,6 @@ export default function ResultDashboard() {
                 </div>
               </div>
             )}
-          </section>
-        )}
-
-        {/* ── Caminhos para Explorar ── */}
-        {topPathScores.length > 0 && topPathScores[0].score > 15 && (
-          <section className="mb-16">
-            <h2 className="font-serif text-3xl text-[var(--color-brand-800)] mb-2 text-center lg:text-left">
-              Caminhos para Explorar
-            </h2>
-            <p className="text-stone-500 mb-8 text-center lg:text-left leading-relaxed">
-              {niche
-                ? <>Dentro do seu nicho <strong className="text-[var(--color-brand-700)]">{niche}{subNiche ? ` · ${subNiche}` : ''}</strong>, estes caminhos têm maior compatibilidade com quem você é. Use-os como lentes para aplicar ao seu negócio — são hipóteses, não certezas.</>
-                : <>Com base nas suas respostas, estes caminhos têm maior compatibilidade com quem você é e o que te move. São hipóteses, não certezas — explore com curiosidade.</>}
-            </p>
-            <div className="space-y-4">
-              {topPathScores.slice(0, 6).map(({ path, score, signals }, idx) => {
-                const matchColor = score >= 65 ? '#16a34a' : score >= 40 ? '#d97706' : '#6b7280';
-                const matchLabel = score >= 65 ? 'Alta compatibilidade' : score >= 40 ? 'Boa compatibilidade' : 'Compatível';
-                return (
-                  <div key={path.id} className="bg-white border border-stone-200 rounded-xl p-6 hover:border-stone-300 transition-colors">
-                    <div className="flex items-start gap-4">
-                      <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-2xl border-2"
-                        style={{ borderColor: path.color + '50', background: path.color + '18' }}>
-                        {path.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {idx === 0 && (
-                              <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border"
-                                style={{ color: path.color, borderColor: path.color + '60', background: path.color + '12' }}>
-                                maior match
-                              </span>
-                            )}
-                            <h3 className="font-semibold text-stone-900">{path.title}</h3>
-                          </div>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="font-mono font-black text-lg" style={{ color: matchColor }}>{score}%</span>
-                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                              style={{ color: matchColor, background: matchColor + '18' }}>{matchLabel}</span>
-                          </div>
-                        </div>
-                        <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden mb-3">
-                          <div className="h-full rounded-full" style={{ width: `${score}%`, background: path.color }} />
-                        </div>
-                        <p className="text-sm text-stone-600 mb-3">{path.desc}</p>
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {path.examples.slice(0, 4).map(ex => (
-                            <span key={ex} className="text-xs px-2 py-0.5 rounded-full bg-stone-50 border border-stone-200 text-stone-500">{ex}</span>
-                          ))}
-                        </div>
-                        {signals.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {signals.map((s, i) => (
-                              <span key={i} className="text-[10px] px-2 py-0.5 rounded-full"
-                                style={{ color: path.color, background: path.color + '12', border: `1px solid ${path.color}30` }}>
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           </section>
         )}
 

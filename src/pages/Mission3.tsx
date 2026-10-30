@@ -52,19 +52,28 @@ export default function Mission3() {
   const [customNiche, setCustomNiche] = useState(() =>
     NICHES.some(n => n.label === niche) ? '' : niche,
   );
-  const [customProblem, setCustomProblem] = useState(() =>
-    PROBLEMS.some(p => p.text === state.phase3.uniqueProblem) ? '' : (state.phase3.uniqueProblem || ''),
-  );
-  const [selectedProblem, setSelectedProblem] = useState<string | null>(
-    state.phase3.uniqueProblem || null,
-  );
+  // A dor pode ser uma sugestão selecionada + um complemento livre (ou só uma delas)
+  const savedProblem = state.phase3.uniqueProblem || '';
+  const matchedProblem = PROBLEMS.find(p => savedProblem === p.text || savedProblem.startsWith(p.text + ' — '));
+  const [selectedProblem, setSelectedProblem] = useState<string | null>(matchedProblem ? matchedProblem.text : null);
+  const [complement, setComplement] = useState(() => {
+    if (matchedProblem) return savedProblem.slice(matchedProblem.text.length).replace(/^ — /, '');
+    return savedProblem; // dor totalmente escrita pelo usuário
+  });
 
   const selectedNicheObj = NICHES.find(n => n.label === niche);
+
+  const composeProblem = () => {
+    const c = complement.trim();
+    if (selectedProblem && c) return `${selectedProblem} — ${c}`;
+    return selectedProblem || c;
+  };
+  const problemReady = !!(selectedProblem || complement.trim());
 
   const handleNextStep = () => {
     if (step === 0 && niche) setStep(1);
     else if (step === 1) {
-      const problem = (customProblem.trim() || selectedProblem || '').trim();
+      const problem = composeProblem();
       if (!problem) return;
       updatePhase('phase3', { uniqueProblem: problem });
       addXP(100);
@@ -166,15 +175,15 @@ export default function Mission3() {
               <div className="text-center mb-6">
                 <h3 className="font-serif text-2xl text-[var(--text-main)] mb-2">A Dor que Você Resolve</h3>
                 <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
-                  Que dor real o seu negócio{niche ? ` em ${niche}` : ''} vai resolver? Escolha uma possibilidade ou descreva a sua.
+                  Que dor real o seu negócio{niche ? ` em ${niche}` : ''} vai resolver? Escolha uma possibilidade e, se quiser, complemente com suas palavras.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5 flex-grow">
                 {PROBLEMS.map(p => {
-                  const isSelected = selectedProblem === p.text && !customProblem.trim();
+                  const isSelected = selectedProblem === p.text;
                   return (
-                    <button key={p.id} onClick={() => { setSelectedProblem(p.text); setCustomProblem(''); }}
+                    <button key={p.id} onClick={() => setSelectedProblem(isSelected ? null : p.text)}
                       className={cn('text-left rounded-2xl border-2 p-5 transition-all duration-200',
                         isSelected
                           ? 'border-[var(--color-brand-500)] bg-[var(--glass)] scale-[1.02] shadow-[var(--btn-shadow)]'
@@ -198,15 +207,20 @@ export default function Mission3() {
 
               <div className="mb-6">
                 <label className="text-xs font-mono uppercase tracking-widest text-[var(--color-brand-500)] block mb-2">
-                  Ou descreva a dor que você quer resolver
+                  {selectedProblem ? 'Complemente com suas palavras (opcional)' : 'Ou descreva a dor que você quer resolver'}
                 </label>
                 <input
                   type="text"
-                  value={customProblem}
-                  onChange={e => { setCustomProblem(e.target.value); if (e.target.value.trim()) setSelectedProblem(null); }}
-                  placeholder="Ex.: ajudar aposentados a transformar um hobby em renda"
+                  value={complement}
+                  onChange={e => setComplement(e.target.value)}
+                  placeholder={selectedProblem ? 'Ex.: especificamente para aposentados que querem renda extra' : 'Ex.: ajudar aposentados a transformar um hobby em renda'}
                   className="w-full rounded-xl border border-[var(--color-brand-200)] bg-[rgba(255,255,255,0.03)] px-4 py-2.5 text-sm text-[var(--text-main)] placeholder:text-[var(--color-text-muted)] focus:border-[var(--color-brand-500)] focus:outline-none"
                 />
+                {selectedProblem && complement.trim() && (
+                  <p className="text-xs text-[var(--color-text-muted)] mt-2 italic">
+                    Dor final: <span className="text-[var(--text-main)]">{composeProblem()}</span>
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-between items-center pt-4 border-t border-[var(--color-brand-100)]">
@@ -215,8 +229,8 @@ export default function Mission3() {
                   ← Voltar
                 </button>
                 <motion.button
-                  animate={{ opacity: (customProblem.trim() || selectedProblem) ? 1 : 0.3 }}
-                  disabled={!(customProblem.trim() || selectedProblem)}
+                  animate={{ opacity: problemReady ? 1 : 0.3 }}
+                  disabled={!problemReady}
                   onClick={handleNextStep}
                   className="px-8 py-3 rounded-xl font-bold uppercase tracking-wider bg-[var(--color-brand-600)] text-[var(--bg-dark)] hover:opacity-90 shadow-[var(--btn-shadow)] disabled:pointer-events-none">
                   Confirmar →

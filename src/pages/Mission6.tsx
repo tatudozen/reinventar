@@ -245,21 +245,53 @@ export default function Mission6() {
                 O que atrai e o que repele são igualmente reveladores.
               </p>
 
-              {savedRoles.length > 0 && (
-                <div className="w-full max-w-md bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-5 mb-10">
-                  <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-3">Possibilidades que ressoaram</p>
-                  <div className="flex flex-wrap gap-2">
-                    {savedRoles.map(id => {
-                      const role = ALL_ROLES.find(r => r.id === id);
-                      return role ? (
-                        <span key={id} className="text-xs px-3 py-1.5 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)] font-medium flex items-center gap-1">
-                          <span>{role.emoji}</span> {role.text}
-                        </span>
-                      ) : null;
-                    })}
+              {savedRoles.length > 0 && (() => {
+                const roleText = (id: string) => {
+                  const r = ALL_ROLES.find(x => x.id === id);
+                  return r ? `${r.emoji} ${r.text}` : id;
+                };
+                const podium = [3, 2, 1]
+                  .map(m => ({ m, id: Object.keys(rolesRanking).find(id => rolesRanking[id] === m) }))
+                  .filter(x => x.id) as { m: number; id: string }[];
+                const medalEmoji = (m: number) => (m === 3 ? '🥇' : m === 2 ? '🥈' : '🥉');
+                const others = savedRoles.filter(id => !rolesRanking[id] && !hobbyRoles.includes(id));
+                return (
+                  <div className="w-full max-w-md space-y-4 mb-10">
+                    {podium.length > 0 && (
+                      <div className="bg-[var(--glass)] border border-[var(--color-brand-300)] rounded-xl p-5">
+                        <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-3">O pódio do negócio</p>
+                        <div className="space-y-2">
+                          {podium.map(({ m, id }) => (
+                            <div key={id} className="flex items-center gap-2 text-sm text-[var(--text-main)]">
+                              <span className="text-lg">{medalEmoji(m)}</span> {roleText(id)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {hobbyRoles.length > 0 && (
+                      <div className="bg-amber-500/10 border border-amber-400/40 rounded-xl p-4">
+                        <p className="text-xs font-mono uppercase tracking-widest text-amber-300 mb-2">🎡 Só por prazer (não como negócio)</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {hobbyRoles.map(id => (
+                            <span key={id} className="text-xs px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-200 border border-amber-400/40">{roleText(id)}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {others.length > 0 && (
+                      <div className="bg-[var(--glass)] border border-[var(--color-brand-200)] rounded-xl p-4">
+                        <p className="text-xs font-mono uppercase tracking-widest text-[var(--color-text-muted)] mb-2">Outras que ressoaram</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {others.map(id => (
+                            <span key={id} className="text-xs px-2.5 py-1 rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-700)] border border-[var(--color-brand-200)]">{roleText(id)}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <button onClick={handleFinish}
                 className="px-10 py-4 bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)] rounded-xl font-bold uppercase tracking-widest text-white shadow-[var(--btn-shadow)] hover:scale-105 transition-transform flex items-center gap-2">

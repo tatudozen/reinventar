@@ -1341,6 +1341,32 @@ export function generateReinventarRelatorioHtml(
     ${offerFormats.length === 0 && payers.length === 0 && !ambition && !goal ? '<div style="color:#9ca3af;font-style:italic;font-size:13px">Modelo de negócio não definido.</div>' : ''}
   `);
 
+  // ── Parte 1 × Parte 2 (perfil × oferta) ──────────────────────────────────────
+  const OFFER_R: Record<string, RIASECType[]> = {
+    servico_1a1: ['I', 'S'], oficina: ['S'], produto: ['R', 'A'], conteudo: ['A'],
+    consultoria: ['E', 'I'], experiencia: ['E', 'S'], intermediacao: ['E'], digital: ['A', 'I'],
+  };
+  const cargoR = cargo ? CARGO_RIASEC[cargo] : undefined;
+  const cargoAligned = cargoR && top3.includes(cargoR);
+  const offerTypes = (bm.offerFormats ?? []).flatMap(oid => OFFER_R[oid] ?? []);
+  const offerAligned = offerTypes.filter(t => top3.includes(t));
+  const offerFit = offerTypes.length === 0 ? null : offerAligned.length > 0 ? 'ok' : 'tension';
+
+  const convItems: string[] = [];
+  if (cargoR) convItems.push(
+    cargoAligned
+      ? `✓ O papel desejado (${dict(REINVENTAR_CARGOS, cargo)}) conversa com o perfil ${dict(RIASEC_NAME, top3[0])} — a execução tende a fluir.`
+      : `⚠ O papel desejado (${dict(REINVENTAR_CARGOS, cargo)}) puxa um lado diferente do perfil dominante — vale preparar-se ou buscar parceria.`);
+  if (offerFit) convItems.push(
+    offerFit === 'ok'
+      ? `✓ A forma de entregar usa pontos fortes do perfil — bom encaixe.`
+      : `⚠ A oferta puxa um lado diferente do perfil — teste em pequena escala antes de escalar.`);
+
+  const convergenciaHtml = (top3.length > 0 && convItems.length > 0)
+    ? section('Perfil × Plano', '#7c3aed', 'Parte 1 (quem você é) × Parte 2 (o que vai oferecer)',
+        convItems.map(t => `<p style="font-size:13px;color:#374151;margin:4px 0;line-height:1.6">${esc(t)}</p>`).join(''))
+    : '';
+
   // ── A Carta ──────────────────────────────────────────────────────────────────
   const letterSection = letter
     ? section('A Carta para o Eu de Amanhã', '#b45309', 'Uma mensagem para você mesmo(a)', `
@@ -1371,6 +1397,7 @@ export function generateReinventarRelatorioHtml(
   ${pilarSkills}
   ${pilarWorld}
   ${pilarRenda}
+  ${convergenciaHtml}
   ${letterSection}
 
   <!-- Footer -->
