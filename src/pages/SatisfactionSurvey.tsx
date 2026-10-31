@@ -333,7 +333,7 @@ export default function SatisfactionSurvey() {
         {/* Q6 — Precisão */}
         <div>
           <p className="text-sm font-semibold text-[var(--text-main)] mb-3">
-            6. O resultado final (Síntese da Reinvenção + análise de convergência) pareceu...
+            6. O resultado final (seu Plano de Reinvenção) pareceu...
           </p>
           <div className="space-y-2">
             {PRECISAO_OPTIONS.map(opt => (
