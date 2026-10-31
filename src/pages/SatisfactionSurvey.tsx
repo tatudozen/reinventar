@@ -26,13 +26,13 @@ const CLAREZA_OPTIONS = [
 
 const FASES = [
   'Fase 1 — Mapa de Energia',
-  'Fase 2 — Talentos e Competências',
-  'Fase 3 — Causas que Importam',
-  'Fase 4 — Duelos de Cenas',
-  'Fase 5 — Figuras Inspiradoras e Missão',
-  'Fase 6 — Conexões e Intenção',
-  'Fase 7 — Papéis que Ressoaram',
-  'Fase 8 — Carta ao Eu de Amanhã',
+  'Fase 2 — Talentos na Mochila',
+  'Fase 3 — Cenários de Vida',
+  'Fase 4 — O Garimpo',
+  'Fase 5 — A Dor que Você Resolve',
+  'Fase 6 — Público e Cliente',
+  'Fase 7 — O Modelo da Reinvenção',
+  'Fase 8 — A Carta para o Eu de Amanhã',
 ];
 
 const PRECISAO_OPTIONS = [
@@ -324,7 +324,7 @@ export default function SatisfactionSurvey() {
           <textarea
             value={dificuldade}
             onChange={e => setDificuldade(e.target.value)}
-            placeholder="Ex: Na fase 3 não entendi bem o que fazer..."
+            placeholder="Ex: em uma das fases não entendi bem o que fazer..."
             rows={3}
             className="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm outline-none focus:border-[var(--color-brand-400)] transition-colors resize-none"
           />
