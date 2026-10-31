@@ -6,7 +6,7 @@ import { useApp } from '../store';
 import { MentorVideo } from '../components/MentorVideo';
 import { ShareQuizLink } from '../components/ShareQuizLink';
 
-// Webhook do N8N que gera o Relatório Profundo via IA.
+// Webhook do N8N que gera o Plano de Reinvenção (aprofundado) via IA.
 // Recebe apenas o jornada_id; N8N busca nome/e-mail/dados com service_role.
 const SURVEY_WEBHOOK_URL = 'https://webhook.alquimiazen.com.br/webhook/reinventar-report';
 
@@ -167,7 +167,7 @@ export default function SatisfactionSurvey() {
         </div>
         <h2 className="font-serif text-3xl text-[var(--text-main)] mb-3">Pesquisa já Respondida</h2>
         <p className="text-stone-500 mb-8 leading-relaxed">
-          Você já respondeu a pesquisa desta jornada. Em breve você receberá seu relatório aprofundado.
+          Você já respondeu a pesquisa desta jornada. Em breve você receberá seu Plano de Reinvenção.
         </p>
         {jornadaId && (
           <button
@@ -191,7 +191,7 @@ export default function SatisfactionSurvey() {
         <h2 className="font-serif text-3xl text-[var(--text-main)] mb-3">Obrigado!</h2>
         <p className="text-stone-500 mb-8 leading-relaxed">
           Sua opinião vai nos ajudar a tornar a Jornada ainda melhor. Em breve você receberá seu
-          relatório aprofundado gerado por IA.
+          Plano de Reinvenção gerado por IA.
         </p>
 
         <MentorVideo
@@ -242,7 +242,7 @@ export default function SatisfactionSurvey() {
           Pesquisa de Satisfação
         </p>
         <h1 className="font-serif text-3xl text-[var(--text-main)] mb-2">Como foi sua Jornada?</h1>
-        <p className="text-stone-500 text-sm">Leva menos de 2 minutos. Sua resposta molda as próximas versões e libera seu relatório aprofundado.</p>
+        <p className="text-stone-500 text-sm">Leva menos de 2 minutos. Sua resposta molda as próximas versões e libera seu Plano de Reinvenção.</p>
       </div>
 
       <div className="space-y-8">
@@ -423,7 +423,7 @@ export default function SatisfactionSurvey() {
           className="w-full py-3.5 bg-[var(--color-brand-600)] text-white text-sm rounded-[4px] font-medium hover:bg-[var(--color-brand-700)] transition-colors inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Send className="w-4 h-4" />
-          {submitting ? 'Enviando...' : 'Enviar e Receber Relatório Aprofundado'}
+          {submitting ? 'Enviando...' : 'Enviar e Receber meu Plano de Reinvenção'}
         </button>
 
         <div className="text-center pb-8">

@@ -1194,10 +1194,38 @@ export default function ResultDashboard() {
           </section>
         )}
 
-        {/* ── Próximo Passo ── */}
-        {tenantConfig?.explore_url && (
-          <section className="mb-12">
-            <div className="bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-2xl px-8 py-10 text-center">
+        {/* ── CTAs ── */}
+        <div className="space-y-6 mb-12">
+
+          {/* 1. Pesquisa de Satisfação — libera o Plano de Reinvenção */}
+          <section className="bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-2xl px-8 py-10 text-center">
+            <div className="w-10 h-10 mx-auto rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-600)] flex items-center justify-center mb-4">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <h2 className="font-serif text-2xl text-[var(--color-brand-800)] mb-2">
+              Receba seu Plano de Reinvenção
+            </h2>
+            <p className="text-stone-500 max-w-sm mx-auto mb-6 text-sm leading-relaxed">
+              Responda a pesquisa de satisfação (menos de 2 minutos) e desbloqueie seu <strong>Plano de Reinvenção</strong> aprofundado, gerado por IA a partir de todas as suas respostas. ✨
+            </p>
+            <Link
+              to={`/comecar/pesquisa${id ? `?id=${id}` : ''}`}
+              className="inline-block px-8 py-3 bg-[var(--color-brand-600)] text-white hover:bg-[var(--color-brand-700)] rounded-full font-semibold transition-colors shadow-sm text-base"
+            >
+              Responder e receber meu Plano →
+            </Link>
+          </section>
+
+          {/* 2. Compartilhar */}
+          {id && (
+            <section className="bg-white border border-stone-200 rounded-2xl px-8 py-10 text-center">
+              <ShareQuizLink jornadaId={id} homeUrl={tenantConfig?.home_url} />
+            </section>
+          )}
+
+          {/* 3. Próximo passo (explorar) */}
+          {tenantConfig?.explore_url && (
+            <section className="bg-white border border-stone-200 rounded-2xl px-8 py-10 text-center">
               <div className="w-10 h-10 mx-auto rounded-full bg-[var(--color-brand-100)] text-[var(--color-brand-600)] flex items-center justify-center mb-4">
                 <Star className="w-5 h-5" />
               </div>
@@ -1216,30 +1244,14 @@ export default function ResultDashboard() {
               >
                 {tenantConfig.explore_label || 'Explorar'}
               </a>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+        </div>
 
         {/* ── Footer ── */}
         <div className="mt-4 text-center">
           <p className="text-stone-400 italic mb-6">"O próximo capítulo não começa com uma decisão perfeita — começa com um primeiro passo honesto."</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              to={`/comecar/pesquisa${id ? `?id=${id}` : ''}`}
-              className="inline-block px-6 py-2.5 border border-[var(--color-brand-300)] text-[var(--color-brand-600)] hover:bg-[var(--color-brand-50)] rounded-full font-medium transition-colors"
-            >
-              Pesquisa de Satisfação
-            </Link>
-          </div>
-          <p className="mt-3 text-sm text-stone-500">
-            Responda a pesquisa para receber o seu relatório aprofundado ✨
-          </p>
-          {id && (
-            <div className="mt-6">
-              <ShareQuizLink jornadaId={id} homeUrl={tenantConfig?.home_url} />
-            </div>
-          )}
-          <div className="mt-3">
+          <div>
             {tenantConfig?.home_url ? (
               <a href={/^https?:\/\//.test(tenantConfig.home_url) ? tenantConfig.home_url : '#'} rel="noreferrer noopener"
                 className="text-sm text-stone-400 hover:text-stone-600 transition-colors">

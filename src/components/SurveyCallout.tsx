@@ -5,7 +5,7 @@ export function SurveyCallout({ jornadaId }: { jornadaId?: string | null }) {
   return (
     <div className="mt-14 max-w-2xl mx-auto text-center bg-[var(--color-brand-50)] border border-[var(--color-brand-200)] rounded-2xl p-6">
       <p className="text-sm text-stone-600 mb-4 leading-relaxed">
-        Se ainda não respondeu a pesquisa de satisfação, responda para receber o seu relatório especial ✨
+        Se ainda não respondeu a pesquisa de satisfação, responda para receber o seu Plano de Reinvenção ✨
       </p>
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
         <Link
