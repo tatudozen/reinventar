@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
       </P>
       <UL>
         <li><strong>Site e aplicação da Jornada Ikigai.</strong> Páginas que operamos sob nosso domínio {dominio}, incluindo as missões, o cadastro para salvar o resultado e a pesquisa de satisfação.</li>
-        <li><strong>Interações com nossos conteúdos.</strong> Registros de suas interações com a jornada, e-mails e mensagens que enviamos (por exemplo, se você abre ou clica em um link do relatório enviado).</li>
+        <li><strong>Interações com nossos conteúdos.</strong> Registros de suas interações com a jornada, e-mails e mensagens que enviamos (por exemplo, se você abre ou clica em um link do Plano de Reinvenção enviado).</li>
         <li><strong>Dados criados por nós.</strong> Durante o seu uso, criamos dados sobre você — como o resultado analisado a partir das suas respostas (Mandala do Ikigai, perfil vocacional e caminhos sugeridos).</li>
         <li><strong>Indicações (member-get-member).</strong> Quando você chega à Jornada por um link de indicação de outra pessoa, registramos essa relação (quem indicou quem) para viabilizar recompensas de indicação, quando aplicável.</li>
       </UL>
@@ -83,7 +83,7 @@ export default function PrivacyPolicy() {
       </UL>
       <P>
         Esses dados são utilizados para <strong>gerar e entregar o seu resultado personalizado</strong>, para permitir
-        que você o acesse novamente e, quando você fornecer e-mail e/ou telefone, para <strong>enviar o relatório</strong>
+        que você o acesse novamente e, quando você fornecer e-mail e/ou telefone, para <strong>enviar o Plano de Reinvenção</strong>
         correspondente por e-mail e/ou WhatsApp.
       </P>
 
@@ -105,7 +105,7 @@ export default function PrivacyPolicy() {
       <UL>
         <li><strong>Provedores de infraestrutura e armazenamento.</strong> Utilizamos serviços de hospedagem e banco de dados para operar a aplicação e armazenar os dados da jornada. Estes provedores atuam como <strong>operadores</strong>, tratando os dados apenas conforme nossas instruções.</li>
         <li><strong>Provedores de inteligência artificial.</strong> As respostas da sua jornada são processadas por serviços de IA (por exemplo, o Google Gemini) para gerar a análise e o resultado personalizado. O compartilhamento se limita ao necessário para essa finalidade.</li>
-        <li><strong>Provedores de mensageria e e-mail.</strong> Para enviar o seu relatório, podemos utilizar serviços de automação, e-mail e envio de mensagens (por exemplo, via WhatsApp), com os dados de contato que você fornecer.</li>
+        <li><strong>Provedores de mensageria e e-mail.</strong> Para enviar o seu Plano de Reinvenção, podemos utilizar serviços de automação, e-mail e envio de mensagens (por exemplo, via WhatsApp), com os dados de contato que você fornecer.</li>
         <li><strong>Ferramentas de análise (analytics).</strong> Dados podem ser utilizados de forma agregada e, sempre que possível, anonimizada, para compreender o uso da plataforma e melhorar os serviços — sem a finalidade de identificar você individualmente.</li>
         <li><strong>Autoridades e proteção de direitos.</strong> Podemos acessar, preservar e divulgar dados quando acreditarmos, de boa-fé, que isso é necessário para cumprir obrigação legal ou ordem judicial, ou para proteger direitos, propriedade ou segurança da Jornada Ikigai e de terceiros.</li>
       </UL>
@@ -133,7 +133,7 @@ export default function PrivacyPolicy() {
       <H2>5. Quais são os direitos dos titulares de dados?</H2>
       <P>
         Você sempre poderá optar por não divulgar seus dados, mas tenha em mente que alguns deles são necessários para
-        salvar o resultado ou receber o relatório. Independentemente disso, você possui direitos relativos à privacidade
+        salvar o resultado ou receber o Plano de Reinvenção. Independentemente disso, você possui direitos relativos à privacidade
         e à proteção dos seus dados pessoais. Sob a <strong>LGPD</strong> (e, quando aplicável, a GDPR), você tem os
         seguintes direitos:
       </P>

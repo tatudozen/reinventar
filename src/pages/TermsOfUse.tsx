@@ -33,7 +33,7 @@ export default function TermsOfUse() {
 
       <H2>2. Cadastro e informações fornecidas</H2>
       <P>
-        Parte dos recursos — como <strong>salvar o resultado</strong> e <strong>receber o relatório</strong> — exige que
+        Parte dos recursos — como <strong>salvar o resultado</strong> e <strong>receber o Plano de Reinvenção</strong> — exige que
         você forneça informações de contato (nome, e-mail e, opcionalmente, telefone). Ao fornecer seus dados, você
         declara que:
       </P>
