@@ -270,7 +270,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 1
   const p1 = d.phase1 ?? {};
   if (nonEmptyObj(p1.energyCards) || nonEmpty(p1.maturityVerbs).length || nonEmpty(p1.curiosityThemes).length) {
-    lines.push('── FASE 1: ENERGIA E RAÍZES ──');
+    lines.push('── ENERGIA E RAÍZES ──');
     if (nonEmptyObj(p1.energyCards)) {
       const byLevel: Record<string, string[]> = { flow: [], boost: [], neutral: [], drain: [] };
       for (const [act, level] of Object.entries(p1.energyCards!)) {
@@ -298,7 +298,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 2 — Talentos + chapéu de dono(a)
   const p2 = d.phase2 ?? {};
   if (nonEmptyObj(p2.skillRatings) || nonEmpty(p2.whoAsksYou).length || nonEmpty(p2.hiddenTalents).length || p2.cargo) {
-    lines.push('── FASE 2: TALENTOS MADUROS E PAPEL ──');
+    lines.push('── TALENTOS MADUROS E CHAPÉU DE DONO(A) ──');
     if (nonEmptyObj(p2.skillRatings)) {
       lines.push('Autoavaliação de talentos (1-5):');
       const detail = p2.detailRatings ?? {};
@@ -326,7 +326,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 3 — Nicho + sub-nicho + a dor que resolve
   const p3 = d.phase3 ?? {};
   if (p3.niche || p3.subNiche || p3.uniqueProblem) {
-    lines.push('── FASE 3: NICHO E A DOR QUE RESOLVE ──');
+    lines.push('── NICHO E A DOR QUE RESOLVE ──');
     if (p3.niche) {
       lines.push(`Nicho de mercado: ${p3.niche}${p3.subNiche ? ` (sub-nicho: ${p3.subNiche})` : ''}`);
     }
@@ -339,7 +339,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 4
   const p4 = d.phase4 ?? {};
   if (nonEmptyObj(p4.sceneDuels) || nonEmpty(p4.environments).length || nonEmptyObj(p4.forcedChoices)) {
-    lines.push('── FASE 4: PERFIL E AMBIENTE ──');
+    lines.push('── PERFIL E AMBIENTE (CENÁRIOS DE VIDA) ──');
     if (nonEmptyObj(p4.sceneDuels)) {
       const freq = computeRiasec(p4.sceneDuels!);
       lines.push(`Frequências RIASEC (12 duelos): ${formatRiasec(freq)}`);
@@ -361,7 +361,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 5 — Público e Cliente
   const p6 = d.phase6 ?? {};
   if (nonEmpty(p6.connections).length || nonEmpty(p6.modes).length) {
-    lines.push('── FASE 5: PÚBLICO E CLIENTE ──');
+    lines.push('── PÚBLICO E CLIENTE ──');
     if (nonEmpty(p6.connections).length) {
       lines.push(`Público que quer servir: ${translateList(p6.connections!, CONNECTION_LABELS)}`);
     }
@@ -374,7 +374,7 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 6 — Garimpo (formatos de oferta em potencial)
   const p7 = d.phase7 ?? {};
   if (nonEmpty(p7.savedRoles).length || nonEmpty(p7.discardedRoles).length) {
-    lines.push('── FASE 6: FORMATOS DE OFERTA EXPLORADOS (GARIMPO) ──');
+    lines.push('── FORMATOS EXPLORADOS (GARIMPO) ──');
     if (nonEmpty(p7.savedRoles).length) {
       const rank = p7.rolesRanking ?? {};
       const ranked = [...p7.savedRoles!].sort((a, b) => (rank[b] ?? 0) - (rank[a] ?? 0));
@@ -420,12 +420,12 @@ function buildDataSection(firstName: string, d: PhaseData): string {
   // FASE 8
   const p8 = d.phase8 ?? {};
   if (p8.businessVision?.trim()) {
-    lines.push('── FASE 8: VISÃO DO NEGÓCIO EM 1 ANO ──');
+    lines.push('── VISÃO DO NEGÓCIO EM 1 ANO ──');
     lines.push(p8.businessVision.trim());
     lines.push('');
   }
   if (p8.letter?.trim()) {
-    lines.push('── FASE 8: CARTA AO EU DE AMANHÃ ──');
+    lines.push('── CARTA AO EU DE AMANHÃ ──');
     lines.push(p8.letter.trim());
     lines.push('');
   }
@@ -447,7 +447,7 @@ ${firstName} tem 55 anos ou mais e está diante de uma pergunta prática e hones
 ### VOZ E TOM (Brand Voice Reinventar)
 
 **A voz é testemunhal — fale a partir do que VIU:**
-- "Vi que você escolheu…", "Quando você colocou todas as moedas em…", "Três vezes durante a jornada você voltou a…"
+- "Vi que você escolheu…", "Quando você deu o ouro para…", "Três vezes durante a caminhada você voltou a…"
 - Nunca: "O participante demonstrou preferência por…" — impessoal não tem vez aqui.
 
 **Caloroso sem açúcar:**
@@ -478,22 +478,28 @@ ${firstName} tem 55 anos ou mais e está diante de uma pergunta prática e hones
 
 ---
 
+### COMO LER OS DADOS
+- **Pódio (🥇🥈🥉)**: nas curiosidades e nos formatos do Garimpo, o 🥇 é a prioridade declarada. Ancore a oferta principal e o "comece por aqui" no ouro.
+- **Chapéu de dono — hoje → desejado**: a diferença entre os dois é a *ponte da reinvenção*.
+- **"Só por prazer"**: o que ${firstName} ama mas NÃO quer como negócio. Nunca vira oferta.
+- **Parte 1 (quem você é: energia, talentos, perfil) × Parte 2 (o que vai oferecer: nicho, dor, público, modelo)**: procure a coerência e as tensões entre as duas metades.
+
 ### ESTRUTURA OBRIGATÓRIA (8 SEÇÕES — este é um PLANO, não um relatório)
 
 **1. Sua Essência Empreendedora**
-Síntese curta (2 parágrafos) de quem ${firstName} é como base do negócio: a energia que sustenta (flow/boost), os talentos maduros e a causa que move. Nomeie a *vantagem injusta* dos 55+: experiência, rede e autoridade que ninguém começando do zero tem.
+Síntese curta (2 parágrafos) de quem ${firstName} é como base do negócio: a energia que sustenta (flow/boost), a curiosidade 🥇 de maior preferência, os talentos maduros e o nicho + a dor que escolheu resolver. Nomeie a *vantagem injusta* dos 55+: experiência, rede e autoridade que ninguém começando do zero tem.
 
 **2. A Oferta**
-O coração do plano. A partir dos formatos de oferta escolhidos (Modelo da Reinvenção) + papéis que ressoaram (Fase 7) + talentos, proponha de 1 a 3 ofertas CONCRETAS. Cada uma com: um nome simples, uma frase que o próprio cliente entenderia ("Eu ajudo ___ a ___"), e o que a pessoa recebe na prática. Nada genérico — ofertas que dá para começar a vender.
+O coração do plano. Parta dos formatos do Garimpo (🥇 primeiro) + os formatos de oferta do Modelo + os talentos, e proponha de 1 a 3 ofertas CONCRETAS para o nicho escolhido. A oferta principal nasce do ouro. Cada uma com: um nome simples, uma frase que o próprio cliente entenderia ("Eu ajudo ___ a ___"), e o que a pessoa recebe na prática. Nada que ${firstName} marcou como "só por prazer". Nada genérico — ofertas que dá para começar a vender.
 
 **3. Para Quem & a Dor que Resolve**
-Diferencie com clareza *quem paga* (o cliente, dos dados de negócio) de *quem ${firstName} quer impactar* (Fase 6) — às vezes são pessoas diferentes, e isso muda o plano. Conecte com a dor/problema escolhido na Fase 3. Explique, concretamente, por que esse cliente pagaria por isso.
+Diferencie com clareza *quem paga* (o cliente, do Modelo) de *quem ${firstName} quer servir* (o público) — às vezes são pessoas diferentes, e isso muda o plano. Ancore no nicho/sub-nicho e na dor escolhida. Explique, concretamente, por que esse cliente pagaria por isso.
 
 **4. Como Gera Receita**
-O modelo de dinheiro. Coerente com os formatos de oferta: como se cobra (por sessão, por projeto, mensalidade, por produto, ingresso…). Sugira uma FAIXA DE PREÇO inicial realista e conservadora, ancorada na meta de renda e no nível de ambição. Aponte os canais (presencial/online, dos modos da Fase 6 e ambientes da Fase 4) e de onde podem vir os 3 primeiros clientes — usando os ativos que ${firstName} já tem (rede, reputação, audiência).
+O modelo de dinheiro. Coerente com os formatos de oferta: como se cobra (por sessão, por projeto, mensalidade, por produto, ingresso…). Sugira uma FAIXA DE PREÇO inicial realista e conservadora, ancorada na meta de renda e no nível de ambição. Aponte os canais (presencial/online/produto físico, dos modos de entrega e dos ambientes preferidos) e de onde podem vir os 3 primeiros clientes — usando os ativos que ${firstName} já tem (rede, reputação, audiência).
 
-**5. Sua Vantagem aos 55+**
-Os ativos declarados (rede, reputação, audiência, capital, espaço, tempo, experiência de setor) + "quem já pede ajuda a ${firstName}" (Fase 2). O que reduz o risco do começo. Se faltar um ativo importante, trate como oportunidade de parceria — nunca como fraqueza.
+**5. Perfil × Oferta: o que flui e o que exige cuidado**
+Cruze a Parte 1 com a Parte 2. Onde a oferta e o papel desejado usam o perfil natural (e tendem a fluir) e onde puxam um lado diferente (a ponte do chapéu hoje→desejado; oferta que exige um tipo que não é o dominante). Tensão não é defeito: aponte o que desenvolver, terceirizar ou buscar em parceria. Some aqui os ativos declarados + "quem já pede ajuda a ${firstName}" como o que reduz o risco do começo.
 
 **6. Plano dos Primeiros 90 Dias**
 3 movimentos concretos e gentis, calibrados pelo nível de ambição:
@@ -510,14 +516,16 @@ Traduza a meta de renda em marcos realistas de 3, 6 e 12 meses, coerentes com a 
 ---
 
 ### REGRAS DO PLANO
-- Quando houver pódio (🥇🥈🥉 — curiosidades na Fase 1, formatos no Garimpo), PRIORIZE o ouro: a oferta principal e o "comece por aqui" nascem do 🥇; prata e bronze são alternativas/expansões futuras.
-- Respeite o que ${firstName} marcou como "só por prazer": NÃO transforme isso em oferta. No máximo, sugira reservar para lazer/recarga — a renda vem das candidatas de negócio.
-- Se o chapéu de HOJE for diferente do DESEJADO, trate isso como a ponte da reinvenção: reconheça de onde ${firstName} vem e o que precisa desenvolver (ou terceirizar) para ocupar o papel desejado.
+- PRIORIZE o 🥇: a oferta principal e o "comece por aqui" nascem do ouro (curiosidade e formato); prata e bronze são alternativas/expansões futuras.
+- Respeite o que ${firstName} marcou como "só por prazer": NÃO transforme em oferta. No máximo, sugira reservar para lazer/recarga — a renda vem das candidatas de negócio.
+- Trate a diferença chapéu hoje→desejado como a ponte da reinvenção: reconheça de onde ${firstName} vem e o que precisa desenvolver (ou terceirizar) para ocupar o papel desejado.
+- Quando a oferta/papel desejado puxar um perfil diferente do dominante, diga isso com honestidade e proponha mitigação (parceria, preparo, piloto) — sem desencorajar.
+- Refira-se às descobertas pelo NOME (nicho, dor, público, oferta, chapéu), nunca por "Fase X".
 - Cite as respostas REAIS de ${firstName} como base de cada recomendação — o plano precisa ser claramente DELE(A), não um template.
-- Cruze múltiplas fases ao propor a oferta e o cliente. Nunca conclua a partir de uma resposta isolada.
+- Cruze múltiplas descobertas ao propor a oferta e o cliente. Nunca conclua a partir de uma resposta isolada.
 - Seja concreto e acionável: nomes de oferta, faixas de preço, canais, números. Um plano que não dá para executar não serve.
 - Campos ausentes: contorne com elegância, propondo o passo que preencheria a lacuna — sem "não foi possível analisar X".
-- Se houver carta ou visão de negócio (Fase 8), ela tem peso especial: é a voz não filtrada de ${firstName}. Ancore o plano nela.
+- Se houver carta ou visão de negócio, ela tem peso especial: é a voz não filtrada de ${firstName}. Ancore o plano nela.
 
 ### RESPONSABILIDADE (não negociável)
 - Preços, metas e projeções são SUGESTÕES realistas e conservadoras — nunca promessas de ganho. Deixe isso claro quando citar números.
